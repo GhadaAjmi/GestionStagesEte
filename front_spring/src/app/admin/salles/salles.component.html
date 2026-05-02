@@ -1,0 +1,236 @@
+<!--! ================================================================ !-->
+<!--! [Start] Main Content !-->
+<!--! ================================================================ !-->
+<main class="nxl-container">
+  <div class="nxl-content">
+
+    <!-- [ page-header ] start -->
+    <div class="page-header">
+      <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Salles</h5>
+        </div>
+      </div>
+
+      <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+          <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+
+            <select class="form-select"
+                    [(ngModel)]="filterLocalisation"
+                    (change)="filterSalles()"
+                    style="max-width: 200px;">
+              <option value="">Tous</option>
+              <option value="PRINCIPALE">Principale</option>
+              <option value="ANNEXE">Annexe</option>
+            </select>
+
+            <button class="btn btn-primary" (click)="openCreateModal()">
+              <i class="feather-plus me-2"></i>
+              <span>Ajouter</span>
+            </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- [ page-header ] end -->
+
+    <!-- [ Main Content ] start -->
+    <div class="main-content">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card stretch stretch-full">
+            <div class="card-body p-0">
+              <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Localisation</th>
+                      <th>Présentation</th>
+                      <th>Poster</th>
+                      <th class="text-end">Actions</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr *ngFor="let salle of filteredSalles">
+                      <td class="fw-semibold">
+                        {{ salle.code }}
+                      </td>
+
+                      <td>
+                        <span [class]="getLocalisationBadgeClass(salle.localisation)">
+                          {{ salle.localisation }}
+                        </span>
+                      </td>
+
+                      <td>
+                        <span class="badge"
+                              [ngClass]="salle.supportePresentation ? 'bg-soft-success text-success' : 'bg-soft-secondary text-muted'">
+                          <i class="feather-check me-1" *ngIf="salle.supportePresentation"></i>
+                          <i class="feather-x me-1" *ngIf="!salle.supportePresentation"></i>
+                          {{ salle.supportePresentation ? 'Oui' : 'Non' }}
+                        </span>
+                      </td>
+
+                      <td>
+                        <span class="badge"
+                              [ngClass]="salle.supportePoster ? 'bg-soft-success text-success' : 'bg-soft-secondary text-muted'">
+                          <i class="feather-check me-1" *ngIf="salle.supportePoster"></i>
+                          <i class="feather-x me-1" *ngIf="!salle.supportePoster"></i>
+                          {{ salle.supportePoster ? 'Oui' : 'Non' }}
+                        </span>
+                      </td>
+
+                      <td class="text-end">
+                        <div class="hstack gap-2 justify-content-end">
+                          <button class="btn btn-sm btn-outline-primary"
+                                  (click)="openEditModal(salle)">
+                            <i class="feather-edit"></i>
+                          </button>
+
+                          <button class="btn btn-sm btn-outline-danger"
+                                  (click)="deleteSalle(salle)">
+                            <i class="feather-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr *ngIf="filteredSalles.length === 0">
+                      <td colspan="5" class="text-center text-muted py-4">
+                        Aucune salle trouvée.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- [ Main Content ] end -->
+
+  </div>
+</main>
+
+<!-- Modal for Create/Edit Salle -->
+<div class="modal fade"
+     id="salleModal"
+     tabindex="-1"
+     aria-labelledby="salleModalLabel"
+     aria-hidden="true">
+
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="salleModalLabel">
+          {{ isEditMode ? 'Modifier Salle' : 'Ajouter Salle' }}
+        </h5>
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close">
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form [formGroup]="salleForm" (ngSubmit)="saveSalle()">
+
+          <!-- Code -->
+          <div class="mb-3">
+            <label for="code" class="form-label">
+              Code <span class="text-danger">*</span>
+            </label>
+
+            <input type="text"
+                   class="form-control"
+                   id="code"
+                   formControlName="code"
+                   required>
+
+            <div class="form-text">
+              Exemple : A101, B12, Salle 3.
+            </div>
+          </div>
+
+          <!-- Localisation -->
+          <div class="mb-3">
+            <label for="localisation" class="form-label">
+              Localisation <span class="text-danger">*</span>
+            </label>
+
+            <select class="form-select"
+                    id="localisation"
+                    formControlName="localisation"
+                    required>
+              <option value="PRINCIPALE">Principale</option>
+              <option value="ANNEXE">Annexe</option>
+            </select>
+          </div>
+
+          <!-- Types possibles -->
+          <div class="mb-3">
+            <label class="form-label">
+              Utilisation possible
+            </label>
+
+            <div class="border rounded p-3 bg-light">
+
+              <div class="form-check mb-2">
+                <input class="form-check-input"
+                       type="checkbox"
+                       id="supportePresentation"
+                       formControlName="supportePresentation">
+
+                <label class="form-check-label" for="supportePresentation">
+                  Peut accueillir une présentation de soutenance
+                </label>
+              </div>
+
+              <div class="form-check">
+                <input class="form-check-input"
+                       type="checkbox"
+                       id="supportePoster"
+                       formControlName="supportePoster">
+
+                <label class="form-check-label" for="supportePoster">
+                  Peut accueillir une soutenance poster
+                </label>
+              </div>
+
+            </div>
+
+            <div class="form-text">
+              Ces options seront utilisées pour générer automatiquement les plannings.
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
+          Annuler
+        </button>
+
+        <button type="button"
+                class="btn btn-primary"
+                (click)="saveSalle()"
+                [disabled]="!salleForm.valid">
+          Sauvegarder
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

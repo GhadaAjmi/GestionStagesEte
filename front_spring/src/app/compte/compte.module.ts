@@ -7,13 +7,17 @@ import { ProfileComponent } from './profile/profile.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CoreModule } from '../core/core.module';
+import { ProfileviewComponent } from './profileview/profileview.component';
+import { ProfileeditComponent } from './profileedit/profileedit.component';
 
 
 @NgModule({
   declarations: [
     LoginComponent,
     ProfileComponent,
-    ResetPasswordComponent
+    ResetPasswordComponent,
+    ProfileviewComponent,
+    ProfileeditComponent
   ],
   imports: [
     CommonModule,

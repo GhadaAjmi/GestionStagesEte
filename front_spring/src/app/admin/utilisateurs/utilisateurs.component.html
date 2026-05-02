@@ -1,0 +1,542 @@
+<!--! ================================================================ !-->
+<!--! [Start] Main Content Utilisateurs !-->
+<!--! ================================================================ !-->
+<main class="nxl-container apps-container apps-storage">
+  <div class="nxl-content without-header nxl-full-content">
+    <div class="main-content d-flex">
+      <div class="content-area" data-scrollbar-target="#psScrollbarInit">
+
+        <!-- ─── Header ─────────────────────────────────────────────────────── -->
+        <div class="content-area-header sticky-top">
+          <div class="page-header-left d-flex align-items-center gap-2">
+            <a href="javascript:void(0);" class="app-sidebar-open-trigger me-2">
+              <i class="feather-align-left fs-20"></i>
+            </a>
+            <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+              <a routerLink="/admin/new" class="btn btn-primary successAlertMessage">
+                <i class="feather-user-plus me-2"></i>
+                <span>Ajouter Utilisateur</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="page-header-right ms-auto">
+            <div class="hstack gap-2">
+
+              <!-- Filtres par rôle -->
+              <div class="hstack gap-1">
+                <a href="javascript:void(0)" class="btn btn-sm"
+                   [class.btn-primary]="roleSelectionne === ''"
+                   [class.btn-light]="roleSelectionne !== ''"
+                   (click)="onRoleChange('')">
+                  Tous
+                  <span class="badge bg-secondary ms-1">{{ countByRole('') }}</span>
+                </a>
+                <a href="javascript:void(0)" class="btn btn-sm d-none d-md-inline-flex"
+                   [class.btn-danger]="roleSelectionne === 'CHEF_DEPARTEMENT'"
+                   [class.btn-light]="roleSelectionne !== 'CHEF_DEPARTEMENT'"
+                   (click)="onRoleChange('CHEF_DEPARTEMENT')">
+                  Chef de département
+                  <span class="badge bg-secondary ms-1">{{ countByRole('CHEF_DEPARTEMENT') }}</span>
+                </a>
+                <a href="javascript:void(0)" class="btn btn-sm d-none d-md-inline-flex"
+                   [class.btn-primary]="roleSelectionne === 'ENSEIGNANT'"
+                   [class.btn-light]="roleSelectionne !== 'ENSEIGNANT'"
+                   (click)="onRoleChange('ENSEIGNANT')">
+                  Enseignant
+                  <span class="badge bg-secondary ms-1">{{ countByRole('ENSEIGNANT') }}</span>
+                </a>
+                <a href="javascript:void(0)" class="btn btn-sm d-none d-md-inline-flex"
+                   [class.btn-success]="roleSelectionne === 'ETUDIANT'"
+                   [class.btn-light]="roleSelectionne !== 'ETUDIANT'"
+                   (click)="onRoleChange('ETUDIANT')">
+                  Étudiant
+                  <span class="badge bg-secondary ms-1">{{ countByRole('ETUDIANT') }}</span>
+                </a>
+                <a href="javascript:void(0)" class="btn btn-sm d-none d-md-inline-flex"
+                   [class.btn-warning]="roleSelectionne === 'RESPONSABLE'"
+                   [class.btn-light]="roleSelectionne !== 'RESPONSABLE'"
+                   (click)="onRoleChange('RESPONSABLE')">
+                  Responsable
+                  <span class="badge bg-secondary ms-1">{{ countByRole('RESPONSABLE') }}</span>
+                </a>
+                <a href="javascript:void(0)" class="btn btn-sm d-none d-md-inline-flex"
+                   [class.btn-info]="roleSelectionne === 'SERVICE_STAGE'"
+                   [class.btn-light]="roleSelectionne !== 'SERVICE_STAGE'"
+                   (click)="onRoleChange('SERVICE_STAGE')">
+                  Service Stage
+                  <span class="badge bg-secondary ms-1">{{ countByRole('SERVICE_STAGE') }}</span>
+                </a>
+                <select class="form-select form-select-sm d-md-none"
+                        [ngModel]="roleSelectionne"
+                        (ngModelChange)="onRoleChange($event)">
+                  <option value="">Tous</option>
+                  <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+                </select>
+              </div>
+
+              <!-- Recherche -->
+              <div class="hstack">
+                <a href="javascript:void(0)" class="search-form-open-toggle" (click)="toggleSearch()">
+                  <div class="avatar-text avatar-md"
+                       data-bs-toggle="tooltip" data-bs-trigger="hover" title="Rechercher">
+                    <i class="feather-search"></i>
+                  </div>
+                </a>
+                <form class="search-form" [style.display]="isSearchOpen ? 'block' : 'none'">
+                  <div class="search-form-inner">
+                    <a href="javascript:void(0)" class="search-form-close-toggle" (click)="toggleSearch()">
+                      <div class="avatar-text avatar-md"
+                           data-bs-toggle="tooltip" data-bs-trigger="hover" title="Fermer">
+                        <i class="feather-arrow-left"></i>
+                      </div>
+                    </a>
+                    <input type="search"
+                           class="py-3 px-0 border-0 w-100"
+                           placeholder="Rechercher (nom, prénom, email, CIN)..."
+                           autocomplete="off"
+                           [value]="searchTerm"
+                           (input)="onSearch($any($event.target).value)">
+                  </div>
+                </form>
+              </div>
+
+              <!-- Grid View -->
+              <a href="javascript:void(0)" class="d-flex d-none d-sm-block" (click)="setGridView()">
+                <div class="avatar-text avatar-md"
+                     data-bs-toggle="tooltip" data-bs-trigger="hover" title="Vue grille"
+                     [style.background]="isGridView ? 'var(--bs-primary-bg-subtle)' : ''">
+                  <i class="feather-grid" [style.color]="isGridView ? 'var(--bs-primary)' : ''"></i>
+                </div>
+              </a>
+
+              <!-- List View -->
+              <a href="javascript:void(0)" class="d-flex d-none d-sm-block" (click)="setListView()">
+                <div class="avatar-text avatar-md"
+                     data-bs-toggle="tooltip" data-bs-trigger="hover" title="Vue liste"
+                     [style.background]="!isGridView ? 'var(--bs-primary-bg-subtle)' : ''">
+                  <i class="feather-list" [style.color]="!isGridView ? 'var(--bs-primary)' : ''"></i>
+                </div>
+              </a>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Body ────────────────────────────────────────────────────────── -->
+        <div class="content-area-body">
+
+          <div *ngIf="utilisateursFiltres.length === 0" class="text-center py-5">
+            <i class="feather-users fs-40 text-muted d-block mb-2"></i>
+            <span class="text-muted fs-14">Aucun utilisateur trouvé</span>
+          </div>
+
+          <!-- ── LIST VIEW ──────────────────────────────────────────────────── -->
+          <div class="card mb-0" *ngIf="!isGridView && utilisateursFiltres.length > 0">
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th scope="col"></th>
+                      <th scope="col">Nom</th>
+                      <th scope="col">Prénom</th>
+                      <th scope="col">CIN</th>
+                      <th scope="col">Email</th>
+                      <th scope="col">Rôle</th>
+                      <th scope="col">Statut</th>
+                      <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let u of utilisateursFiltres">
+                      <td>
+                        <img class="rounded-circle"
+                             [src]="photos[u.id!]"
+                             alt="photo"
+                             style="width:36px;height:36px;object-fit:cover;">
+                      </td>
+                      <td class="fw-500">{{ u.nom }}</td>
+                      <td>{{ u.prenom }}</td>
+                      <td class="text-muted fs-13">{{ u.cin }}</td>
+                      <td class="text-muted fs-13">{{ u.email }}</td>
+                      <td>
+                        <span [class]="getRoleBadgeClass(u.role)">{{ u.role }}</span>
+                      </td>
+                      <td>
+                        <span *ngIf="u.actif !== null && u.actif !== undefined"
+                              [class]="u.actif ? 'badge bg-success-subtle text-success' : 'badge bg-danger-subtle text-danger'">
+                          {{ u.actif ? 'Actif' : 'Inactif' }}
+                        </span>
+                      </td>
+                      <td class="text-end">
+                        <div class="hstack gap-2 justify-content-end">
+                          <a href="javascript:void(0)" class="avatar-text avatar-sm"
+                             data-bs-toggle="tooltip" title="Voir détails"
+                             (click)="voirDetails(u)">
+                            <i class="feather-eye fs-14"></i>
+                          </a>
+                          <a href="javascript:void(0)" class="avatar-text avatar-sm"
+                             data-bs-toggle="tooltip" title="Modifier"
+                             (click)="ouvrirModification(u)">
+                            <i class="feather-edit-2 fs-14"></i>
+                          </a>
+                          <a href="javascript:void(0)" class="avatar-text avatar-sm text-danger"
+                             data-bs-toggle="tooltip" title="Supprimer"
+                             (click)="confirmerSuppression(u)">
+                            <i class="feather-trash-2 fs-14"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── GRID VIEW ──────────────────────────────────────────────────── -->
+          <div *ngIf="isGridView && utilisateursFiltres.length > 0">
+            <div class="row">
+              <div class="col-xxl-3 col-sm-6" *ngFor="let u of utilisateursFiltres">
+                <div class="card mb-4 stretch stretch-full">
+                  <div class="card-body p-0">
+                    <div class="d-flex align-items-center border-bottom p-3 gap-3">
+                      <img [src]="photos[u.id!]" alt="Photo" class="rounded-circle"
+                           style="width:40px;height:40px;object-fit:cover;">
+                      <div class="flex-grow-1 overflow-hidden">
+                        <span class="d-block fs-13 fw-500 text-truncate">{{ u.prenom }} {{ u.nom }}</span>
+                        <div class="d-flex gap-1 mt-1 flex-wrap">
+                          <span [class]="getRoleBadgeClass(u.role)" style="font-size:10px;">{{ u.role }}</span>
+                          <span *ngIf="u.actif !== null && u.actif !== undefined"
+                                [class]="u.actif ? 'badge bg-success-subtle text-success' : 'badge bg-danger-subtle text-danger'"
+                                style="font-size:10px;">
+                            {{ u.actif ? 'Actif' : 'Inactif' }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-flex border-top">
+                      <a href="javascript:void(0)"
+                         class="flex-fill text-center py-2 border-end fs-12 text-muted action-link"
+                         (click)="voirDetails(u)">
+                        <i class="feather-eye me-1"></i>Détails
+                      </a>
+                      <a href="javascript:void(0)"
+                         class="flex-fill text-center py-2 border-end fs-12 text-muted action-link"
+                         (click)="ouvrirModification(u)">
+                        <i class="feather-edit-2 me-1"></i>Modifier
+                      </a>
+                      <a href="javascript:void(0)"
+                         class="flex-fill text-center py-2 fs-12 text-danger action-link"
+                         (click)="confirmerSuppression(u)">
+                        <i class="feather-trash-2 me-1"></i>Supprimer
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL : Voir Détails                                                        -->
+<!-- ════════════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade show d-block" tabindex="-1"
+     *ngIf="isDetailsModalOpen" style="background:rgba(0,0,0,.45);">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="feather-user me-2"></i>Détails de l'utilisateur</h5>
+        <button type="button" class="btn-close" (click)="fermerDetails()"></button>
+      </div>
+
+      <div class="modal-body" *ngIf="selectedUtilisateur">
+
+        <!-- Photo + Nom + Badges -->
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <img [src]="photos[selectedUtilisateur.id!]" alt="Photo" class="rounded-circle"
+               style="width:64px;height:64px;object-fit:cover;">
+          <div>
+            <h6 class="mb-1">{{ selectedUtilisateur.prenom }} {{ selectedUtilisateur.nom }}</h6>
+            <div class="d-flex gap-1 flex-wrap">
+              <span [class]="getRoleBadgeClass(selectedUtilisateur.role)">{{ selectedUtilisateur.role }}</span>
+              <span *ngIf="selectedUtilisateur.actif !== null && selectedUtilisateur.actif !== undefined"
+                    [class]="selectedUtilisateur.actif ? 'badge bg-success-subtle text-success' : 'badge bg-danger-subtle text-danger'">
+                {{ selectedUtilisateur.actif ? 'Actif' : 'Inactif' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Informations générales -->
+        <p class="fs-11 text-muted text-uppercase fw-600 mb-2">Informations générales</p>
+        <div class="row g-3 mb-3">
+          <div class="col-6" *ngIf="selectedUtilisateur.cin">
+            <label class="fs-11 text-muted text-uppercase fw-500">CIN</label>
+            <p class="fs-13 mb-0">{{ selectedUtilisateur.cin }}</p>
+          </div>
+          <div class="col-6" *ngIf="selectedUtilisateur.nom">
+            <label class="fs-11 text-muted text-uppercase fw-500">Nom</label>
+            <p class="fs-13 mb-0">{{ selectedUtilisateur.nom }}</p>
+          </div>
+          <div class="col-6" *ngIf="selectedUtilisateur.prenom">
+            <label class="fs-11 text-muted text-uppercase fw-500">Prénom</label>
+            <p class="fs-13 mb-0">{{ selectedUtilisateur.prenom }}</p>
+          </div>
+          <div class="col-12" *ngIf="selectedUtilisateur.email">
+            <label class="fs-11 text-muted text-uppercase fw-500">Email</label>
+            <p class="fs-13 mb-0">{{ selectedUtilisateur.email }}</p>
+          </div>
+          <div class="col-6" *ngIf="selectedUtilisateur.telephone">
+            <label class="fs-11 text-muted text-uppercase fw-500">Téléphone</label>
+            <p class="fs-13 mb-0">{{ selectedUtilisateur.telephone }}</p>
+          </div>
+          <div class="col-6" *ngIf="selectedUtilisateur.lieuDelivranceCin">
+            <label class="fs-11 text-muted text-uppercase fw-500">Lieu délivrance CIN</label>
+            <p class="fs-13 mb-0">{{ selectedUtilisateur.lieuDelivranceCin }}</p>
+          </div>
+          <div class="col-6" *ngIf="selectedUtilisateur.dateDelivranceCin">
+            <label class="fs-11 text-muted text-uppercase fw-500">Date délivrance CIN</label>
+            <p class="fs-13 mb-0">{{ selectedUtilisateur.dateDelivranceCin }}</p>
+          </div>
+        </div>
+
+        <!-- Section Étudiant -->
+        <ng-container *ngIf="selectedUtilisateur.role === 'ETUDIANT'">
+          <hr class="my-3">
+          <p class="fs-11 text-muted text-uppercase fw-600 mb-2">
+            <i class="feather-book-open me-1"></i>Informations étudiant
+          </p>
+          <div class="row g-3 mb-3">
+            <div class="col-6" *ngIf="selectedUtilisateur.niveau">
+              <label class="fs-11 text-muted text-uppercase fw-500">Niveau</label>
+              <p class="fs-13 mb-0">{{ selectedUtilisateur.niveau }}</p>
+            </div>
+            <div class="col-6" *ngIf="selectedUtilisateur.specialite">
+              <label class="fs-11 text-muted text-uppercase fw-500">Spécialité</label>
+              <p class="fs-13 mb-0">{{ selectedUtilisateur.specialite }}</p>
+            </div>
+            <div class="col-6" *ngIf="selectedUtilisateur.departement">
+              <label class="fs-11 text-muted text-uppercase fw-500">Département</label>
+              <p class="fs-13 mb-0">{{ selectedUtilisateur.departement }}</p>
+            </div>
+            <div class="col-6" *ngIf="selectedUtilisateur.groupe">
+              <label class="fs-11 text-muted text-uppercase fw-500">Groupe</label>
+              <p class="fs-13 mb-0">{{ selectedUtilisateur.groupe }}</p>
+            </div>
+            <div class="col-6" *ngIf="selectedUtilisateur.numeroInscription">
+              <label class="fs-11 text-muted text-uppercase fw-500">N° d'inscription</label>
+              <p class="fs-13 mb-0">{{ selectedUtilisateur.numeroInscription }}</p>
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- Section Enseignant & Chef Département -->
+        <ng-container *ngIf="selectedUtilisateur.role === 'ENSEIGNANT' || selectedUtilisateur.role === 'CHEF_DEPARTEMENT'">
+          <hr class="my-3">
+          <p class="fs-11 text-muted text-uppercase fw-600 mb-2">
+            <i class="feather-briefcase me-1"></i>
+            {{ selectedUtilisateur.role === 'CHEF_DEPARTEMENT' ? 'Informations chef de département' : 'Informations enseignant' }}
+          </p>
+          <div class="row g-3">
+            <div class="col-6" *ngIf="selectedUtilisateur.grade">
+              <label class="fs-11 text-muted text-uppercase fw-500">Grade</label>
+              <p class="fs-13 mb-0">{{ selectedUtilisateur.grade }}</p>
+            </div>
+            <div class="col-6" *ngIf="selectedUtilisateur.departement">
+              <label class="fs-11 text-muted text-uppercase fw-500">Département</label>
+              <p class="fs-13 mb-0">{{ selectedUtilisateur.departement }}</p>
+            </div>
+            <div class="col-6" *ngIf="selectedUtilisateur.domaine">
+              <label class="fs-11 text-muted text-uppercase fw-500">Domaine</label>
+              <p class="fs-13 mb-0">{{ selectedUtilisateur.domaine }}</p>
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="fermerDetails()">Fermer</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL : Modifier                                                            -->
+<!-- ════════════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade show d-block" tabindex="-1"
+     *ngIf="isEditModalOpen" style="background:rgba(0,0,0,.45);">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="feather-edit-2 me-2"></i>Modifier l'utilisateur</h5>
+        <button type="button" class="btn-close" (click)="fermerModification()"></button>
+      </div>
+
+      <div class="modal-body" *ngIf="editUtilisateur">
+
+        <!-- ── Informations générales ──────────────────────────────────────── -->
+        <p class="fs-11 text-muted text-uppercase fw-600 mb-2">Informations générales</p>
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="form-label fs-12 fw-500">Nom</label>
+            <input type="text" class="form-control" [(ngModel)]="editUtilisateur.nom" placeholder="Nom">
+          </div>
+          <div class="col-6">
+            <label class="form-label fs-12 fw-500">Prénom</label>
+            <input type="text" class="form-control" [(ngModel)]="editUtilisateur.prenom" placeholder="Prénom">
+          </div>
+          <div class="col-6">
+            <label class="form-label fs-12 fw-500">CIN</label>
+            <input type="text" class="form-control" [(ngModel)]="editUtilisateur.cin" placeholder="CIN">
+          </div>
+          <div class="col-6">
+            <label class="form-label fs-12 fw-500">Email</label>
+            <input type="email" class="form-control" [(ngModel)]="editUtilisateur.email" placeholder="Email">
+          </div>
+          <div class="col-6">
+            <label class="form-label fs-12 fw-500">Téléphone</label>
+            <input type="text" class="form-control" [(ngModel)]="editUtilisateur.telephone" placeholder="Téléphone">
+          </div>
+          <div class="col-6">
+            <label class="form-label fs-12 fw-500">Lieu de délivrance CIN</label>
+            <input type="text" class="form-control" [(ngModel)]="editUtilisateur.lieuDelivranceCin" placeholder="Lieu de délivrance">
+          </div>
+          <div class="col-6">
+            <label class="form-label fs-12 fw-500">Date de délivrance CIN</label>
+            <input type="text" class="form-control" [(ngModel)]="editUtilisateur.dateDelivranceCin" placeholder="ex : 01/01/2020">
+          </div>
+          <div class="col-6">
+            <label class="form-label fs-12 fw-500">Rôle</label>
+            <select class="form-select" [(ngModel)]="editUtilisateur.role">
+              <option value="ADMIN">Admin</option>
+              <option value="ENSEIGNANT">Enseignant</option>
+              <option value="ETUDIANT">Étudiant</option>
+              <option value="RESPONSABLE">Responsable</option>
+              <option value="CHEF_DEPARTEMENT">Chef de département</option>
+              <option value="SERVICE_STAGE">Service Stage</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label fs-12 fw-500">Statut</label>
+            <select class="form-select" [(ngModel)]="editUtilisateur.actif">
+              <option [ngValue]="true">Actif</option>
+              <option [ngValue]="false">Inactif</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ── Champs ÉTUDIANT ─────────────────────────────────────────────── -->
+        <ng-container *ngIf="editUtilisateur.role === 'ETUDIANT'">
+          <hr class="my-3">
+          <p class="fs-11 text-muted text-uppercase fw-600 mb-2">
+            <i class="feather-book-open me-1"></i>Informations étudiant
+          </p>
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label fs-12 fw-500">Département</label>
+              <select class="form-select" [(ngModel)]="editUtilisateur.departement">
+                <option value="">Choisir</option>
+                <option *ngFor="let d of departements" [value]="d">{{ d }}</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fs-12 fw-500">Niveau</label>
+              <input type="text" class="form-control" [(ngModel)]="editUtilisateur.niveau" placeholder="Niveau">
+            </div>
+            <div class="col-6">
+              <label class="form-label fs-12 fw-500">Spécialité</label>
+              <input type="text" class="form-control" [(ngModel)]="editUtilisateur.specialite" placeholder="Spécialité">
+            </div>
+            <div class="col-6">
+              <label class="form-label fs-12 fw-500">Groupe</label>
+              <input type="text" class="form-control" [(ngModel)]="editUtilisateur.groupe" placeholder="Groupe">
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ── Champs ENSEIGNANT & CHEF_DEPARTEMENT ────────────────────────── -->
+        <ng-container *ngIf="editUtilisateur.role === 'ENSEIGNANT' || editUtilisateur.role === 'CHEF_DEPARTEMENT'">
+          <hr class="my-3">
+          <p class="fs-11 text-muted text-uppercase fw-600 mb-2">
+            <i class="feather-briefcase me-1"></i>
+            {{ editUtilisateur.role === 'CHEF_DEPARTEMENT' ? 'Informations chef de département' : 'Informations enseignant' }}
+          </p>
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label fs-12 fw-500">Grade</label>
+              <input type="text" class="form-control" [(ngModel)]="editUtilisateur.grade" placeholder="Grade">
+            </div>
+            <div class="col-6">
+              <label class="form-label fs-12 fw-500">Département</label>
+              <select class="form-select" [(ngModel)]="editUtilisateur.departement">
+                <option value="">Choisir</option>
+                <option *ngFor="let d of departements" [value]="d">{{ d }}</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label fs-12 fw-500">Domaine</label>
+              <input type="text" class="form-control" [(ngModel)]="editUtilisateur.domaine" placeholder="Domaine">
+            </div>
+          </div>
+        </ng-container>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="fermerModification()">Annuler</button>
+        <button type="button" class="btn btn-primary" (click)="sauvegarderModification()">
+          <i class="feather-save me-1"></i>Enregistrer
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL : Confirmer Suppression                                               -->
+<!-- ════════════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade show d-block" tabindex="-1"
+     *ngIf="isDeleteModalOpen" style="background:rgba(0,0,0,.45);">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+
+      <div class="modal-body text-center py-4">
+        <div class="avatar-text avatar-lg bg-danger-subtle text-danger mx-auto mb-3">
+          <i class="feather-trash-2 fs-22"></i>
+        </div>
+        <h6 class="mb-1">Confirmer la suppression</h6>
+        <p class="text-muted fs-13 mb-0" *ngIf="utilisateurToDelete">
+          Voulez-vous vraiment supprimer
+          <strong>{{ utilisateurToDelete.prenom }} {{ utilisateurToDelete.nom }}</strong> ?
+          Cette action est irréversible.
+        </p>
+      </div>
+
+      <div class="modal-footer justify-content-center border-0 pt-0 pb-4 gap-2">
+        <button type="button" class="btn btn-light px-4" (click)="annulerSuppression()">Annuler</button>
+        <button type="button" class="btn btn-danger px-4" (click)="supprimerUtilisateur()">
+          <i class="feather-trash-2 me-1"></i>Supprimer
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!--! END Main Content Utilisateurs !-->

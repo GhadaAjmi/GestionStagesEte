@@ -1,0 +1,260 @@
+<main class="nxl-container">
+  <div class="nxl-content">
+
+    <div class="page-header">
+      <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Utilisateurs</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item">Ajout</li>
+        </ul>
+      </div>
+      <div class="page-header-right ms-auto">
+        <div class="d-md-none d-flex align-items-center">
+          <a href="javascript:void(0)" class="page-header-right-open-toggle">
+            <i class="feather-align-right fs-20"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card stretch stretch-full">
+            <hr class="mt-0">
+            <div class="card-body general-info">
+
+              <form [formGroup]="formUser" (ngSubmit)="onSubmit()">
+                <div class="card p-4">
+
+                  <h5 class="mb-4">Ajouter Utilisateur</h5>
+
+                  <!-- ===== CHAMPS COMMUNS ===== -->
+                  <div class="row g-3">
+
+                    <div class="col-md-6">
+                      <label>CIN</label>
+                      <input type="text" class="form-control"
+                             formControlName="cin"
+                             [class.is-invalid]="isInvalid('cin')">
+                      <div class="invalid-feedback">CIN requis (8 chiffres minimum)</div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label>Nom</label>
+                      <input type="text" class="form-control"
+                             formControlName="nom"
+                             [class.is-invalid]="isInvalid('nom')">
+                      <div class="invalid-feedback">Nom requis</div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label>Prénom</label>
+                      <input type="text" class="form-control"
+                             formControlName="prenom"
+                             [class.is-invalid]="isInvalid('prenom')">
+                      <div class="invalid-feedback">Prénom requis</div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label>Email</label>
+                      <input type="email" class="form-control"
+                             formControlName="email"
+                             [class.is-invalid]="isInvalid('email')">
+                      <div class="invalid-feedback">Email invalide</div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label>Mot de passe</label>
+                      <input type="password" class="form-control"
+                             formControlName="motDePasse"
+                             [class.is-invalid]="isInvalid('motDePasse')">
+                      <div class="invalid-feedback">Mot de passe requis</div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label>Téléphone</label>
+                      <input type="text" class="form-control"
+                             formControlName="telephone">
+                    </div>
+
+                    <div class="col-md-6">
+                      <label>Lieu de délivrance CIN</label>
+                      <input type="text" class="form-control"
+                             formControlName="lieuDelivranceCin">
+                    </div>
+
+                    <div class="col-md-6">
+                      <label>Date de délivrance CIN</label>
+                      <input type="text" class="form-control"
+                             formControlName="dateDelivranceCin"
+                             placeholder="ex : 01/01/2020">
+                    </div>
+
+                    <div class="col-md-6">
+                      <label>Rôle</label>
+                      <select class="form-control"
+                              formControlName="role"
+                              [class.is-invalid]="isInvalid('role')">
+                        <option value="">Choisir</option>
+                        <option value="ETUDIANT">Étudiant</option>
+                        <option value="ENSEIGNANT">Enseignant</option>
+                        <option value="CHEF_DEPARTEMENT">Chef de département</option>
+                        <option value="SERVICE_STAGE">Service Stage</option>
+                        <option value="RESPONSABLE">Responsable</option>
+                      </select>
+                      <div class="invalid-feedback">Rôle requis</div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <label>Statut</label>
+                      <select class="form-control" formControlName="actif">
+                        <option [ngValue]="true">Actif</option>
+                        <option [ngValue]="false">Inactif</option>
+                      </select>
+                    </div>
+
+                  </div>
+
+                  <!-- ===== ÉTUDIANT ===== -->
+                  <div *ngIf="formUser.get('role')?.value === 'ETUDIANT'" class="mt-4">
+                    <h6 class="text-primary">Informations Étudiant</h6>
+                    <div class="row g-3">
+
+                      <div class="col-md-3">
+                        <label>Département</label>
+                        <select class="form-control"
+                                formControlName="departement"
+                                [class.is-invalid]="isInvalid('departement')">
+                          <option value="">Choisir</option>
+                          <option *ngFor="let d of departements" [value]="d">{{ d }}</option>
+                        </select>
+                      </div>
+
+                      <div class="col-md-3">
+                        <label>Niveau</label>
+                        <select class="form-control"
+                                formControlName="niveau"
+                                [class.is-invalid]="isInvalid('niveau')">
+                          <option value="">Choisir</option>
+                          <option *ngFor="let n of niveaux" [value]="n">{{ n }}</option>
+                        </select>
+                      </div>
+
+                      <div class="col-md-3">
+                        <label>Spécialité</label>
+                        <select class="form-control"
+                                formControlName="specialite"
+                                [class.is-invalid]="isInvalid('specialite')">
+                          <option value="">
+                            {{ specialites.length === 0 ? 'Choisir un département d\'abord' : 'Choisir' }}
+                          </option>
+                          <option *ngFor="let s of specialites" [value]="s">{{ s }}</option>
+                        </select>
+                      </div>
+
+                      <div class="col-md-3">
+                        <label>Groupe</label>
+                        <select class="form-control"
+                                formControlName="groupe"
+                                [class.is-invalid]="isInvalid('groupe')">
+                          <option value="">Choisir</option>
+                          <option *ngFor="let g of groupes" [value]="g">{{ g }}</option>
+                        </select>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <!-- ===== ENSEIGNANT ===== -->
+                  <div *ngIf="formUser.get('role')?.value === 'ENSEIGNANT'" class="mt-4">
+                    <h6 class="text-success">Informations Enseignant</h6>
+                    <div class="row g-3">
+
+                      <div class="col-md-4">
+                        <label>Grade</label>
+                        <input type="text" class="form-control"
+                               formControlName="grade"
+                               [class.is-invalid]="isInvalid('grade')">
+                      </div>
+
+                      <div class="col-md-4">
+                        <label>Département</label>
+                        <select class="form-control"
+                                formControlName="departement"
+                                [class.is-invalid]="isInvalid('departement')">
+                          <option value="">Choisir</option>
+                          <option *ngFor="let d of departements" [value]="d">{{ d }}</option>
+                        </select>
+                      </div>
+
+                      <div class="col-md-4">
+                        <label>Domaine</label>
+                        <input type="text" class="form-control"
+                               formControlName="domaine"
+                               [class.is-invalid]="isInvalid('domaine')">
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <!-- ===== CHEF DE DÉPARTEMENT ===== -->
+                  <div *ngIf="formUser.get('role')?.value === 'CHEF_DEPARTEMENT'" class="mt-4">
+                    <h6 class="text-warning">Informations Chef de Département</h6>
+                    <div class="row g-3">
+
+                      <div class="col-md-4">
+                        <label>Grade</label>
+                        <input type="text" class="form-control"
+                               formControlName="grade"
+                               [class.is-invalid]="isInvalid('grade')">
+                      </div>
+
+                      <div class="col-md-4">
+                        <label>Département</label>
+                        <select class="form-control"
+                                formControlName="departement"
+                                [class.is-invalid]="isInvalid('departement')">
+                          <option value="">Choisir</option>
+                          <option *ngFor="let d of departements" [value]="d">{{ d }}</option>
+                        </select>
+                      </div>
+
+                      <div class="col-md-4">
+                        <label>Domaine</label>
+                        <input type="text" class="form-control"
+                               formControlName="domaine"
+                               [class.is-invalid]="isInvalid('domaine')">
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <!-- ===== MESSAGES ===== -->
+                  <div *ngIf="successMessage" class="alert alert-success mt-3">
+                    {{ successMessage }}
+                  </div>
+                  <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+                    {{ errorMessage }}
+                  </div>
+
+                  <!-- ===== BOUTON ===== -->
+                  <div class="mt-4 text-end">
+                    <button class="btn btn-primary" type="submit">
+                      Enregistrer
+                    </button>
+                  </div>
+
+                </div>
+              </form>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>

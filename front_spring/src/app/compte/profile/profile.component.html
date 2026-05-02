@@ -1,1 +1,155 @@
-<p>profile works!</p>
+<!--! [Start] Main Content !-->
+<!--! ================================================================ !-->
+<main class="nxl-container">
+  <div class="nxl-content">
+    <div class="main-content">
+      <div class="tab-content">
+        <div class="tab-pane fade show active" id="profileTab" role="tabpanel">
+          <div class="card card-body general-info">
+            <ng-container *ngIf="currentUser; else loading">
+
+              <!-- Avatar + identité -->
+              <div class="d-flex align-items-center gap-4 mb-5">
+                <div class="position-relative">
+                  <img [src]="photoUrl"
+                       alt="Photo de profil"
+                       class="rounded-circle border"
+                       style="width: 120px; height: 120px; object-fit: cover;">
+                </div>
+                <div>
+                  <h4 class="fw-bold mb-1">{{ currentUser.prenom }} {{ currentUser.nom }}</h4>
+                  <span class="badge bg-soft-primary text-primary mb-2">{{ currentUser.role }}</span>
+                  <p class="fs-12 text-muted mb-0">
+                    {{ currentUser.departement || currentUser.domaine }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- En-tête section -->
+              <div class="mb-4 d-flex align-items-center justify-content-between">
+                <div>
+                  <h5 class="fw-bold mb-0">
+                    <span class="d-block mb-2">Profil utilisateur</span>
+                    <span class="fs-12 fw-normal text-muted d-block">
+                      Informations générales du compte utilisateur
+                    </span>
+                  </h5>
+                </div>
+                <div class="d-flex gap-2">
+                  <a class="btn btn-light btn-sm" routerLink="/profil/edit">Modifier le profil</a>
+                  <a class="btn btn-primary btn-sm" routerLink="/profil/password">Changer le mot de passe</a>
+                </div>
+              </div>
+
+              <!-- ── Champs communs à tous les rôles ─────────────────────── -->
+
+              <div class="row mb-4" *ngIf="currentUser.email">
+                <div class="col-lg-2 fw-medium">Email</div>
+                <div class="col-lg-10">{{ currentUser.email }}</div>
+              </div>
+
+              <div class="row mb-4" *ngIf="currentUser.telephone">
+                <div class="col-lg-2 fw-medium">Téléphone</div>
+                <div class="col-lg-10">{{ currentUser.telephone }}</div>
+              </div>
+
+              <div class="row mb-4" *ngIf="currentUser.cin">
+                <div class="col-lg-2 fw-medium">CIN</div>
+                <div class="col-lg-10">{{ currentUser.cin }}</div>
+              </div>
+
+              <div class="row mb-4" *ngIf="currentUser.lieuDelivranceCin">
+                <div class="col-lg-2 fw-medium">Lieu de délivrance CIN</div>
+                <div class="col-lg-10">{{ currentUser.lieuDelivranceCin }}</div>
+              </div>
+
+              <div class="row mb-4" *ngIf="currentUser.dateDelivranceCin">
+                <div class="col-lg-2 fw-medium">Date de délivrance CIN</div>
+                <div class="col-lg-10">{{ currentUser.dateDelivranceCin }}</div>
+              </div>
+
+              <div class="row mb-4">
+                <div class="col-lg-2 fw-medium">Rôle</div>
+                <div class="col-lg-10">{{ currentUser.role }}</div>
+              </div>
+
+              <div class="row mb-4">
+                <div class="col-lg-2 fw-medium">Statut</div>
+                <div class="col-lg-10">
+                  <span [class]="currentUser.actif ? 'badge bg-soft-success text-success' : 'badge bg-soft-danger text-danger'">
+                    {{ currentUser.actif ? 'Actif' : 'Inactif' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- ── Champs ÉTUDIANT ──────────────────────────────────────── -->
+              <ng-container *ngIf="hasStudentFields()">
+                <hr>
+                <h6 class="fw-semibold mb-3">Informations académiques</h6>
+
+                <div class="row mb-4" *ngIf="currentUser.niveau">
+                  <div class="col-lg-2 fw-medium">Niveau</div>
+                  <div class="col-lg-10">{{ currentUser.niveau }}</div>
+                </div>
+
+                <div class="row mb-4" *ngIf="currentUser.specialite">
+                  <div class="col-lg-2 fw-medium">Spécialité</div>
+                  <div class="col-lg-10">{{ currentUser.specialite }}</div>
+                </div>
+
+                <div class="row mb-4" *ngIf="currentUser.departement">
+                  <div class="col-lg-2 fw-medium">Département</div>
+                  <div class="col-lg-10">{{ currentUser.departement }}</div>
+                </div>
+
+                <div class="row mb-4" *ngIf="currentUser.groupe">
+                  <div class="col-lg-2 fw-medium">Groupe</div>
+                  <div class="col-lg-10">{{ currentUser.groupe }}</div>
+                </div>
+
+                <div class="row mb-4" *ngIf="currentUser.numeroInscription">
+                  <div class="col-lg-2 fw-medium">N° d'inscription</div>
+                  <div class="col-lg-10">{{ currentUser.numeroInscription }}</div>
+                </div>
+              </ng-container>
+
+              <!-- ── Champs ENSEIGNANT / CHEF_DEPARTEMENT ────────────────── -->
+              <ng-container *ngIf="hasTeacherFields()">
+                <hr>
+                <h6 class="fw-semibold mb-3">Informations professionnelles</h6>
+
+                <div class="row mb-4" *ngIf="currentUser.grade">
+                  <div class="col-lg-2 fw-medium">Grade</div>
+                  <div class="col-lg-10">{{ currentUser.grade }}</div>
+                </div>
+
+                <div class="row mb-4" *ngIf="currentUser.domaine">
+                  <div class="col-lg-2 fw-medium">Domaine</div>
+                  <div class="col-lg-10">{{ currentUser.domaine }}</div>
+                </div>
+
+                <div class="row mb-4" *ngIf="currentUser.departement">
+                  <div class="col-lg-2 fw-medium">Département</div>
+                  <div class="col-lg-10">{{ currentUser.departement }}</div>
+                </div>
+              </ng-container>
+
+            </ng-container>
+
+            <!-- Loading -->
+            <ng-template #loading>
+              <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-3 mb-0">Chargement du profil...</p>
+              </div>
+            </ng-template>
+
+            <div *ngIf="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<!--! ================================================================ !-->
+<!--! [End] Main Content !-->
