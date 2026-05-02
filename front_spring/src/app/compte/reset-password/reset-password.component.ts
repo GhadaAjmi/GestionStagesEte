@@ -92,10 +92,10 @@ export class ResetPasswordComponent implements OnInit {
     this.successMessage = 'Mot de passe mis à jour avec succès.';
     this.loading = false;
     this.passwordForm.reset();
-    setTimeout(() => this.router.navigate(['/profil']), 2000);
+    setTimeout(() => this.router.navigate(['/profile']), 2000);
   }
 
   cancel(): void {
-    this.router.navigate(['/profil']);
+    this.router.navigate(['/profile']);
   }
 }

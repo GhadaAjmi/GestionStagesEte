@@ -119,7 +119,7 @@ export class ProfileeditComponent implements OnInit {
           this.uploadPhoto();
         } else {
           this.isSaving = false;
-          setTimeout(() => this.router.navigate(['/profil']), 1500);
+          setTimeout(() => this.router.navigate(['/profile']), 1500);
         }
       },
       error: err => {
@@ -143,7 +143,7 @@ export class ProfileeditComponent implements OnInit {
         this.selectedPhoto = undefined;
         this.isSaving = false;
         this.authService.notifyProfileUpdate();
-        setTimeout(() => this.router.navigate(['/profil']), 1500);
+        setTimeout(() => this.router.navigate(['/profile']), 1500);
       },
       error: err => {
         console.error('Erreur mise à jour de la photo', err);
@@ -163,6 +163,6 @@ export class ProfileeditComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/profil']);
+    this.router.navigate(['/profile']);
   }
 }

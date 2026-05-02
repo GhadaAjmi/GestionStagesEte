@@ -3,13 +3,21 @@ import { LayoutComponent } from './front/layout/layout.component';
 
 
 export const routes: Routes = [
- 
+   // --------------------- Compte : login sans layout ---------------------
+    // --------------------- Redirection par défaut ---------------------
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full'
+  },
 
-     {
+    // --------------------- Compte : login sans layout ---------------------
+  {
     path: '',
     loadChildren: () =>
       import('./compte/compte.module').then(m => m.CompteModule)
   },
+
   
       // --------------------- Super Admin ---------------------
   {
