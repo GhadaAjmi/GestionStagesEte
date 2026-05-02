@@ -9,7 +9,6 @@ import com.enicar.projet.repositories.MembreJuryRepository;
 import com.enicar.projet.repositories.UtilisateurRepository;
 import com.enicar.projet.services.interfaces.UtilisateurService;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,11 +19,14 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class UtilisateurServiceImpl implements UtilisateurService {
-    private final MembreJuryRepository juryRepository;
 
     private final UtilisateurRepository repository;
+    private final MembreJuryRepository juryRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // =========================================================
+    // SAVE
+    // =========================================================
     @Override
     public Utilisateur save(Utilisateur utilisateur) {
 
@@ -37,140 +39,142 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         return repository.save(utilisateur);
     }
 
+    // =========================================================
+    // FIND ALL
+    // =========================================================
     @Override
     public List<UtilisateurDTO> findAll() {
-        return repository.findAll().stream()
+        return repository.findAll()
+                .stream()
                 .map(this::mapToDTO)
                 .toList();
     }
 
+    // =========================================================
+    // FIND BY ID ENTITY
+    // =========================================================
     @Override
     public Utilisateur findById(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé avec id : " + id));
     }
 
+    // =========================================================
+    // FIND BY ID DTO
+    // =========================================================
     @Override
     public UtilisateurDTO findId(Long id) {
         return mapToDTO(findById(id));
     }
 
+    // =========================================================
+    // DELETE
+    // =========================================================
     @Override
     public void delete(Long id) {
-        repository.deleteById(id);
+        Utilisateur utilisateur = findById(id);
+        repository.delete(utilisateur);
     }
 
-    // ================= CREATE =================
+    // =========================================================
+    // CREATE FROM DTO
+    // =========================================================
     @Override
     public UtilisateurDTO createUtilisateur(UtilisateurDTO dto) {
 
-        if (dto.getRole() == null || dto.getRole().isBlank())
-            throw new BadRequestException("Le champ 'role' est obligatoire");
+        RoleUtilisateur role = parseRole(dto.getRole());
 
-        Utilisateur user = switch (dto.getRole().toUpperCase()) {
+        Utilisateur user = createEntityByRole(role);
 
-            case "ETUDIANT" -> {
-                Etudiant etu = new Etudiant();
-                mapBase(dto, etu);
-                etu.setNiveau(dto.getNiveau());
-                etu.setSpecialite(dto.getSpecialite());
-                etu.setGroupe(dto.getGroupe());
-                yield etu;
-            }
+        mapBaseFromDTO(dto, user, true);
+        mapSpecificFieldsFromDTO(dto, user);
 
-            case "ENSEIGNANT" -> {
-                Enseignant ens = new Enseignant();
-                mapBase(dto, ens);
-                ens.setGrade(dto.getGrade());
-                ens.setDomaine(dto.getDomaine());
-                yield ens;
-            }
-
-            case "CHEF_DEPARTEMENT" -> {
-                ChefDepartement chef = new ChefDepartement();
-                mapBase(dto, chef);
-                chef.setGrade(dto.getGrade());
-                chef.setDomaine(dto.getDomaine());
-                yield chef;
-            }
-
-            case "ADMIN" -> {
-                Admin admin = new Admin();
-                mapBase(dto, admin);
-                yield admin;
-            }
-
-            case "RESPONSABLE" -> {
-                Responsable r = new Responsable();
-                mapBase(dto, r);
-                yield r;
-            }
-
-            case "SERVICE_STAGE" -> {
-                ServiceStage ss = new ServiceStage();
-                mapBase(dto, ss);
-                yield ss;
-            }
-
-            default -> throw new BadRequestException("Rôle invalide : " + dto.getRole());
-        };
-
-        return mapToDTO(save(user));
+        Utilisateur saved = save(user);
+        return mapToDTO(saved);
     }
 
-    // ================= UPDATE =================
+    // =========================================================
+    // UPDATE ENTITY
+    // =========================================================
     @Override
     public Utilisateur update(Utilisateur utilisateur) {
 
-        Utilisateur existing = repository.findById(utilisateur.getId())
-                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
+        if (utilisateur.getId() == null) {
+            throw new BadRequestException("L'id de l'utilisateur est obligatoire pour la mise à jour");
+        }
 
+        Utilisateur existing = findById(utilisateur.getId());
+
+        existing.setCin(utilisateur.getCin());
         existing.setNom(utilisateur.getNom());
         existing.setPrenom(utilisateur.getPrenom());
+        existing.setEmail(utilisateur.getEmail());
         existing.setActif(utilisateur.getActif());
         existing.setDepartement(utilisateur.getDepartement());
+        existing.setTelephone(utilisateur.getTelephone());
+        existing.setLieuDelivranceCin(utilisateur.getLieuDelivranceCin());
+        existing.setDateDelivranceCin(utilisateur.getDateDelivranceCin());
 
-        if (existing instanceof Etudiant etu && utilisateur instanceof Etudiant u) {
-            etu.setNiveau(u.getNiveau());
-            etu.setSpecialite(u.getSpecialite());
-            etu.setGroupe(u.getGroupe());
+        if (utilisateur.getMotDePasse() != null && !utilisateur.getMotDePasse().isBlank()) {
+            existing.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
         }
 
-        if (existing instanceof ChefDepartement chef && utilisateur instanceof ChefDepartement u) {
-            chef.setGrade(u.getGrade());
-            chef.setDomaine(u.getDomaine());
+        if (existing instanceof Etudiant existingEtudiant && utilisateur instanceof Etudiant newEtudiant) {
+            existingEtudiant.setNiveau(newEtudiant.getNiveau());
+            existingEtudiant.setSpecialite(newEtudiant.getSpecialite());
+            existingEtudiant.setGroupe(newEtudiant.getGroupe());
+            existingEtudiant.setNumeroInscription(newEtudiant.getNumeroInscription());
         }
 
-        if (existing instanceof Enseignant ens && utilisateur instanceof Enseignant u) {
-            ens.setGrade(u.getGrade());
-            ens.setDomaine(u.getDomaine());
+        if (existing instanceof Enseignant existingEnseignant && utilisateur instanceof Enseignant newEnseignant) {
+            existingEnseignant.setGrade(newEnseignant.getGrade());
+            existingEnseignant.setDomaine(newEnseignant.getDomaine());
         }
 
         return repository.save(existing);
     }
 
-    // ================= PASSWORD =================
+    // =========================================================
+    // UPDATE FROM DTO
+    // =========================================================
+    public UtilisateurDTO updateUtilisateur(Long id, UtilisateurDTO dto) {
+
+        Utilisateur existing = findById(id);
+
+        mapBaseFromDTO(dto, existing, false);
+        mapSpecificFieldsFromDTO(dto, existing);
+
+        Utilisateur saved = save(existing);
+        return mapToDTO(saved);
+    }
+
+    // =========================================================
+    // CHANGE PASSWORD
+    // =========================================================
     @Override
     public void changePassword(Long userId, ChangePasswordRequest request) {
 
-        Utilisateur user = repository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Utilisateur non trouvé"));
+        Utilisateur user = findById(userId);
 
-        if (!passwordEncoder.matches(request.getAncienMotDePasse(), user.getMotDePasse()))
+        if (!passwordEncoder.matches(request.getAncienMotDePasse(), user.getMotDePasse())) {
             throw new BadRequestException("Ancien mot de passe incorrect");
+        }
 
-        if (!request.getNouveauMotDePasse().equals(request.getConfirmationMotDePasse()))
-            throw new BadRequestException("Confirmation incorrecte");
+        if (!request.getNouveauMotDePasse().equals(request.getConfirmationMotDePasse())) {
+            throw new BadRequestException("Confirmation du mot de passe incorrecte");
+        }
 
         user.setMotDePasse(passwordEncoder.encode(request.getNouveauMotDePasse()));
         repository.save(user);
     }
+
     // =========================================================
     // FIND BY ROLE
     // =========================================================
     @Override
     public List<UtilisateurDTO> findByRole(RoleUtilisateur role) {
-        return repository.findByRole(role).stream()
+        return repository.findByRole(role)
+                .stream()
                 .map(this::mapToDTO)
                 .toList();
     }
@@ -220,24 +224,24 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                 .map(this::mapToDTO)
                 .toList();
     }
+
+    // =========================================================
+    // ENSEIGNANTS DISPONIBLES
+    // =========================================================
     @Override
-    public List<UtilisateurDTO> getEnseignantsDisponibles(
-            String departement,
-            LocalDate date,
-            LocalTime heureDebut,
-            Integer duree
-    ) {
-        List<Enseignant> enseignants =
-                repository.findEnseignantsByDepartement(departement);
+    public List<UtilisateurDTO> getEnseignantsDisponibles(String departement,
+                                                          LocalDate date,
+                                                          LocalTime heureDebut,
+                                                          Integer duree) {
 
-        boolean avecVerificationCreneau =
-                date != null &&
-                        heureDebut != null &&
-                        duree != null &&
-                        duree > 0;
+        List<Enseignant> enseignants = repository.findEnseignantsByDepartement(departement);
 
+        boolean verifierCreneau = date != null
+                && heureDebut != null
+                && duree != null
+                && duree > 0;
 
-        if (!avecVerificationCreneau) {
+        if (!verifierCreneau) {
             return enseignants.stream()
                     .map(this::mapToDTO)
                     .toList();
@@ -253,64 +257,198 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                                     date
                             );
 
-                    return soutenances.stream().noneMatch(s -> {
-                        LocalTime sDebut = LocalTime.parse(s.getHeureDebut());
-                        LocalTime sFin = sDebut.plusMinutes(s.getDuree());
+                    return soutenances.stream().noneMatch(soutenance -> {
+                        LocalTime soutenanceDebut = LocalTime.parse(soutenance.getHeureDebut());
+                        LocalTime soutenanceFin = soutenanceDebut.plusMinutes(soutenance.getDuree());
 
-                        return heureDebut.isBefore(sFin) && heureFin.isAfter(sDebut);
+                        return heureDebut.isBefore(soutenanceFin)
+                                && heureFin.isAfter(soutenanceDebut);
                     });
                 })
                 .map(this::mapToDTO)
                 .toList();
     }
-    // ================= MAPPING =================
-    private void mapBase(UtilisateurDTO dto, Utilisateur user) {
-        user.setCin(dto.getCin());
-        user.setNom(dto.getNom());
-        user.setPrenom(dto.getPrenom());
-        user.setEmail(dto.getEmail());
-        user.setMotDePasse(dto.getMotDePasse());
-        user.setActif(dto.getActif() != null ? dto.getActif() : true);
-        user.setDepartement(dto.getDepartement());
+
+    // =========================================================
+    // CREATE ENTITY BY ROLE
+    // =========================================================
+    private Utilisateur createEntityByRole(RoleUtilisateur role) {
+        return switch (role) {
+            case ETUDIANT -> new Etudiant();
+            case ENSEIGNANT -> new Enseignant();
+            case CHEF_DEPARTEMENT -> new ChefDepartement();
+            case RESPONSABLE -> new Responsable();
+            case SERVICE_STAGE -> new ServiceStage();
+            case ADMIN -> new Admin();
+        };
     }
 
+    // =========================================================
+    // ROLE PARSER
+    // =========================================================
+    private RoleUtilisateur parseRole(String role) {
+
+        if (role == null || role.isBlank()) {
+            throw new BadRequestException("Le champ 'role' est obligatoire");
+        }
+
+        try {
+            return RoleUtilisateur.valueOf(role.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Rôle invalide : " + role);
+        }
+    }
+
+    // =========================================================
+    // MAP BASE DTO -> ENTITY
+    // =========================================================
+    private void mapBaseFromDTO(UtilisateurDTO dto, Utilisateur user, boolean creation) {
+
+        if (dto.getCin() != null) {
+            user.setCin(dto.getCin());
+        }
+
+        if (dto.getNom() != null) {
+            user.setNom(dto.getNom());
+        }
+
+        if (dto.getPrenom() != null) {
+            user.setPrenom(dto.getPrenom());
+        }
+
+        if (dto.getEmail() != null) {
+            user.setEmail(dto.getEmail());
+        }
+
+        if (dto.getActif() != null) {
+            user.setActif(dto.getActif());
+        } else if (creation) {
+            user.setActif(true);
+        }
+
+        if (dto.getDepartement() != null) {
+            user.setDepartement(dto.getDepartement());
+        }
+
+        if (dto.getTelephone() != null) {
+            user.setTelephone(dto.getTelephone());
+        }
+
+        if (dto.getLieuDelivranceCin() != null) {
+            user.setLieuDelivranceCin(dto.getLieuDelivranceCin());
+        }
+
+        if (dto.getDateDelivranceCin() != null) {
+            user.setDateDelivranceCin(dto.getDateDelivranceCin());
+        }
+
+        if (creation) {
+            RoleUtilisateur role = parseRole(dto.getRole());
+            user.setRole(role);
+        }
+
+        if (dto.getMotDePasse() != null && !dto.getMotDePasse().isBlank()) {
+            user.setMotDePasse(dto.getMotDePasse());
+        }
+    }
+
+    // =========================================================
+    // MAP SPECIFIC DTO -> ENTITY
+    // =========================================================
+    private void mapSpecificFieldsFromDTO(UtilisateurDTO dto, Utilisateur user) {
+
+        if (user instanceof Etudiant etudiant) {
+            etudiant.setNiveau(dto.getNiveau());
+            etudiant.setSpecialite(dto.getSpecialite());
+            etudiant.setGroupe(dto.getGroupe());
+            etudiant.setNumeroInscription(dto.getNumeroInscription());
+        }
+
+        if (user instanceof Enseignant enseignant) {
+            enseignant.setGrade(dto.getGrade());
+            enseignant.setDomaine(dto.getDomaine());
+        }
+    }
+
+    // =========================================================
+    // MAP ENTITY -> DTO
+    // =========================================================
     public UtilisateurDTO mapToDTO(Utilisateur user) {
 
+        if (user == null) {
+            return null;
+        }
+
         UtilisateurDTO dto = new UtilisateurDTO();
+
         dto.setId(user.getId());
+
+        if (user.getRole() != null) {
+            dto.setRole(user.getRole().name());
+        } else {
+            dto.setRole(resolveRoleFromInstance(user));
+        }
+
         dto.setCin(user.getCin());
         dto.setNom(user.getNom());
         dto.setPrenom(user.getPrenom());
         dto.setEmail(user.getEmail());
         dto.setActif(user.getActif());
-        System.out.println("Departement = " + (user != null ? user.getDepartement() : null));
-
         dto.setDepartement(user.getDepartement());
+        dto.setTelephone(user.getTelephone());
+        dto.setLieuDelivranceCin(user.getLieuDelivranceCin());
+        dto.setDateDelivranceCin(user.getDateDelivranceCin());
 
-        if (user instanceof Etudiant e) {
-            dto.setRole("ETUDIANT");
-            dto.setNiveau(e.getNiveau());
-            dto.setSpecialite(e.getSpecialite());
-            dto.setGroupe(e.getGroupe());
+        dto.setMotDePasse(null);
+
+        if (user instanceof Etudiant etudiant) {
+            dto.setNiveau(etudiant.getNiveau());
+            dto.setSpecialite(etudiant.getSpecialite());
+            dto.setGroupe(etudiant.getGroupe());
+            dto.setNumeroInscription(etudiant.getNumeroInscription());
         }
 
-        if (user instanceof Enseignant e) {
-            dto.setRole("ENSEIGNANT");
-            dto.setGrade(e.getGrade());
-            dto.setDomaine(e.getDomaine());
+        /*
+         * ChefDepartement hérite de Enseignant, donc ce bloc fonctionne
+         * pour Enseignant et ChefDepartement.
+         */
+        if (user instanceof Enseignant enseignant) {
+            dto.setGrade(enseignant.getGrade());
+            dto.setDomaine(enseignant.getDomaine());
         }
-
-        if (user instanceof ChefDepartement c) {
-            dto.setRole("CHEF_DEPARTEMENT");
-            dto.setGrade(c.getGrade());
-            dto.setDomaine(c.getDomaine());
-        }
-
-        if (user instanceof Admin) dto.setRole("ADMIN");
-        if (user instanceof Responsable) dto.setRole("RESPONSABLE");
-        if (user instanceof ServiceStage) dto.setRole("SERVICE_STAGE");
 
         return dto;
     }
 
+    // =========================================================
+    // FALLBACK ROLE FROM INSTANCE
+    // =========================================================
+    private String resolveRoleFromInstance(Utilisateur user) {
+
+        if (user instanceof ChefDepartement) {
+            return RoleUtilisateur.CHEF_DEPARTEMENT.name();
+        }
+
+        if (user instanceof ServiceStage) {
+            return RoleUtilisateur.SERVICE_STAGE.name();
+        }
+
+        if (user instanceof Responsable) {
+            return RoleUtilisateur.RESPONSABLE.name();
+        }
+
+        if (user instanceof Admin) {
+            return RoleUtilisateur.ADMIN.name();
+        }
+
+        if (user instanceof Etudiant) {
+            return RoleUtilisateur.ETUDIANT.name();
+        }
+
+        if (user instanceof Enseignant) {
+            return RoleUtilisateur.ENSEIGNANT.name();
+        }
+
+        return null;
+    }
 }

@@ -21,6 +21,7 @@ public interface UtilisateurService {
     Utilisateur findById(Long id);
 
     UtilisateurDTO findId(Long id);
+    UtilisateurDTO updateUtilisateur(Long id, UtilisateurDTO dto);
 
     void delete(Long id);
 
