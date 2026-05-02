@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface DocumentRepository extends JpaRepository<Document, Long> {
     // Récupérer documents avec DemandeStage et Etudiant chargés
-    @Query("SELECT d FROM DocumentDemande d " +
+    @Query("SELECT d FROM Document d " +
             "JOIN FETCH d.demandeStage ds " +
             "JOIN FETCH ds.etudiant " +
             "WHERE ds.id = :demandeStageId")
