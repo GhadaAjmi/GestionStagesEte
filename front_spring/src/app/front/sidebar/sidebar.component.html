@@ -1,1 +1,114 @@
-<p>sidebar works!</p>
+<nav class="nxl-navigation">
+  <div class="navbar-wrapper">
+
+    <!-- Logo -->
+    <div class="m-header">
+      <a routerLink="/" class="b-brand">
+        <img src="../../../../assets/images/logo.jpg" alt="Logo" class="img-fluid" style="width: 150px;" />
+      </a>
+    </div>
+
+    <div class="navbar-content">
+      <ul class="nxl-navbar">
+
+      
+
+        <!-- Dashboard -->
+        <li class="nxl-item" *ngIf="role === 'ENSEIGNANT' || role==='RESPONSABLE'|| role==='SERVICE_STAGE' || role==='CHEF_DEPARTEMENT'">
+          <a routerLink="/{{role.toLowerCase()}}" class="nxl-link">
+            <span class="nxl-micon"><i class="feather-airplay"></i></span>
+            <span class="nxl-mtext">Tableau de bord</span>
+          </a>
+        </li>
+         <!-- Documents-->
+        <li class="nxl-item" *ngIf="role === 'ETUDIANT'">
+          <a routerLink="/etudiant/documents/archives" class="nxl-link">
+            <span class="nxl-micon"><i class="feather-book-open"></i></span>
+            <span class="nxl-mtext">Documents</span>
+          </a>
+        </li>
+        <!-- Dépôt -->
+        <li class="nxl-item" *ngIf="role === 'ETUDIANT'">
+          <a routerLink="/etudiant/documents/depot" class="nxl-link">
+            <span class="nxl-micon"><i class="feather-upload"></i></span>
+            <span class="nxl-mtext">Dépôt</span>
+          </a>
+        </li>
+        <!-- MonStage-->
+        <li class="nxl-item" *ngIf="role === 'ETUDIANT'" >
+          <a routerLink="/etudiant/stage/suivi" class="nxl-link">
+            <span class="nxl-micon"><i class="feather-briefcase"></i></span>
+            <span class="nxl-mtext">Mon Stage</span>
+          </a>
+        </li>
+        <!-- Ma soutenance -->
+        <li class="nxl-item" *ngIf="role === 'ETUDIANT'">
+          <a routerLink="/etudiant/soutenance/infos" class="nxl-link">
+            <span class="nxl-micon"><i class="feather-calendar"></i></span>
+            <span class="nxl-mtext">Ma soutenance</span>
+          </a>
+        </li>
+        <!-- Stages -->
+        <li class="nxl-item" *ngIf="role === 'RESPONSABLE'" >
+          <a routerLink="/responsable/demandes" class="nxl-link">
+            <span class="nxl-micon"><i class="feather-briefcase"></i></span>
+            <span class="nxl-mtext">Stages</span>
+          </a>
+        </li>
+
+        <!-- Soutenances -->
+        <li class="nxl-item" *ngIf="role === 'RESPONSABLE'">
+          <a routerLink="/responsable/soutenances" class="nxl-link">
+            <span class="nxl-micon"><i class="feather-calendar"></i></span>
+            <span class="nxl-mtext">Soutenances</span>
+          </a>
+        </li>
+               <!-- Soutenances -->
+        <li class="nxl-item" *ngIf="role === 'CHEF_DEPARTEMENT'">
+          <a routerLink="/chef_departement/soutenances" class="nxl-link">
+            <span class="nxl-micon"><i class="feather-calendar"></i></span>
+            <span class="nxl-mtext">Soutenances</span>
+          </a>
+        </li>
+
+        <!-- Soutenances (Enseignant) -->
+        <li class="nxl-item" *ngIf="role === 'ENSEIGNANT'">
+          <a routerLink="/enseignant/soutenances" class="nxl-link">
+            <span class="nxl-micon"><i class="feather-calendar"></i></span>
+            <span class="nxl-mtext">Soutenances</span>
+          </a>
+        </li>
+
+
+       
+
+        <!-- Utilisateurs -->
+        <li class="nxl-item" *ngIf="role === 'ADMIN'">
+          <a routerLink="/admin/utilisateurs" class="nxl-link">
+            <span class="nxl-micon"><i class="feather-users"></i></span>
+            <span class="nxl-mtext">Utilisateurs</span>
+          </a>
+        </li>
+           <!-- Enseignants -->
+        <li class="nxl-item" *ngIf="role === 'RESPONSABLE' || role ==='CHEF_DEPARTEMENT'">
+          <a routerLink="/responsable/enseignants" class="nxl-link">
+            <span class="nxl-micon"><i class="feather-users"></i></span>
+            <span class="nxl-mtext">Enseignants</span>
+          </a>
+        </li>
+
+        <!-- Salles -->
+        <li class="nxl-item" *ngIf="role === 'ADMIN'">
+          <a routerLink="/admin/salles" class="nxl-link">
+            <span class="nxl-micon"><i class="feather-map-pin"></i></span>
+            <span class="nxl-mtext">Salles</span>
+          </a>
+        </li>
+
+    
+
+      </ul>
+    </div>
+
+  </div>
+</nav>

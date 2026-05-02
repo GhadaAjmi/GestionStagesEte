@@ -1,1 +1,94 @@
-<p>navbar works!</p>
+<header class="nxl-header">
+  <div class="header-wrapper d-flex align-items-center justify-content-between">
+
+    <!-- Logo -->
+    <div class="header-left d-flex align-items-center">
+      <a routerLink="/dashboard" class="b-brand">
+      </a>
+    </div>
+
+    <!-- Header Right -->
+    <div class="header-right">
+      <div class="d-flex align-items-center gap-3">
+
+        <!-- Search -->
+        <div class="dropdown nxl-h-item nxl-header-search">
+          <a class="nxl-head-link" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+            <i class="feather-search"></i>
+          </a>
+          <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-search-dropdown">
+            <div class="input-group search-form">
+              <span class="input-group-text">
+                <i class="feather-search fs-6 text-muted"></i>
+              </span>
+              <input
+                type="text"
+                class="form-control search-input-field"
+                placeholder="Rechercher un étudiant, un stage..."
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="dropdown nxl-h-item">
+          <a class="nxl-head-link" data-bs-toggle="dropdown">
+            <i class="feather-bell"></i>
+            <span class="badge bg-danger nxl-h-badge">3</span>
+          </a>
+
+          <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown">
+            <h6 class="dropdown-header">Notifications</h6>
+
+            <a class="dropdown-item">
+               Soutenance programmée le 20 juin
+            </a>
+
+            <a class="dropdown-item">
+               Rapport validé par l'encadrant
+            </a>
+
+            <a routerLink="/notifications" class="dropdown-item text-center text-primary">
+              Voir tout
+            </a>
+          </div>
+        </div>
+
+        <!-- User -->
+        <div class="dropdown nxl-h-item">
+          <a data-bs-toggle="dropdown">
+            <img
+              [src]="imageUrl || 'assets/images/avatar/default.png'"
+              class="img-fluid user-avtar"
+              alt="user"
+            />
+          </a>
+
+          <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown">
+
+            <div class="dropdown-header">
+              <strong>{{ currentUser?.prenom }} {{ currentUser?.nom }}</strong>
+              <div class="text-muted fs-12">{{ currentUser?.email }}</div>
+            </div>
+
+
+            <a routerLink="/profil" class="dropdown-item">
+              <i class="feather-user"></i> Mon profil
+            </a>
+
+            
+
+            <div class="dropdown-divider"></div>
+
+            <a (click)="logout()" class="dropdown-item text-danger">
+              <i class="feather-log-out"></i> Déconnexion
+            </a>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</header>

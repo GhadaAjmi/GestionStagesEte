@@ -16,6 +16,10 @@ import { RouterModule } from '@angular/router';
   imports: [
     CommonModule,
      RouterModule
+       ],
+  exports: [
+   
+    LayoutComponent
   ]
 })
 export class FrontModule { }

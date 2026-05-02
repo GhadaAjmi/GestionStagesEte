@@ -1,4 +1,4 @@
-import { Utilisateur } from "./utilisateur";
+import { Utilisateur } from "./utilisateur.models";
 
 export interface Admin extends Utilisateur {
   

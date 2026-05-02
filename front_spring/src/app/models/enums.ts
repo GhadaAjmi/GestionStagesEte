@@ -1,4 +1,3 @@
-// enums.models.ts — générés depuis les enums Java backend
 
 // ── RoleUtilisateur ───────────────────────────────────────────────────
 export type RoleUtilisateur =

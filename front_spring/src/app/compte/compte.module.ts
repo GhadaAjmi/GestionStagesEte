@@ -7,7 +7,6 @@ import { ProfileComponent } from './profile/profile.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CoreModule } from '../core/core.module';
-import { ProfileviewComponent } from './profileview/profileview.component';
 import { ProfileeditComponent } from './profileedit/profileedit.component';
 
 
@@ -16,7 +15,6 @@ import { ProfileeditComponent } from './profileedit/profileedit.component';
     LoginComponent,
     ProfileComponent,
     ResetPasswordComponent,
-    ProfileviewComponent,
     ProfileeditComponent
   ],
   imports: [
