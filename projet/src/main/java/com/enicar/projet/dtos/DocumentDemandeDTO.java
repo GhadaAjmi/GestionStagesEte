@@ -1,10 +1,11 @@
 package com.enicar.projet.dtos;
 
 import java.time.LocalDateTime;
+
+import com.enicar.projet.entities.StatutDocument;
+import com.enicar.projet.entities.TypeDocument;
 import lombok.Builder;
 import lombok.Data;
-import net.enicar.gestionsoutenances.entities.StatutDocument;
-import net.enicar.gestionsoutenances.entities.TypeDocumentDemande;
 
 @Data
 @Builder
@@ -18,7 +19,7 @@ public class DocumentDemandeDTO {
     private String typeDemande;
 
     // Infos du document
-    private TypeDocumentDemande type;
+    private TypeDocument type;
     private String nomFichier;
     private String motifRejet;
     private LocalDateTime dateDepot;

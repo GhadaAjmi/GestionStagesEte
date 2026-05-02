@@ -1,9 +1,14 @@
 package com.enicar.projet.entities;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-
+@Entity
+@Table(name = "prolongation")
+@Data
+@NoArgsConstructor
 public class Prolongation {
 
     @Id
