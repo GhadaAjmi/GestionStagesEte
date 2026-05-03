@@ -3,6 +3,7 @@ package com.enicar.projet.services.impl;
 import com.enicar.projet.dtos.DemandeStageDTO;
 import com.enicar.projet.entities.DemandeStage;
 import com.enicar.projet.entities.Etudiant;
+import com.enicar.projet.entities.StatutDemande;
 import com.enicar.projet.exceptions.NotFoundException;
 import com.enicar.projet.repositories.DemandeStageRepository;
 import com.enicar.projet.repositories.UtilisateurRepository;
@@ -91,7 +92,6 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         ds.setSujet(dto.getSujet());
 
         ds.setStatut(dto.getStatut());
-        ds.setEntreprise(dto.getEntreprise());
         ds.setDateDebut(dto.getDateDebut());
         ds.setDateFin(dto.getDateFin());
 
@@ -106,23 +106,42 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         if (ds == null) return null;
 
         DemandeStageDTO dto = new DemandeStageDTO();
+
         dto.setId(ds.getId());
         dto.setSujet(ds.getSujet());
-        dto.setDateDebut(ds.getDateDebut());
-
-        dto.setDateFin(ds.getDateFin());
-
         dto.setStatut(ds.getStatut());
         dto.setDateDemande(ds.getDateDemande());
-        dto.setEntreprise(ds.getEntreprise());
+        dto.setDateDebut(ds.getDateDebut());
+        dto.setDateFin(ds.getDateFin());
+
+        // Entreprise peut être null au début
+        if (ds.getEntreprise() != null) {
+            dto.setEntreprise(ds.getEntreprise().getNom());
+        } else {
+            dto.setEntreprise(null);
+        }
+
         if (ds.getEtudiant() != null) {
             dto.setEtudiantId(ds.getEtudiant().getId());
         }
+
         if (ds.getSoutenance() != null) {
             dto.setSoutenanceId(ds.getSoutenance().getId());
         }
 
-
         return dto;
+    }
+
+    @Override
+    public DemandeStageDTO updateStatut(Long id, StatutDemande statut) {
+
+        DemandeStage ds = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Demande introuvable"));
+
+        ds.setStatut(statut);
+
+        DemandeStage updated = repository.save(ds);
+
+        return toDTO(updated);
     }
 }

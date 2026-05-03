@@ -1,0 +1,703 @@
+<!--! ================================================================ !-->
+<!--! [Start] Main Content !-->
+<!--! ================================================================ !-->
+<main class="nxl-container">
+  <div class="nxl-content">
+
+    <!-- [ page-header ] start -->
+    <div class="page-header">
+      <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Mes soutenances</h5>
+        </div>
+      </div>
+
+      <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+          <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+
+            <button type="button"
+                    class="btn btn-icon btn-light"
+                    [disabled]="loading"
+                    (click)="load()">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+              <i *ngIf="!loading" class="feather-refresh-cw"></i>
+            </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- [ page-header ] end -->
+
+    <!-- [ Main Content ] start -->
+    <div class="main-content">
+      <div class="row">
+        <div class="col-lg-12">
+
+          <!-- Loading global -->
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-3 mb-0">Chargement de vos soutenances...</p>
+          </div>
+
+          <!-- Error -->
+          <div *ngIf="!loading && error" class="alert alert-danger">
+            {{ error }}
+          </div>
+
+          <ng-container *ngIf="!loading && !error">
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+
+              <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fs-11 text-muted text-uppercase mb-1">
+                          Total soutenances
+                        </div>
+                        <div class="fs-20 fw-bold text-dark">
+                          {{ totalSoutenances }}
+                        </div>
+                      </div>
+                      <div class="avatar-text avatar-lg bg-primary text-white">
+                        <i class="feather-calendar"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fs-11 text-muted text-uppercase mb-1">
+                          À venir
+                        </div>
+                        <div class="fs-20 fw-bold text-warning">
+                          {{ soutenancesAVenir }}
+                        </div>
+                      </div>
+                      <div class="avatar-text avatar-lg bg-warning text-white">
+                        <i class="feather-clock"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fs-11 text-muted text-uppercase mb-1">
+                          Terminées
+                        </div>
+                        <div class="fs-20 fw-bold text-success">
+                          {{ soutenancesTerminees }}
+                        </div>
+                      </div>
+                      <div class="avatar-text avatar-lg bg-success text-white">
+                        <i class="feather-check-circle"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fs-11 text-muted text-uppercase mb-1">
+                          Annulées
+                        </div>
+                        <div class="fs-20 fw-bold text-danger">
+                          {{ soutenancesAnnulees }}
+                        </div>
+                      </div>
+                      <div class="avatar-text avatar-lg bg-danger text-white">
+                        <i class="feather-x-circle"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Filtres et recherche -->
+            <div class="card mb-4">
+              <div class="card-body">
+
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h6 class="fw-bold mb-0">
+                    <i class="feather-filter me-2"></i>
+                    Filtres
+                  </h6>
+
+                  <span class="badge bg-soft-primary text-primary fs-12">
+                    {{ filteredSoutenances.length }} / {{ soutenances.length }} soutenance(s)
+                  </span>
+                </div>
+
+                <div class="row g-3">
+
+                  <div class="col-lg-4 col-md-6">
+                    <div class="input-group">
+                      <span class="input-group-text">
+                        <i class="feather-search"></i>
+                      </span>
+                      <input type="text"
+                             class="form-control"
+                             placeholder="Rechercher par étudiant, sujet, salle..."
+                             [(ngModel)]="filter.recherche"
+                             (input)="applyFilters()">
+                    </div>
+                  </div>
+
+                  <div class="col-lg-2 col-md-6">
+                    <select class="form-control"
+                            [(ngModel)]="filter.statut"
+                            (change)="applyFilters()">
+                      <option value="">Tous les statuts</option>
+                      <option value="PLANIFIEE">Planifiée</option>
+                      <option value="VALIDEE">Validée</option>
+                      <option value="ANNULEE">Annulée</option>
+                    </select>
+                  </div>
+
+                  <div class="col-lg-2 col-md-6">
+                    <select class="form-control"
+                            [(ngModel)]="filter.niveau"
+                            (change)="applyFilters()">
+                      <option value="">Tous niveaux</option>
+                      <option *ngFor="let n of niveauxDisponibles" [value]="n">
+                        {{ n }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="col-lg-2 col-md-6">
+                    <select class="form-control"
+                            [(ngModel)]="filter.departement"
+                            (change)="applyFilters()">
+                      <option value="">Tous départements</option>
+                      <option *ngFor="let d of departementsDisponibles" [value]="d">
+                        {{ d }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="col-lg-2 col-md-6">
+                    <button type="button"
+                            class="btn btn-light w-100"
+                            (click)="resetFilters()">
+                      <i class="feather-filter me-2"></i>
+                      Réinitialiser
+                    </button>
+                  </div>
+
+                  <div class="col-lg-3 col-md-6">
+                    <select class="form-control"
+                            [(ngModel)]="filter.specialite"
+                            (change)="applyFilters()">
+                      <option value="">Toutes spécialités</option>
+                      <option *ngFor="let sp of specialitesDisponibles" [value]="sp">
+                        {{ sp }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="col-lg-3 col-md-6">
+                    <select class="form-control"
+                            [(ngModel)]="filter.groupe"
+                            (change)="applyFilters()">
+                      <option value="">Tous groupes</option>
+                      <option *ngFor="let g of groupesDisponibles" [value]="g">
+                        {{ g }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="col-lg-3 col-md-6">
+                    <select class="form-control"
+                            [(ngModel)]="filter.salleCode"
+                            (change)="applyFilters()">
+                      <option value="">Toutes salles</option>
+                      <option *ngFor="let s of sallesDisponibles" [value]="s">
+                        {{ s }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="col-lg-3 col-md-6">
+                    <input type="date"
+                           class="form-control"
+                           [(ngModel)]="filter.date"
+                           (change)="applyFilters()">
+                  </div>
+
+                </div>
+
+                <!-- Badges filtres actifs -->
+                <div class="mt-3 d-flex flex-wrap gap-2" *ngIf="filtresActifsCount > 0">
+                  <small class="text-muted d-flex align-items-center me-1">
+                    Actifs :
+                  </small>
+
+                  <span *ngIf="filter.recherche" class="badge bg-soft-primary text-primary">
+                    <i class="feather-search me-1"></i>
+                    {{ filter.recherche }}
+                  </span>
+
+                  <span *ngIf="filter.statut" class="badge bg-soft-warning text-warning">
+                    <i class="feather-info me-1"></i>
+                    {{ filter.statut }}
+                  </span>
+
+                  <span *ngIf="filter.niveau" class="badge bg-soft-info text-info">
+                    <i class="feather-layers me-1"></i>
+                    {{ filter.niveau }}
+                  </span>
+
+                  <span *ngIf="filter.departement" class="badge bg-soft-secondary text-secondary">
+                    <i class="feather-briefcase me-1"></i>
+                    {{ filter.departement }}
+                  </span>
+
+                  <span *ngIf="filter.specialite" class="badge bg-soft-success text-success">
+                    <i class="feather-bookmark me-1"></i>
+                    {{ filter.specialite }}
+                  </span>
+
+                  <span *ngIf="filter.groupe" class="badge bg-soft-primary text-primary">
+                    <i class="feather-users me-1"></i>
+                    {{ filter.groupe }}
+                  </span>
+
+                  <span *ngIf="filter.salleCode" class="badge bg-soft-primary text-primary">
+                    <i class="feather-map-pin me-1"></i>
+                    {{ filter.salleCode }}
+                  </span>
+
+                  <span *ngIf="filter.date" class="badge bg-soft-primary text-primary">
+                    <i class="feather-calendar me-1"></i>
+                    {{ filter.date }}
+                  </span>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Liste des soutenances -->
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title mb-0">Liste des soutenances</h5>
+              </div>
+
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0">
+
+                    <thead>
+                      <tr>
+                        <th>Date &amp; Heure</th>
+                        <th>Étudiant</th>
+                        <th>Sujet</th>
+                        <th>Niveau</th>
+                        <th>Département</th>
+                        <th>Salle</th>
+                        <th>Mon rôle</th>
+                        <th>Statut</th>
+                        <th class="text-end">Actions</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+
+                      <tr *ngFor="let s of filteredSoutenances"
+                          [class.bg-soft-light]="s.statut === 'VALIDEE'">
+
+                        <!-- Date & Heure -->
+                        <td>
+                          <div class="fw-semibold">
+                            {{ s.date | date:'dd MMM yyyy' }}
+                          </div>
+
+                          <div class="fs-11 text-muted">
+                            {{ s.heureDebut | slice:0:5 }}
+                            <span *ngIf="s.duree">
+                              - {{ heureFinCalc(s.heureDebut, s.duree) }}
+                            </span>
+                          </div>
+                        </td>
+
+                        <!-- Étudiant -->
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <div class="avatar-text avatar-sm bg-soft-primary text-primary">
+                              {{ (s.etudiantPrenom?.charAt(0) || '') + (s.etudiantNom?.charAt(0) || '') }}
+                            </div>
+
+                            <div>
+                              <div class="fw-semibold">
+                                {{ s.etudiantPrenom || '' }} {{ s.etudiantNom || '' }}
+                              </div>
+
+                              <div class="fs-11 text-muted">
+                                {{ s.etudiantGroupe || '—' }}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        <!-- Sujet -->
+                        <td>
+                          <div class="fw-medium">
+                            {{ s.sujetDemande || '—' }}
+                          </div>
+
+                          <div class="fs-11 text-muted">
+                            {{ s.etudiantSpecialite || '—' }}
+                          </div>
+                        </td>
+
+                        <!-- Niveau -->
+                        <td>
+                          <span class="badge bg-soft-info text-info">
+                            {{ s.etudiantNiveau || '—' }}
+                          </span>
+                        </td>
+
+                        <!-- Département -->
+                        <td>
+                          <span class="text-dark">
+                            {{ s.etudiantDepartement || '—' }}
+                          </span>
+                        </td>
+
+                        <!-- Salle -->
+                        <td>
+                          <div class="d-flex align-items-center gap-1">
+                            <i class="feather-map-pin fs-12 text-muted"></i>
+                            <span>{{ s.codeSalle || '—' }}</span>
+                          </div>
+
+                          <div class="fs-11 text-muted" *ngIf="s.localisationSalle">
+                            {{ s.localisationSalle }}
+                          </div>
+                        </td>
+
+                        <!-- Mon rôle -->
+                        <td>
+                          <span class="badge bg-soft-primary text-primary">
+                            {{ monRole(s) }}
+                          </span>
+                        </td>
+
+                        <!-- Statut -->
+                        <td>
+                          <span [class]="statutBadgeClass(s.statut)">
+                            {{ statutLabel(s.statut) }}
+                          </span>
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="text-end">
+                          <a href="javascript:void(0)"
+                             class="btn btn-sm btn-light"
+                             (click)="openDetail(s)">
+                            <i class="feather-eye me-1"></i>
+                            Voir
+                          </a>
+                        </td>
+
+                      </tr>
+
+                      <tr *ngIf="filteredSoutenances.length === 0">
+                        <td colspan="9" class="text-center py-5 text-muted">
+                          <i class="feather-inbox fs-32 d-block mb-2"></i>
+                          Aucune soutenance trouvée
+                        </td>
+                      </tr>
+
+                    </tbody>
+
+                  </table>
+                </div>
+              </div>
+
+              <div class="card-footer">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="text-muted">
+                    Affichage de {{ filteredSoutenances.length }} sur {{ soutenances.length }} soutenance(s)
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </ng-container>
+
+        </div>
+      </div>
+    </div>
+    <!-- [ Main Content ] end -->
+
+  </div>
+</main>
+<!--! ================================================================ !-->
+<!--! [End] Main Content !-->
+<!--! ================================================================ !-->
+
+
+<!-- ================================================================ -->
+<!-- MODAL — Détails soutenance -->
+<!-- ================================================================ -->
+<div class="modal fade"
+     [class.show]="showDetailModal"
+     [style.display]="showDetailModal ? 'block' : 'none'"
+     tabindex="-1"
+     *ngIf="selectedSoutenance">
+
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <div class="hstack gap-3">
+          <div class="avatar-text avatar-lg rounded bg-soft-primary text-primary">
+            <i class="feather-file-text fs-20"></i>
+          </div>
+
+          <div>
+            <h5 class="modal-title mb-0">
+              {{ selectedSoutenance.sujetDemande || ('Soutenance #' + selectedSoutenance.id) }}
+            </h5>
+            <small class="text-muted">
+              Soutenance #{{ selectedSoutenance.id }}
+            </small>
+          </div>
+        </div>
+
+        <button type="button"
+                class="btn-close"
+                (click)="closeDetail()">
+        </button>
+      </div>
+
+      <div class="modal-body">
+
+        <div *ngIf="detailLoading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <div *ngIf="detailError" class="alert alert-danger">
+          {{ detailError }}
+        </div>
+
+        <div class="row g-4" *ngIf="!detailLoading">
+
+          <div class="col-12">
+            <span [class]="statutBadgeClass(selectedSoutenance.statut)"
+                  class="fs-14 px-3 py-2">
+              <i class="feather-info me-2"></i>
+              {{ statutLabel(selectedSoutenance.statut) }}
+            </span>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-user me-2"></i>
+                  Étudiant
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.etudiantPrenom || '' }}
+                  {{ selectedSoutenance.etudiantNom || '' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-bookmark me-2"></i>
+                  Niveau
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.etudiantNiveau || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-users me-2"></i>
+                  Groupe
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.etudiantGroupe || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-briefcase me-2"></i>
+                  Département
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.etudiantDepartement || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-layers me-2"></i>
+                  Spécialité
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.etudiantSpecialite || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-calendar me-2"></i>
+                  Date
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.date | date:'EEEE dd MMMM yyyy':'':'fr' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-clock me-2"></i>
+                  Horaire
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.heureDebut | slice:0:5 }}
+                  <span *ngIf="selectedSoutenance.duree">
+                    — {{ heureFinCalc(selectedSoutenance.heureDebut, selectedSoutenance.duree) }}
+                    <small class="text-muted">
+                      ({{ selectedSoutenance.duree }} min)
+                    </small>
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-map-pin me-2"></i>
+                  Salle
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.codeSalle || '—' }}
+                </p>
+                <small class="text-muted" *ngIf="selectedSoutenance.localisationSalle">
+                  {{ selectedSoutenance.localisationSalle }}
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-file-text me-2"></i>
+                  Sujet de stage
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.sujetDemande || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <h6 class="fw-bold mb-3">
+              <i class="feather-users me-2"></i>
+              Membres du jury
+            </h6>
+
+            <div class="row g-2"
+                 *ngIf="selectedSoutenance.membresJury && selectedSoutenance.membresJury.length > 0; else noJuryDetail">
+
+              <div class="col-md-4" *ngFor="let m of selectedSoutenance.membresJury">
+                <div class="card border-0 bg-light">
+                  <div class="card-body py-2 px-3 hstack gap-2">
+                    <div class="avatar-text avatar-sm bg-soft-primary text-primary">
+                      {{ initials(m) }}
+                    </div>
+
+                    <span class="fw-semibold fs-13">
+                      {{ m.prenomEnseignant || '' }} {{ m.nomEnseignant || '' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <ng-template #noJuryDetail>
+              <div class="text-center py-3 text-muted border rounded">
+                <i class="feather-users fs-24 d-block mb-1"></i>
+                Aucun membre de jury assigné
+              </div>
+            </ng-template>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-light-brand"
+                (click)="closeDetail()">
+          Fermer
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade"
+     [class.show]="showDetailModal"
+     *ngIf="showDetailModal"
+     (click)="closeDetail()">
+</div>

@@ -1,6 +1,7 @@
 package com.enicar.projet.controllers;
 
 import com.enicar.projet.dtos.DemandeStageDTO;
+import com.enicar.projet.entities.StatutDemande;
 import com.enicar.projet.services.interfaces.DemandeStageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -45,5 +46,19 @@ public class DemandeStageController {
     @PutMapping("/{id}")
     public DemandeStageDTO update(@PathVariable Long id, @RequestBody DemandeStageDTO dto){
         return service.update(id, dto);
+    }
+    @PutMapping("/{id}/approuver")
+    public DemandeStageDTO approuver(@PathVariable Long id) {
+        return service.updateStatut(id, StatutDemande.VALIDEE);
+    }
+
+    @PutMapping("/{id}/rejeter")
+    public DemandeStageDTO rejeter(@PathVariable Long id) {
+        return service.updateStatut(id, StatutDemande.REFUSEE);
+    }
+
+    @PutMapping("/{id}/statut")
+    public DemandeStageDTO modifierStatut(@PathVariable Long id, @RequestBody DemandeStageDTO dto) {
+        return service.updateStatut(id, dto.getStatut());
     }
 }

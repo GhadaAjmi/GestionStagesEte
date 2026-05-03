@@ -366,4 +366,31 @@ public class SoutenanceServiceImpl implements SoutenanceService {
 
         return conflits;
     }
+    @Override
+    public SoutenanceDTO getSoutenanceByEtudiant(Long etudiantId) {
+        Soutenance soutenance = repo.findByDemandeStageEtudiantId(etudiantId)
+                .orElseThrow(() -> new NotFoundException(
+                        "Aucune soutenance trouvée pour cet étudiant : " + etudiantId
+                ));
+
+        List<MembreJury> membres = membreJuryRepo.findBySoutenanceId(soutenance.getId());
+
+        return toDTO(soutenance, membres);
+    }
+
+
+
+    @Override
+    public List<SoutenanceDTO> getSoutenancesByEnseignant(Long enseignantId) {
+        return membreJuryRepo.findByEnseignantId(enseignantId)
+                .stream()
+                .map(MembreJury::getSoutenance)
+                .filter(soutenance -> soutenance != null)
+                .distinct()
+                .map(soutenance -> {
+                    List<MembreJury> membres = membreJuryRepo.findBySoutenanceId(soutenance.getId());
+                    return toDTO(soutenance, membres);
+                })
+                .toList();
+    }
 }

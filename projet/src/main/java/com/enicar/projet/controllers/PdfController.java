@@ -63,6 +63,13 @@ public class PdfController {
         Document doc = pdfService.generateConvention(demandeId, dto);
         return ResponseEntity.ok(doc.getId());
     }
+    @PostMapping(value = "/demande/{demandeId}/prolongation",
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Long> generateProlongation(@PathVariable Long demandeId,
+                                                   @RequestBody ConventionRequestDTO dto) throws Exception {
+        Document doc = pdfService.generateAvenant(demandeId);
+        return ResponseEntity.ok(doc.getId());
+    }
 
     /**
      * Signe la convention identifiée par {documentId}.
@@ -72,6 +79,16 @@ public class PdfController {
     @PostMapping("/convention/{documentId}/signer")
     public ResponseEntity<byte[]> signerConvention(@PathVariable Long documentId) throws Exception {
         byte[] pdfSigne = pdfService.signerConvention(documentId);
+        return pdfResponse(pdfSigne, "convention_signee.pdf");
+    }
+    /**
+     * Signe la convention identifiée par {documentId}.
+     * POST /api/pdf/prolongation/{documentId}/signer
+     * Retourne le PDF signé en téléchargement.
+     */
+    @PostMapping("/prolongation/{documentId}/signer")
+    public ResponseEntity<byte[]> signerProlongation(@PathVariable Long documentId) throws Exception {
+        byte[] pdfSigne = pdfService.signerProlongation(documentId);
         return pdfResponse(pdfSigne, "convention_signee.pdf");
     }
 

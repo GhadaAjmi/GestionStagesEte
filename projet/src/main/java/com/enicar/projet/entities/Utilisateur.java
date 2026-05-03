@@ -44,9 +44,9 @@ public abstract class Utilisateur {
 
     @Column(nullable = false, unique = true, length = 8)
     private String telephone;
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = true,  length = 100)
     private String lieuDelivranceCin;
-    @Column(nullable = false, unique = true, length = 30)
+    @Column(nullable = true,  length = 30)
     private String dateDelivranceCin;
     @Column(name = "mot_de_passe", nullable = false)
     private String motDePasse;

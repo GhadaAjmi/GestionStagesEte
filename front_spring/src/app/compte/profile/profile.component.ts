@@ -13,7 +13,7 @@ import { Utilisateur } from '../../models/utilisateur.models';
 export class ProfileComponent implements OnInit {
 
   currentUser: Utilisateur | null = null;
-  photoUrl: SafeUrl | string = 'assets/images/avatar/default.png';
+  photoUrl: SafeUrl | string = 'assets/images/avatar/undefined.jpg';
   errorMessage = '';
 
   constructor(
@@ -48,7 +48,7 @@ export class ProfileComponent implements OnInit {
         this.photoUrl = this.sanitizer.bypassSecurityTrustUrl(objectURL);
       },
       error: () => {
-        this.photoUrl = 'assets/images/avatar/default.png';
+        this.photoUrl = 'assets/images/avatar/undefined.jpg';
       }
     });
   }

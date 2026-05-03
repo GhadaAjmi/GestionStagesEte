@@ -1,0 +1,405 @@
+<!--! ================================================================ !-->
+<!--! [Start] Main Content !-->
+<!--! ================================================================ !-->
+<main class="nxl-container apps-container apps-storage">
+    <div class="nxl-content without-header nxl-full-content">
+        <!-- [ Main Content ] start -->
+        <div class="main-content d-flex">
+            <!-- [ Main Area  ] start -->
+            <div class="content-area" data-scrollbar-target="#psScrollbarInit">
+     <div class="content-area-header sticky-top">
+    <div class="page-header-left d-flex align-items-center gap-2">
+        
+        <!-- Sidebar toggle -->
+        <a href="javascript:void(0);" class="app-sidebar-open-trigger me-2">
+            <i class="feather-align-left fs-20"></i>
+        </a>
+
+        <!-- Select Année -->
+        <select class="form-control" style="width: auto; min-width: 160px;"
+                (change)="filtrerParAnnee(+$any($event.target).value)">
+            <option value="">Toutes les années</option>
+            <option *ngFor="let annee of annees" [value]="annee">
+                {{ annee }} / {{ annee + 1 }}
+            </option>
+        </select>
+
+        <!-- Dropdown Type doc -->
+        <div class="dropdown">
+          
+                <div class="avatar-text avatar-md"
+                     data-bs-toggle="tooltip"
+                     data-bs-trigger="hover"
+                     title="Filtrer par année">
+                    <i class="feather-filter"></i>
+                </div>
+         
+         
+        </div>
+
+        <!-- Badge filtre actif — reset au clic -->
+        <span *ngIf="selectedAnnee || selectedType"
+              class="badge bg-primary ms-1 c-pointer d-flex align-items-center gap-1"
+              style="cursor:pointer; font-size:11px; padding: 5px 10px;"
+              (click)="resetFiltres()">
+            <span *ngIf="selectedAnnee">{{ selectedAnnee }}/{{ selectedAnnee + 1 }}</span>
+            <span *ngIf="selectedAnnee && selectedType"> · </span>
+            <span *ngIf="selectedType">{{ selectedType }}</span>
+            <i class="feather-x ms-1" style="font-size:10px;"></i>
+        </span>
+
+    </div>
+
+    <div class="page-header-right ms-auto">
+        <div class="hstack gap-2">
+
+            <!-- Recherche -->
+            <div class="hstack">
+                <a href="javascript:void(0)"
+                   class="search-form-open-toggle"
+                   (click)="toggleSearch()">
+                    <div class="avatar-text avatar-md"
+                         data-bs-toggle="tooltip"
+                         data-bs-trigger="hover"
+                         title="Rechercher">
+                        <i class="feather-search"></i>
+                    </div>
+                </a>
+                <form class="search-form" [style.display]="isSearchOpen ? 'block' : 'none'">
+                    <div class="search-form-inner">
+                        <a href="javascript:void(0)"
+                           class="search-form-close-toggle"
+                           (click)="toggleSearch()">
+                            <div class="avatar-text avatar-md"
+                                 data-bs-toggle="tooltip"
+                                 data-bs-trigger="hover"
+                                 title="Fermer">
+                                <i class="feather-arrow-left"></i>
+                            </div>
+                        </a>
+                        <input type="search"
+                               class="py-3 px-0 border-0 w-100"
+                               id="storageSearch"
+                               placeholder="Rechercher un projet, étudiant..."
+                               autocomplete="off"
+                               [value]="searchTerm"
+                               (input)="onSearch($any($event.target).value)">
+                    </div>
+                </form>
+            </div>
+
+            <!-- Starred / Favoris -->
+            <a href="javascript:void(0)"
+               class="d-flex d-none d-sm-block"
+               (click)="toggleStarredFilter()"
+               [class.text-warning]="showStarredOnly">
+                <div class="avatar-text avatar-md"
+                     data-bs-toggle="tooltip"
+                     data-bs-trigger="hover"
+                     title="Favoris">
+                    <i [class]="showStarredOnly ? 'feather-star text-warning' : 'feather-star'"></i>
+                </div>
+            </a>
+
+            <!-- Grid View -->
+            <a href="javascript:void(0)"
+               class="d-flex d-none d-sm-block"
+               (click)="setGridView()">
+                <div class="avatar-text avatar-md"
+                     data-bs-toggle="tooltip"
+                     data-bs-trigger="hover"
+                     title="Vue grille"
+                     [style.background]="isGridView ? 'var(--bs-primary-bg-subtle)' : ''">
+                    <i class="feather-grid"
+                       [style.color]="isGridView ? 'var(--bs-primary)' : ''"></i>
+                </div>
+            </a>
+
+            <!-- List View -->
+            <a href="javascript:void(0)"
+               class="d-flex d-none d-sm-block"
+               (click)="setListView()">
+                <div class="avatar-text avatar-md"
+                     data-bs-toggle="tooltip"
+                     data-bs-trigger="hover"
+                     title="Vue liste"
+                     [style.background]="!isGridView ? 'var(--bs-primary-bg-subtle)' : ''">
+                    <i class="feather-list"
+                       [style.color]="!isGridView ? 'var(--bs-primary)' : ''"></i>
+                </div>
+            </a>
+
+           
+
+        </div>
+    </div>
+</div>
+                <div class="content-area-body">
+
+                <!--! BEGIN: [travaux-section] !-->
+<div class="project-section">
+
+    <!-- En-tête section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="me-4">
+            <h2 class="fs-16 fw-bold mb-1">Travaux de Stage</h2>
+            <div class="fs-12 text-muted text-truncate-1-line">
+                {{ travauxFiltres.length }} travaux
+            </div>
+        </div>
+    </div>
+
+    <!-- Message vide -->
+    <div *ngIf="travauxFiltres.length === 0" class="text-center py-5">
+        <i class="feather-inbox fs-40 text-muted d-block mb-2"></i>
+        <span class="text-muted fs-14">Aucun travail trouvé</span>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         LIST VIEW
+    ══════════════════════════════════════ -->
+    <div class="card mb-0" *ngIf="!isGridView && travauxFiltres.length > 0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">Nom du fichier</th>
+                            <th scope="col">Étudiant</th>
+                            <th scope="col">Sujet</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Année</th>
+                            <th scope="col" class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let t of travauxFiltres">
+
+                            <!-- Starred -->
+                            <td style="width: 36px;">
+                                <a href="javascript:void(0)" (click)="toggleStar(t)">
+                                    <i class="feather-star"
+                                       [style.color]="t.starred ? '#f5a623' : ''"
+                                       [style.fill]="t.starred ? '#f5a623' : 'none'"></i>
+                                </a>
+                            </td>
+
+                            <!-- Nom fichier -->
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img [src]="t.iconFile" class="img-fluid rounded wd-30" alt="">
+                                    <a href="javascript:void(0)" (click)="ouvrirFichier(t)">
+                                        {{ t.nomFichier }}
+                                    </a>
+                                </div>
+                            </td>
+
+                            <!-- Étudiant -->
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="avatar-text avatar-xs rounded-circle bg-soft-primary"
+                                         style="width:28px;height:28px;font-size:11px;display:flex;align-items:center;justify-content:center;">
+                                        {{ t.prenomEtudiant?.charAt(0) }}
+                                    </div>
+                                    <span class="fs-13">{{ t.prenomEtudiant }} {{ t.nomEtudiant }}</span>
+                                </div>
+                            </td>
+
+                            <!-- Sujet -->
+                            <td>
+                                <span class="text-truncate-1-line"  data-bs-toggle="tooltip"
+                     data-bs-trigger="hover"
+                           [title]="t.sujetDemande" style="width:180px">
+                                    {{ t.sujetDemande }}
+                                </span>
+                            </td>
+
+                            <!-- Type badge -->
+                            <td>
+                                 <span class="badge" [ngClass]="t.badgeClass">{{ t.type }}</span>
+
+                            </td>
+
+                            <!-- Année -->
+                            <td>{{ t.anneeDepot}}</td>
+
+                         
+                            <!-- Actions -->
+                            <td>
+                                <div class="dropdown hstack text-end justify-content-end">
+                                    <a href="javascript:void(0)" class="avatar-text avatar-sm"
+                                       data-bs-toggle="dropdown">
+                                        <i class="feather-more-vertical"></i>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a href="javascript:void(0)" class="dropdown-item"
+                                               (click)="ouvrirFichier(t)">
+                                                <i class="feather-eye me-3"></i>
+                                                <span>Ouvrir</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0)" class="dropdown-item"
+                                               (click)="telechargerFichier(t)">
+                                                <i class="feather-download me-3"></i>
+                                                <span>Télécharger</span>
+                                            </a>
+                                        </li>
+                                        <li class="dropdown-divider"></li>
+                                        <li>
+                                            <a href="javascript:void(0)" class="dropdown-item"
+                                               (click)="toggleStar(t)">
+                                                <i class="feather-star me-3"></i>
+                                                <span>{{ t.starred ? 'Retirer des favoris' : 'Ajouter aux favoris' }}</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination 
+        <div class="card-footer">
+            <ul class="list-unstyled d-flex align-items-center gap-2 mb-0 pagination-common-style">
+                <li><a href="javascript:void(0);"><i class="bi bi-arrow-left"></i></a></li>
+                <li><a href="javascript:void(0);" class="active">1</a></li>
+                <li><a href="javascript:void(0);">2</a></li>
+                <li><a href="javascript:void(0);"><i class="bi bi-dot"></i></a></li>
+                <li><a href="javascript:void(0);">8</a></li>
+                <li><a href="javascript:void(0);">9</a></li>
+                <li><a href="javascript:void(0);"><i class="bi bi-arrow-right"></i></a></li>
+            </ul>
+        </div>-->
+    </div>
+
+    <!-- ══════════════════════════════════════
+         GRID VIEW
+    ══════════════════════════════════════ -->
+    <div *ngIf="isGridView && travauxFiltres.length > 0">
+        <div class="row">
+            <div class="col-xxl-3 col-sm-6" *ngFor="let t of travauxFiltres">
+                <div class="card mb-4 stretch stretch-full">
+                    <div class="card-body p-0">
+
+                        <!-- Header card : icône + starred -->
+                        <div class="d-flex align-items-center justify-content-between border-bottom p-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="p-2 avatar-image bg-gray-200 rounded-3">
+                                    <img [src]="t.iconFile" alt="" class="img-fluid" style="width:32px;height:32px;">
+                                </div>
+                                <div>
+                                    <span class="d-block fs-13 fw-500 text-truncate" style="max-width:130px">
+                                        {{ t.nomFichier }}
+                                    </span>
+                                    <span class="badge mt-1 ms-1" [ngClass]="t.badgeClass">{{ t.type }}</span>
+
+                                </div>
+                            </div>
+                            <!-- Starred toggle -->
+                            <a href="javascript:void(0)" (click)="toggleStar(t)" class="ms-2">
+                                <i class="feather-star"
+                                   [style.color]="t.starred ? '#f5a623' : 'var(--bs-secondary)'"
+                                   [style.fill]="t.starred ? '#f5a623' : 'none'"
+                                   style="font-size:16px"></i>
+                            </a>
+                        </div>
+
+                        <!-- Infos étudiant + sujet -->
+                        <div class="p-3 border-bottom">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="avatar-text avatar-xs rounded-circle bg-soft-primary"
+                                     style="width:28px;height:28px;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                                    {{ t.prenomEtudiant?.charAt(0) }}
+                                </div>
+                                <span class="fs-13 fw-500">{{ t.prenomEtudiant }} {{ t.nomEtudiant }}</span>
+                            </div>
+                            <p class="fs-12 text-truncate text-muted mb-1 " data-bs-toggle="tooltip"
+                     data-bs-trigger="hover"
+                           [title]="t.sujetDemande">
+                                <i class="feather-book-open me-1" style="font-size:11px"></i>
+                                {{ t.sujetDemande }}
+                            </p>
+                            <span class="fs-11 text-muted">
+                                <i class="feather-calendar me-1" style="font-size:11px"></i>
+                                {{ t.anneeDepot }} 
+                            </span>
+                        </div>
+
+                        <!-- Actions footer -->
+                        <div class="p-3 d-flex align-items-center justify-content-between">
+                            <div class="hstack gap-2">
+                                <!-- Ouvrir -->
+                                <a href="javascript:void(0)"
+                                   class="avatar-text avatar-sm"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-trigger="hover"
+                                   title="Ouvrir"
+                                   (click)="ouvrirFichier(t)">
+                                    <i class="feather-eye"></i>
+                                </a>
+                                <!-- Télécharger -->
+                                <a href="javascript:void(0)"
+                                   class="avatar-text avatar-sm"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-trigger="hover"
+                                   title="Télécharger"
+                                   (click)="telechargerFichier(t)">
+                                    <i class="feather-download"></i>
+                                </a>
+                            </div>
+
+                            <!-- Dropdown plus -->
+                            <div class="dropdown">
+                                <a href="javascript:void(0)"
+                                   class="avatar-text avatar-sm"
+                                   data-bs-toggle="dropdown">
+                                    <i class="feather-more-vertical"></i>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a href="javascript:void(0)" class="dropdown-item"
+                                           (click)="ouvrirFichier(t)">
+                                            <i class="feather-eye me-3"></i>
+                                            <span>Ouvrir</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0)" class="dropdown-item"
+                                           (click)="telechargerFichier(t)">
+                                            <i class="feather-download me-3"></i>
+                                            <span>Télécharger</span>
+                                        </a>
+                                    </li>
+                                    <li class="dropdown-divider"></li>
+                                    <li>
+                                        <a href="javascript:void(0)" class="dropdown-item"
+                                           (click)="toggleStar(t)">
+                                            <i class="feather-star me-3"></i>
+                                            <span>{{ t.starred ? 'Retirer des favoris' : 'Ajouter aux favoris' }}</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!--! END: [travaux-section] !-->
+                </div>
+            </div>
+            <!-- [ Content Area ] end -->
+        </div>
+        <!-- [ Main Content ] end -->
+    </div>
+</main>

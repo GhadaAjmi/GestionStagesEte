@@ -90,68 +90,39 @@ export class UtilisateurService {
   // =========================================================
   // DEPARTEMENTS
   // =========================================================
-  getDepartements(): Observable<string[]> {
+ getDepartements(): Observable<string[]> {
     return this.http.get<string[]>(`${this.apiUrl}/departements`);
   }
-
   // =========================================================
   // NIVEAUX
   // =========================================================
-  getNiveaux(departement?: string, specialite?: string): Observable<string[]> {
-    let params = new HttpParams();
+ 
+getNiveaux(filters?: any): Observable<string[]> {
+  return this.http.get<string[]>(`${this.apiUrl}/niveaux`, {
+    params: this.buildParams(filters)
+  });
+}
 
-    if (departement) {
-      params = params.set('departement', departement);
-    }
-
-    if (specialite) {
-      params = params.set('specialite', specialite);
-    }
-
-    return this.http.get<string[]>(`${this.apiUrl}/niveaux`, { params });
-  }
 
   // =========================================================
   // SPECIALITES
   // =========================================================
-  getSpecialites(departement?: string, niveau?: string): Observable<string[]> {
-    let params = new HttpParams();
-
-    if (departement) {
-      params = params.set('departement', departement);
-    }
-
-    if (niveau) {
-      params = params.set('niveau', niveau);
-    }
-
-    return this.http.get<string[]>(`${this.apiUrl}/specialites`, { params });
-  }
+   
+getSpecialites(filters?: any): Observable<string[]> {
+  return this.http.get<string[]>(`${this.apiUrl}/specialites`, {
+    params: this.buildParams(filters)
+  });
+}
 
   // =========================================================
   // GROUPES
   // =========================================================
-  getGroupes(
-    departement?: string,
-    specialite?: string,
-    niveau?: string
-  ): Observable<string[]> {
-    let params = new HttpParams();
 
-    if (departement) {
-      params = params.set('departement', departement);
-    }
-
-    if (specialite) {
-      params = params.set('specialite', specialite);
-    }
-
-    if (niveau) {
-      params = params.set('niveau', niveau);
-    }
-
-    return this.http.get<string[]>(`${this.apiUrl}/groupes`, { params });
-  }
+getGroupes(filters?: any): Observable<string[]> {
+  return this.http.get<string[]>(`${this.apiUrl}/groupes`, {
+    params: this.buildParams(filters)
+  });
+}
 
   // =========================================================
   // ETUDIANTS PAR FILTRE
@@ -269,4 +240,23 @@ export class UtilisateurService {
       { params }
     );
   }
+
+
+
+
+private buildParams(filters: any): any {
+  let params: any = {};
+
+  if (!filters) return params;
+
+  Object.keys(filters).forEach(key => {
+    if (filters[key] !== null && filters[key] !== undefined && filters[key] !== '') {
+      params[key] = filters[key];
+    }
+  });
+
+  return params;
 }
+
+}
+

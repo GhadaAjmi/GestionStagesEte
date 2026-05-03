@@ -34,7 +34,15 @@ public class SoutenanceController {
     public SoutenanceDTO getById(@PathVariable Long id) {
         return service.getById(id);
     }
+    @GetMapping("/etudiant/{etudiantId}")
+    public SoutenanceDTO getSoutenanceByEtudiant(@PathVariable Long etudiantId) {
+        return service.getSoutenanceByEtudiant(etudiantId);
+    }
 
+    @GetMapping("/enseignant/{enseignantId}")
+    public List<SoutenanceDTO> getSoutenancesByEnseignant(@PathVariable Long enseignantId) {
+        return service.getSoutenancesByEnseignant(enseignantId);
+    }
     @PutMapping("/{id}")
     public SoutenanceDTO update(@PathVariable Long id, @RequestBody SoutenanceDTO dto) {
         return service.modifier(id, dto);

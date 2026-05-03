@@ -62,10 +62,7 @@ public class Evaluation {
         calculerNoteFinale();
     }
 
-    /**
-     * Calcule la note finale avec pondération.
-     * Gère le cas des notes partielles (seulement les critères renseignés sont pondérés).
-     */
+
     public void calculerNoteFinale() {
         double total  = 0.0;
         double poids  = 0.0;

@@ -1,0 +1,27 @@
+
+import { StatutDemande } from "./enums";
+
+export interface DemandeStage {
+  id:            number;
+  sujet:         string;
+  entreprise?:   string;
+
+  type?:         string;
+  description?:  string;
+
+  etudiantId:    number;       // Long côté backend
+  soutenanceId?: number; 
+
+  statut:        StatutDemande;
+  dateDemande?:  string;       // LocalDateTime → ISO string
+  dateDebut?:    string;       // LocalDate     → ISO string (yyyy-MM-dd)
+  dateFin?:      string;       // LocalDate     → ISO string (yyyy-MM-dd)
+
+  // ── Champs UI uniquement (enrichis côté frontend après getEtudiant()) ──
+  etudiantNom?:         string;
+  etudiantPrenom?:      string;
+  etudiantDepartement?: string;
+  etudiantNiveau?:      string;
+  etudiantGroupe?:      string;
+  etudiantSpecialite?:  string;
+}

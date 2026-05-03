@@ -2,13 +2,19 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { EnseignantRoutingModule } from './enseignant-routing.module';
+import { MesSoutenancesComponent } from './mes-soutenances/mes-soutenances.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    MesSoutenancesComponent
+  ],
   imports: [
     CommonModule,
-    EnseignantRoutingModule
+    EnseignantRoutingModule, 
+    FormsModule, 
+    ReactiveFormsModule
   ]
 })
 export class EnseignantModule { }

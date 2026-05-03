@@ -1,0 +1,804 @@
+<!--! ================================================================ !-->
+<!--! [Start] Main Content ING2 !-->
+<!--! ================================================================ !-->
+<main class="nxl-container">
+  <div class="nxl-content">
+
+    <!-- [ page-header ] start -->
+    <div class="page-header">
+      <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Soutenances ING2</h5>
+        </div>
+      </div>
+
+      <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+          <div class="d-flex d-md-none">
+            <a href="javascript:void(0)" class="page-header-right-close-toggle">
+              <i class="feather-arrow-left me-2"></i>
+              <span>Retour</span>
+            </a>
+          
+
+          </div>
+
+          <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+
+            <a href="javascript:void(0);" class="btn btn-icon btn-light-brand" (click)="toggleStats()">
+              <i class="feather-bar-chart"></i>
+            </a>
+
+            <a href="javascript:void(0);" class="btn btn-light-brand position-relative" (click)="toggleFilters()">
+              <i class="feather-filter"></i>
+              <span *ngIf="filtresActifsCount > 0"
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                    style="font-size:9px">
+                {{ filtresActifsCount }}
+              </span>
+            </a>
+
+            <span class="badge bg-soft-info text-info px-3 py-2">
+              <i class="feather-layers me-1"></i>
+              ING2 uniquement
+            </span>
+  
+<button class="btn btn-secondary" routerLink="/chef_departement/soutenances/planning">
+          <i class="feather-cpu me-2"></i>
+             Générer planning ING2
+          </button>
+            <a routerLink="/chef_departement/soutenances/new" class="btn btn-primary">
+              <i class="feather-plus me-2"></i>
+              <span>Planifier Soutenance</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="d-md-none d-flex align-items-center">
+          <a href="javascript:void(0)" class="page-header-right-open-toggle">
+            <i class="feather-align-right fs-20"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    <!-- [ page-header ] end -->
+
+    <!-- [ Stats ] -->
+    <div *ngIf="showStats" class="main-content">
+      <div class="accordion-body pb-2">
+        <div class="row">
+
+          <div class="col-xxl-3 col-md-6">
+            <div class="card stretch stretch-full">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-text avatar-xl rounded">
+                      <i class="feather-calendar"></i>
+                    </div>
+                    <a href="javascript:void(0);" class="fw-bold d-block">
+                      <span class="d-block">Total ING2</span>
+                      <span class="fs-24 fw-bolder d-block">{{ soutenancesING2Count() }}</span>
+                    </a>
+                  </div>
+                  <div class="badge bg-soft-success text-success">
+                    <i class="feather-layers fs-10 me-1"></i>
+                    <span>Total</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xxl-3 col-md-6">
+            <div class="card stretch stretch-full">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-text avatar-xl rounded">
+                      <i class="feather-clock"></i>
+                    </div>
+                    <a href="javascript:void(0);" class="fw-bold d-block">
+                      <span class="d-block">Planifiées</span>
+                      <span class="fs-24 fw-bolder d-block">{{ countByStatutFiltered('PLANIFIEE') }}</span>
+                    </a>
+                  </div>
+                  <div class="badge bg-soft-warning text-warning">
+                    <i class="feather-clock fs-10 me-1"></i>
+                    <span>En cours</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xxl-3 col-md-6">
+            <div class="card stretch stretch-full">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-text avatar-xl rounded">
+                      <i class="feather-check-circle"></i>
+                    </div>
+                    <a href="javascript:void(0);" class="fw-bold d-block">
+                      <span class="d-block">Validées</span>
+                      <span class="fs-24 fw-bolder d-block">{{ countByStatutFiltered('VALIDEE') }}</span>
+                    </a>
+                  </div>
+                  <div class="badge bg-soft-success text-success">
+                    <i class="feather-check fs-10 me-1"></i>
+                    <span>Terminées</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xxl-3 col-md-6">
+            <div class="card stretch stretch-full">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-text avatar-xl rounded">
+                      <i class="feather-x-circle"></i>
+                    </div>
+                    <a href="javascript:void(0);" class="fw-bold d-block">
+                      <span class="d-block">Annulées</span>
+                      <span class="fs-24 fw-bolder d-block">{{ countByStatutFiltered('ANNULEE') }}</span>
+                    </a>
+                  </div>
+                  <div class="badge bg-soft-danger text-danger">
+                    <i class="feather-x fs-10 me-1"></i>
+                    <span>{{ annuleePercentFiltered() }}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- [ Main Content ] -->
+    <div class="main-content">
+      <div class="row">
+
+        <!-- FILTRES AVANCÉS -->
+        <div class="row mb-4" *ngIf="showFilters">
+          <div class="col-12">
+            <div class="card stretch">
+              <div class="card-body">
+
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h6 class="fw-bold mb-0">
+                    <i class="feather-filter me-2"></i>
+                    Filtres avancés ING2
+                  </h6>
+                  <span class="badge bg-soft-primary text-primary fs-12">
+                    {{ filteredSoutenances.length }} / {{ soutenances.length }} soutenance(s)
+                  </span>
+                </div>
+
+                <div class="row g-3">
+
+                  <!-- Groupe -->
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Groupe</label>
+                    <select class="form-select"
+                            [(ngModel)]="filter.groupe"
+                            (change)="applyFilters()">
+                      <option value="">Tous les groupes</option>
+                      <option *ngFor="let g of groupesDisponibles" [value]="g">
+                        {{ g }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Département -->
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Département</label>
+                    <select class="form-select"
+                            [(ngModel)]="filter.departement"
+                            (change)="applyFilters()">
+                      <option value="">Tous les départements</option>
+                      <option *ngFor="let d of departementsDisponibles" [value]="d">
+                        {{ d }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Spécialité -->
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Spécialité</label>
+                    <select class="form-select"
+                            [(ngModel)]="filter.specialite"
+                            (change)="applyFilters()">
+                      <option value="">Toutes les spécialités</option>
+                      <option *ngFor="let sp of specialitesDisponibles" [value]="sp">
+                        {{ sp }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Statut -->
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Statut</label>
+                    <select class="form-select"
+                            [(ngModel)]="filter.statut"
+                            (change)="applyFilters()">
+                      <option value="">Tous les statuts</option>
+                      <option value="PLANIFIEE">Planifiée</option>
+                      <option value="VALIDEE">Validée</option>
+                      <option value="ANNULEE">Annulée</option>
+                    </select>
+                  </div>
+
+                  <!-- Salle -->
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Salle</label>
+                    <select class="form-select"
+                            [(ngModel)]="filter.salleCode"
+                            (change)="applyFilters()">
+                      <option value="">Toutes les salles</option>
+                      <option *ngFor="let salle of salles" [value]="salle.code">
+                        {{ salle.code }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Date -->
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Date</label>
+                    <input type="date"
+                           class="form-control"
+                           [(ngModel)]="filter.date"
+                           (change)="applyFilters()">
+                  </div>
+
+                  <!-- Sujet / Étudiant -->
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Sujet / Étudiant</label>
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Nom, prénom ou sujet…"
+                           [(ngModel)]="filter.etudiant"
+                           (input)="applyFilters()">
+                  </div>
+
+                  <!-- Heure début -->
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Heure de début</label>
+                    <input type="time"
+                           class="form-control"
+                           [(ngModel)]="filter.heureDebut"
+                           (change)="applyFilters()">
+                  </div>
+
+                  <!-- Heure fin -->
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Heure de fin</label>
+                    <input type="time"
+                           class="form-control"
+                           [(ngModel)]="filter.heureFin"
+                           (change)="applyFilters()">
+                  </div>
+
+                  <!-- Bouton reset -->
+                  <div class="col-lg-3 col-md-6 d-flex align-items-end">
+                    <button class="btn btn-light-brand w-100" (click)="resetFilters()">
+                      <i class="feather-refresh-cw me-2"></i>
+                      Réinitialiser
+                    </button>
+                  </div>
+
+                </div>
+
+                <!-- Badges filtres actifs -->
+                <div class="mt-3 d-flex flex-wrap gap-2" *ngIf="filtresActifsCount > 0">
+                  <small class="text-muted d-flex align-items-center me-1">Actifs :</small>
+
+                  <span *ngIf="filter.groupe" class="badge bg-soft-primary text-primary">
+                    <i class="feather-users me-1"></i>
+                    {{ filter.groupe }}
+                  </span>
+
+                  <span *ngIf="filter.departement" class="badge bg-soft-secondary text-secondary">
+                    <i class="feather-briefcase me-1"></i>
+                    {{ filter.departement }}
+                  </span>
+
+                  <span *ngIf="filter.specialite" class="badge bg-soft-success text-success">
+                    <i class="feather-bookmark me-1"></i>
+                    {{ filter.specialite }}
+                  </span>
+
+                  <span *ngIf="filter.statut" class="badge bg-soft-warning text-warning">
+                    <i class="feather-info me-1"></i>
+                    {{ filter.statut }}
+                  </span>
+
+                  <span *ngIf="filter.salleCode" class="badge bg-soft-primary text-primary">
+                    <i class="feather-map-pin me-1"></i>
+                    {{ filter.salleCode }}
+                  </span>
+
+                  <span *ngIf="filter.date" class="badge bg-soft-primary text-primary">
+                    <i class="feather-calendar me-1"></i>
+                    {{ filter.date }}
+                  </span>
+
+                  <span *ngIf="filter.etudiant" class="badge bg-soft-primary text-primary">
+                    <i class="feather-user me-1"></i>
+                    {{ filter.etudiant }}
+                  </span>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- FIN FILTRES -->
+
+        <!-- VUE ING2 -->
+        <div class="col-lg-12">
+
+          <div class="alert alert-info d-flex align-items-center gap-3 mb-3">
+            <div class="avatar-text avatar-md bg-info text-white rounded-circle">
+              <i class="feather-eye"></i>
+            </div>
+            <div>
+              <strong>Mode ING2 — Consultation des soutenances</strong><br>
+              <span class="fs-13">
+                Cette page affiche uniquement les soutenances des étudiants de deuxième année.
+              </span>
+            </div>
+          </div>
+
+          <div class="card stretch stretch-full">
+            <div class="card-body p-0">
+
+              <div *ngIf="loading" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+              </div>
+
+              <div *ngIf="error" class="alert alert-danger m-3">
+                {{ error }}
+              </div>
+
+              <div class="table-responsive" *ngIf="!loading && !error">
+                <table class="table table-hover" id="soutenanceIng2List">
+                  <thead>
+                    <tr>
+                      <th>Sujet</th>
+                      <th>Étudiant</th>
+                      <th>Groupe</th>
+                      <th>Département</th>
+                      <th>Spécialité</th>
+                      <th>Date &amp; Heure</th>
+                      <th>Salle</th>
+                      <th>Jury</th>
+                      <th>Statut</th>
+                      <th class="text-end">Actions</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr *ngFor="let s of filteredSoutenances" class="single-item">
+
+                      <!-- Sujet -->
+                      <td>
+                        <div class="hstack gap-3">
+                          <div class="avatar-text avatar-md rounded bg-soft-primary text-primary">
+                            <i class="feather-file-text"></i>
+                          </div>
+                          <div>
+                            <span class="text-truncate-1-line fw-bold">
+                              {{ s.sujetDemande || ('Soutenance #' + s.id) }}
+                            </span>
+                            <span class="fs-11 d-block text-muted">
+                              #{{ s.id }} · {{ s.etudiantNiveau || 'ING2' }}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <!-- Étudiant -->
+                      <td>
+                        <span class="fw-semibold">
+                          {{ s.etudiantPrenom || '' }} {{ s.etudiantNom || '' }}
+                        </span>
+                        <span *ngIf="!s.etudiantPrenom && !s.etudiantNom" class="text-muted fs-11">
+                          —
+                        </span>
+                      </td>
+
+                      <!-- Groupe -->
+                      <td>
+                        <span *ngIf="s.etudiantGroupe">{{ s.etudiantGroupe }}</span>
+                        <span *ngIf="!s.etudiantGroupe" class="text-muted fs-11">—</span>
+                      </td>
+
+                      <!-- Département -->
+                      <td>
+                        <span *ngIf="s.etudiantDepartement">{{ s.etudiantDepartement }}</span>
+                        <span *ngIf="!s.etudiantDepartement" class="text-muted fs-11">—</span>
+                      </td>
+
+                      <!-- Spécialité -->
+                      <td>
+                        <span *ngIf="s.etudiantSpecialite">{{ s.etudiantSpecialite }}</span>
+                        <span *ngIf="!s.etudiantSpecialite" class="text-muted fs-11">—</span>
+                      </td>
+
+                      <!-- Date & Heure -->
+                      <td>
+                        <div class="fw-semibold">
+                          {{ s.date | date:'dd/MM/yyyy' }}
+                        </div>
+                        <div class="fs-11 text-muted">
+                          {{ s.heureDebut | slice:0:5 }}
+                          <span *ngIf="s.duree">
+                            — {{ heureFinCalc(s.heureDebut, s.duree) }} ({{ s.duree }} min)
+                          </span>
+                        </div>
+                      </td>
+
+                      <!-- Salle -->
+                      <td>
+                        <div class="hstack gap-2">
+                          <div class="avatar-text avatar-sm bg-soft-primary text-primary">
+                            <i class="feather-map-pin"></i>
+                          </div>
+                          <div>
+                            <span>{{ s.codeSalle || '—' }}</span>
+                            <span *ngIf="s.localisationSalle" class="fs-11 d-block text-muted">
+                              {{ s.localisationSalle }}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <!-- Jury -->
+                      <td>
+                        <div class="img-group lh-0" *ngIf="s.membresJury.length; else noJury">
+                          <span *ngFor="let m of s.membresJury"
+                                class="avatar-text avatar-sm bg-soft-primary text-primary"
+                                [title]="(m.prenomEnseignant || '') + ' ' + (m.nomEnseignant || '')">
+                            {{ initials(m) }}
+                          </span>
+                        </div>
+
+                        <ng-template #noJury>
+                          <span class="text-muted fs-11">Aucun jury</span>
+                        </ng-template>
+                      </td>
+
+                      <!-- Statut -->
+                      <td>
+                        <span [class]="statutBadgeClass(s.statut)">
+                          {{ statutLabel(s.statut) }}
+                        </span>
+                      </td>
+
+                      <!-- Actions -->
+                      <td>
+                        <div class="hstack gap-2 justify-content-end">
+
+                          <a href="javascript:void(0)"
+                             class="avatar-text avatar-md"
+                             title="Consulter"
+                             (click)="openDetail(s)">
+                            <i class="feather feather-eye"></i>
+                          </a>
+
+                          <a href="javascript:void(0)"
+                             class="avatar-text avatar-md"
+                             title="Modifier"
+                             *ngIf="s.statut !== 'VALIDEE'"
+                             (click)="openEdit(s)">
+                            <i class="feather feather-edit-3"></i>
+                          </a>
+
+                          <div class="dropdown">
+                            <a href="javascript:void(0)"
+                               class="avatar-text avatar-md"
+                               data-bs-toggle="dropdown"
+                               data-bs-offset="0,21">
+                              <i class="feather feather-more-horizontal"></i>
+                            </a>
+
+                            <ul class="dropdown-menu">
+
+                            
+
+                          
+
+                              <li class="dropdown-divider"></li>
+
+                              <li *ngIf="s.statut === 'PLANIFIEE'">
+                                <a class="dropdown-item"
+                                   href="javascript:void(0)"
+                                   (click)="changerStatut(s.id!, 'VALIDEE')">
+                                  <i class="feather feather-check me-3"></i>
+                                  Valider
+                                </a>
+                              </li>
+
+                            
+
+                              <li class="dropdown-divider"></li>
+
+                              <li>
+                                <a class="dropdown-item text-danger"
+                                   href="javascript:void(0)"
+                                   (click)="changerStatut(s.id!, 'ANNULEE')">
+                                  <i class="feather feather-x me-3"></i>
+                                  Annuler
+                                </a>
+                              </li>
+
+                            </ul>
+                          </div>
+
+                        </div>
+                      </td>
+
+                    </tr>
+
+                    <tr *ngIf="filteredSoutenances.length === 0">
+                      <td colspan="10" class="text-center py-5 text-muted">
+                        <i class="feather-inbox fs-32 d-block mb-2"></i>
+                        Aucune soutenance ING2 trouvée
+                      </td>
+                    </tr>
+
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+        <!-- FIN VUE ING2 -->
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ================================================================ -->
+<!-- MODAL — Détails soutenance ING2                                  -->
+<!-- ================================================================ -->
+<div class="modal fade"
+     [class.show]="showDetailModal"
+     [style.display]="showDetailModal ? 'block' : 'none'"
+     tabindex="-1"
+     *ngIf="selectedSoutenance">
+
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <div class="hstack gap-3">
+          <div class="avatar-text avatar-lg rounded bg-soft-primary text-primary">
+            <i class="feather-file-text fs-20"></i>
+          </div>
+          <div>
+            <h5 class="modal-title mb-0">
+              {{ selectedSoutenance.sujetDemande || ('Soutenance #' + selectedSoutenance.id) }}
+            </h5>
+            <small class="text-muted">
+              Soutenance ING2 #{{ selectedSoutenance.id }}
+            </small>
+          </div>
+        </div>
+
+        <button type="button" class="btn-close" (click)="closeDetail()"></button>
+      </div>
+
+      <div class="modal-body">
+
+        <div *ngIf="detailLoading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <div *ngIf="detailError" class="alert alert-danger">
+          {{ detailError }}
+        </div>
+
+        <div class="row g-4" *ngIf="!detailLoading">
+
+          <div class="col-12">
+            <span [class]="statutBadgeClass(selectedSoutenance.statut)" class="fs-14 px-3 py-2">
+              <i class="feather-info me-2"></i>
+              {{ statutLabel(selectedSoutenance.statut) }}
+            </span>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-user me-2"></i>
+                  Étudiant
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.etudiantPrenom || '' }}
+                  {{ selectedSoutenance.etudiantNom || '' }}
+                  <span *ngIf="!selectedSoutenance.etudiantPrenom && !selectedSoutenance.etudiantNom">—</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-bookmark me-2"></i>
+                  Niveau
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.etudiantNiveau || 'ING2' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-users me-2"></i>
+                  Groupe
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.etudiantGroupe || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-briefcase me-2"></i>
+                  Département
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.etudiantDepartement || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-layers me-2"></i>
+                  Spécialité
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.etudiantSpecialite || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-calendar me-2"></i>
+                  Date
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.date | date:'EEEE dd MMMM yyyy':'':'fr' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-clock me-2"></i>
+                  Horaire
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.heureDebut | slice:0:5 }}
+                  <span *ngIf="selectedSoutenance.duree">
+                    — {{ heureFinCalc(selectedSoutenance.heureDebut, selectedSoutenance.duree) }}
+                    <small class="text-muted">
+                      ({{ selectedSoutenance.duree }} min)
+                    </small>
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-map-pin me-2"></i>
+                  Salle
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.codeSalle || '—' }}
+                </p>
+                <small class="text-muted" *ngIf="selectedSoutenance.localisationSalle">
+                  {{ selectedSoutenance.localisationSalle }}
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-file-text me-2"></i>
+                  Sujet de stage
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedSoutenance.sujetDemande || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <h6 class="fw-bold mb-3">
+              <i class="feather-users me-2"></i>
+              Membres du jury
+            </h6>
+
+            <div class="row g-2" *ngIf="selectedSoutenance.membresJury.length; else noJuryDetail">
+              <div class="col-md-4" *ngFor="let m of selectedSoutenance.membresJury">
+                <div class="card border-0 bg-light">
+                  <div class="card-body py-2 px-3 hstack gap-2">
+                    <div class="avatar-text avatar-sm bg-soft-primary text-primary">
+                      {{ initials(m) }}
+                    </div>
+                    <span class="fw-semibold fs-13">
+                      {{ m.prenomEnseignant }} {{ m.nomEnseignant }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <ng-template #noJuryDetail>
+              <div class="text-center py-3 text-muted border rounded">
+                <i class="feather-users fs-24 d-block mb-1"></i>
+                Aucun membre de jury assigné
+              </div>
+            </ng-template>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light-brand" (click)="closeDetail()">
+          Fermer
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade"
+     [class.show]="showDetailModal"
+     *ngIf="showDetailModal"
+     (click)="closeDetail()">
+</div>

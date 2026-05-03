@@ -202,7 +202,7 @@
                 <div class="card mb-4 stretch stretch-full">
                   <div class="card-body p-0">
                     <div class="d-flex align-items-center border-bottom p-3 gap-3">
-                      <img [src]="photos[u.id!]" alt="Photo" class="rounded-circle"
+                      <img [src]="photos[u.id!]|| defaultPhoto" alt="Photo" class="rounded-circle"
                            style="width:40px;height:40px;object-fit:cover;">
                       <div class="flex-grow-1 overflow-hidden">
                         <span class="d-block fs-13 fw-500 text-truncate">{{ u.prenom }} {{ u.nom }}</span>

@@ -1,0 +1,514 @@
+<main class="nxl-container apps-container apps-storage">
+  <div class="nxl-content without-header nxl-full-content">
+
+    <div class="main-content d-flex">
+      <div class="content-area" data-scrollbar-target="#psScrollbarInit">
+
+        <!-- HEADER -->
+        <div class="content-area-header sticky-top">
+          <div class="page-header-left d-flex align-items-center gap-2">
+
+            <a href="javascript:void(0);" class="app-sidebar-open-trigger me-2">
+              <i class="feather-align-left fs-20"></i>
+            </a>
+
+            <div>
+              <h5 class="mb-0">Étudiants</h5>
+              <small class="text-muted">
+                Liste des étudiants et suivi des stages
+              </small>
+            </div>
+
+          </div>
+
+          <div class="page-header-right ms-auto">
+            <div class="hstack gap-2">
+
+              <!-- Recherche -->
+              <div class="hstack">
+                <a href="javascript:void(0)"
+                   class="search-form-open-toggle"
+                   (click)="toggleSearch()">
+                  <div class="avatar-text avatar-md"
+                       data-bs-toggle="tooltip"
+                       data-bs-trigger="hover"
+                       title="Rechercher">
+                    <i class="feather-search"></i>
+                  </div>
+                </a>
+
+                <form class="search-form" [style.display]="isSearchOpen ? 'block' : 'none'">
+                  <div class="search-form-inner">
+                    <a href="javascript:void(0)"
+                       class="search-form-close-toggle"
+                       (click)="toggleSearch()">
+                      <div class="avatar-text avatar-md"
+                           data-bs-toggle="tooltip"
+                           data-bs-trigger="hover"
+                           title="Fermer">
+                        <i class="feather-arrow-left"></i>
+                      </div>
+                    </a>
+
+                    <input type="search"
+                           class="py-3 px-0 border-0 w-100"
+                           placeholder="Rechercher un étudiant..."
+                           autocomplete="off"
+                           [value]="searchTerm"
+                           (input)="onSearch($any($event.target).value)">
+                  </div>
+                </form>
+              </div>
+
+              <!-- Stats -->
+              <a href="javascript:void(0)"
+                 class="d-flex d-none d-sm-block"
+                 (click)="toggleStats()">
+                <div class="avatar-text avatar-md"
+                     title="Afficher/Masquer les statistiques"
+                     [style.background]="showStats ? 'var(--bs-primary-bg-subtle)' : ''">
+                  <i class="feather-bar-chart"
+                     [style.color]="showStats ? 'var(--bs-primary)' : ''"></i>
+                </div>
+              </a>
+
+              <!-- Filtres -->
+              <a href="javascript:void(0)"
+                 class="d-flex d-none d-sm-block position-relative"
+                 (click)="toggleFilters()">
+                <div class="avatar-text avatar-md"
+                     title="Filtres"
+                     [style.background]="showFilters ? 'var(--bs-primary-bg-subtle)' : ''">
+                  <i class="feather-filter"
+                     [style.color]="showFilters ? 'var(--bs-primary)' : ''"></i>
+                </div>
+
+                <span *ngIf="filtresActifsCount > 0"
+                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                      style="font-size:9px">
+                  {{ filtresActifsCount }}
+                </span>
+              </a>
+
+              <!-- Grid View -->
+              <a href="javascript:void(0)"
+                 class="d-flex d-none d-sm-block"
+                 (click)="setGridView()">
+                <div class="avatar-text avatar-md"
+                     title="Vue grille"
+                     [style.background]="isGridView ? 'var(--bs-primary-bg-subtle)' : ''">
+                  <i class="feather-grid"
+                     [style.color]="isGridView ? 'var(--bs-primary)' : ''"></i>
+                </div>
+              </a>
+
+              <!-- List View -->
+              <a href="javascript:void(0)"
+                 class="d-flex d-none d-sm-block"
+                 (click)="setListView()">
+                <div class="avatar-text avatar-md"
+                     title="Vue liste"
+                     [style.background]="!isGridView ? 'var(--bs-primary-bg-subtle)' : ''">
+                  <i class="feather-list"
+                     [style.color]="!isGridView ? 'var(--bs-primary)' : ''"></i>
+                </div>
+              </a>
+
+              <!-- Refresh -->
+              <a href="javascript:void(0)"
+                 class="d-flex d-none d-sm-block"
+                 (click)="loadEtudiants()">
+                <div class="avatar-text avatar-md" title="Actualiser">
+                  <i class="feather-refresh-cw"></i>
+                </div>
+              </a>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="content-area-body">
+
+          <!-- Loading -->
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-3 mb-0">Chargement des étudiants...</p>
+          </div>
+
+          <!-- Error -->
+          <div *ngIf="!loading && errorMessage" class="alert alert-danger">
+            {{ errorMessage }}
+          </div>
+
+          <ng-container *ngIf="!loading && !errorMessage">
+
+            <!-- STATS -->
+            <div class="row mb-4" *ngIf="showStats">
+
+              <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fs-11 text-muted text-uppercase mb-1">
+                          Total étudiants
+                        </div>
+                        <div class="fs-20 fw-bold text-dark">
+                          {{ totalEtudiants }}
+                        </div>
+                      </div>
+                      <div class="avatar-text avatar-lg bg-primary text-white">
+                        <i class="feather-users"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fs-11 text-muted text-uppercase mb-1">
+                          Avec stage
+                        </div>
+                        <div class="fs-20 fw-bold text-success">
+                          {{ etudiantsAvecStage }}
+                        </div>
+                      </div>
+                      <div class="avatar-text avatar-lg bg-success text-white">
+                        <i class="feather-check-circle"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full border border-danger">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fs-11 text-muted text-uppercase mb-1">
+                          Sans stage
+                        </div>
+                        <div class="fs-20 fw-bold text-danger">
+                          {{ etudiantsSansStage }}
+                        </div>
+                        <div class="fs-11 text-muted">
+                          {{ pourcentageSansStage }}%
+                        </div>
+                      </div>
+                      <div class="avatar-text avatar-lg bg-danger text-white">
+                        <i class="feather-alert-triangle"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xxl-3 col-md-6">
+                <div class="card stretch stretch-full">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <div class="fs-11 text-muted text-uppercase mb-1">
+                          Résultat filtré
+                        </div>
+                        <div class="fs-20 fw-bold text-info">
+                          {{ totalFiltres }}
+                        </div>
+                      </div>
+                      <div class="avatar-text avatar-lg bg-info text-white">
+                        <i class="feather-filter"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- FILTRES -->
+            <div class="card mb-4" *ngIf="showFilters">
+              <div class="card-body">
+
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h6 class="fw-bold mb-0">
+                    <i class="feather-filter me-2"></i>
+                    Filtres étudiants
+                  </h6>
+
+                  <span class="badge bg-soft-primary text-primary fs-12">
+                    {{ etudiantsFiltres.length }} / {{ etudiants.length }} étudiant(s)
+                  </span>
+                </div>
+
+                <div class="row g-3">
+
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Niveau</label>
+                    <select class="form-select"
+                            [(ngModel)]="filter.niveau"
+                            (change)="appliquerFiltres()">
+                      <option value="">Tous les niveaux</option>
+                      <option *ngFor="let n of niveauxDisponibles" [value]="n">
+                        {{ n }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Département</label>
+                    <select class="form-select"
+                            [(ngModel)]="filter.departement"
+                            (change)="appliquerFiltres()">
+                      <option value="">Tous départements</option>
+                      <option *ngFor="let d of departementsDisponibles" [value]="d">
+                        {{ d }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Spécialité</label>
+                    <select class="form-select"
+                            [(ngModel)]="filter.specialite"
+                            (change)="appliquerFiltres()">
+                      <option value="">Toutes spécialités</option>
+                      <option *ngFor="let s of specialitesDisponibles" [value]="s">
+                        {{ s }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Groupe</label>
+                    <select class="form-select"
+                            [(ngModel)]="filter.groupe"
+                            (change)="appliquerFiltres()">
+                      <option value="">Tous groupes</option>
+                      <option *ngFor="let g of groupesDisponibles" [value]="g">
+                        {{ g }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Statut stage</label>
+                    <select class="form-select"
+                            [(ngModel)]="filter.statutStage"
+                            (change)="appliquerFiltres()">
+                      <option value="">Tous</option>
+                      <option value="AVEC_STAGE">Avec stage</option>
+                      <option value="SANS_STAGE">Sans stage</option>
+                    </select>
+                  </div>
+
+                  <div class="col-lg-3 col-md-6 d-flex align-items-end">
+                    <button class="btn btn-light-brand w-100"
+                            type="button"
+                            (click)="resetFiltres()">
+                      <i class="feather-refresh-cw me-2"></i>
+                      Réinitialiser
+                    </button>
+                  </div>
+
+                </div>
+
+                <div class="mt-3 d-flex flex-wrap gap-2" *ngIf="filtresActifsCount > 0">
+                  <small class="text-muted d-flex align-items-center me-1">
+                    Actifs :
+                  </small>
+
+                  <span *ngIf="searchTerm" class="badge bg-soft-primary text-primary">
+                    <i class="feather-search me-1"></i>
+                    {{ searchTerm }}
+                  </span>
+
+                  <span *ngIf="filter.niveau" class="badge bg-soft-info text-info">
+                    <i class="feather-layers me-1"></i>
+                    {{ filter.niveau }}
+                  </span>
+
+                  <span *ngIf="filter.departement" class="badge bg-soft-secondary text-secondary">
+                    <i class="feather-briefcase me-1"></i>
+                    {{ filter.departement }}
+                  </span>
+
+                  <span *ngIf="filter.specialite" class="badge bg-soft-success text-success">
+                    <i class="feather-bookmark me-1"></i>
+                    {{ filter.specialite }}
+                  </span>
+
+                  <span *ngIf="filter.groupe" class="badge bg-soft-primary text-primary">
+                    <i class="feather-users me-1"></i>
+                    {{ filter.groupe }}
+                  </span>
+
+                  <span *ngIf="filter.statutStage === 'AVEC_STAGE'" class="badge bg-soft-success text-success">
+                    <i class="feather-check-circle me-1"></i>
+                    Avec stage
+                  </span>
+
+                  <span *ngIf="filter.statutStage === 'SANS_STAGE'" class="badge bg-soft-danger text-danger">
+                    <i class="feather-alert-triangle me-1"></i>
+                    Sans stage
+                  </span>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Message vide -->
+            <div *ngIf="etudiantsFiltres.length === 0" class="text-center py-5">
+              <i class="feather-users fs-40 text-muted d-block mb-2"></i>
+              <span class="text-muted fs-14">Aucun étudiant trouvé</span>
+            </div>
+
+            <!-- LIST VIEW -->
+            <div class="card mb-0" *ngIf="!isGridView && etudiantsFiltres.length > 0">
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col"></th>
+                        <th scope="col">Nom</th>
+                        <th scope="col">Prénom</th>
+                        <th scope="col">Niveau</th>
+                        <th scope="col">Groupe</th>
+                        <th scope="col">Spécialité</th>
+                        <th scope="col">Département</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Stage</th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      <tr *ngFor="let e of etudiantsFiltres"
+                          [class.table-danger]="!e.hasStage">
+
+                        <td>
+                          <img class="avatar-image"
+                               [src]="getPhoto(e.id)"
+                               alt="photo">
+                        </td>
+
+                        <td>{{ e.nom || '—' }}</td>
+                        <td>{{ e.prenom || '—' }}</td>
+                        <td>{{ e.niveau || '—' }}</td>
+                        <td>{{ e.groupe || '—' }}</td>
+                        <td>{{ e.specialite || '—' }}</td>
+                        <td>{{ e.departement || '—' }}</td>
+                        <td>{{ e.email || '—' }}</td>
+
+                        <td>
+                          <span [class]="statutStageBadgeClass(e)">
+                            {{ statutStageLabel(e) }}
+                          </span>
+
+                          <div class="fs-11 text-muted mt-1" *ngIf="e.sujetDemande">
+                            {{ e.sujetDemande }}
+                          </div>
+                        </td>
+
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- GRID VIEW -->
+            <div *ngIf="isGridView && etudiantsFiltres.length > 0">
+              <div class="row">
+
+                <div class="col-xxl-3 col-sm-6" *ngFor="let e of etudiantsFiltres">
+                  <div class="card mb-4 stretch stretch-full"
+                       [class.border-danger]="!e.hasStage"
+                       [class.border-2]="!e.hasStage">
+
+                    <div class="card-body p-0">
+
+                      <!-- Header photo + nom -->
+                      <div class="d-flex align-items-center border-bottom p-3 gap-3"
+                           [class.bg-soft-danger]="!e.hasStage">
+
+                        <div class="avatar-image">
+                          <img [src]="getPhoto(e.id)"
+                               alt="Photo"
+                               class="img-fluid"
+                               style="width:40px;height:40px;">
+                        </div>
+
+                        <div class="flex-grow-1">
+                          <span class="d-block fs-13 fw-500">
+                            {{ e.prenom || '' }} {{ e.nom || '' }}
+                          </span>
+
+                          <span class="fs-11 text-muted">
+                            {{ e.niveau || '—' }} / {{ e.groupe || '—' }}
+                          </span>
+                        </div>
+
+                        <span [class]="statutStageBadgeClass(e)">
+                          {{ !e.hasStage ? 'Sans stage' : 'Stage' }}
+                        </span>
+
+                      </div>
+
+                      <!-- Infos étudiant -->
+                      <div class="p-3">
+
+                        <p class="fs-12 text-muted mb-1">
+                          <i class="feather-book me-1" style="font-size:11px"></i>
+                          {{ e.specialite || '—' }}
+                        </p>
+
+                        <p class="fs-12 text-muted mb-1">
+                          <i class="feather-layers me-1" style="font-size:11px"></i>
+                          {{ e.departement || '—' }}
+                        </p>
+
+                        <p class="fs-12 text-muted mb-1">
+                          <i class="feather-mail me-1" style="font-size:11px"></i>
+                          {{ e.email || '—' }}
+                        </p>
+
+                        <p class="fs-12 mb-0" *ngIf="e.hasStage">
+                          <i class="feather-check-circle me-1 text-success" style="font-size:11px"></i>
+                          <span class="text-success">
+                            {{ e.statutDemande || 'Avec stage' }}
+                          </span>
+                        </p>
+
+                        <p class="fs-12 mb-0" *ngIf="!e.hasStage">
+                          <i class="feather-alert-triangle me-1 text-danger" style="font-size:11px"></i>
+                          <span class="text-danger fw-semibold">
+                            Étudiant sans stage
+                          </span>
+                        </p>
+
+                        <div class="mt-2 fs-11 text-muted" *ngIf="e.sujetDemande">
+                          Sujet : {{ e.sujetDemande }}
+                        </div>
+
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </ng-container>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>

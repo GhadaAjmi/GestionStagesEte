@@ -1,0 +1,517 @@
+<main class="nxl-container">
+  <div class="nxl-content">
+
+    <!-- ══ PAGE HEADER ══════════════════════════════════════════ -->
+    <div class="page-header">
+      <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+          <h5 class="m-b-10">
+            <span class="badge bg-primary me-2">ING1</span>
+            Planifier une soutenance — Planification groupée
+          </h5>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══ BADGE INFO MODE ══════════════════════════════════════ -->
+    <div class="px-4 mb-3">
+      <div class="alert alert-primary d-flex align-items-center gap-3 mb-0">
+        <div class="avatar-text avatar-md bg-primary text-white rounded-circle">
+          <i class="feather-users fs-5"></i>
+        </div>
+
+        <div>
+          <strong>Mode ING1 — Planification groupée</strong><br>
+          <span class="fs-13">
+            Un seul jury, une seule salle et une seule date pour
+            <strong>tous les étudiants du groupe sélectionné</strong>.
+          </span>
+        </div>
+      </div>
+    </div>
+
+   
+
+    <div class="main-content">
+      <form [formGroup]="form">
+        <div class="row">
+          <div class="col-lg-12">
+
+            <!-- ══ SÉLECTION GROUPE ══════════════════════════════ -->
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title mb-0">
+                  <i class="feather-users me-2 text-primary"></i>
+                  Sélection du groupe ING1
+                </h5>
+              </div>
+
+              <div class="card-body">
+                <div class="row g-4">
+
+                  <!-- Département -->
+                  <div class="col-lg-4">
+                    <label class="form-label">
+                      Département <span class="text-danger">*</span>
+                    </label>
+
+                    <select class="form-control"
+                            formControlName="departement"
+                            [class.is-invalid]="isInvalid('departement')">
+                      <option value="">Sélectionner un département</option>
+                      <option *ngFor="let d of departements" [value]="d">
+                        {{ d }}
+                      </option>
+                    </select>
+
+                    <div class="invalid-feedback">Département requis</div>
+                  </div>
+
+                  <!-- Spécialité -->
+                  <div class="col-lg-4">
+                    <label class="form-label">
+                      Spécialité <span class="text-danger">*</span>
+                    </label>
+
+                    <select class="form-control"
+                            formControlName="specialite"
+                            [class.is-invalid]="isInvalid('specialite')"
+                            [attr.disabled]="specialites.length === 0 ? true : null">
+                      <option value="">
+                        {{ form.get('departement')?.value ? 'Sélectionner une spécialité' : "Choisissez d'abord un département" }}
+                      </option>
+
+                      <option *ngFor="let s of specialites" [value]="s">
+                        {{ s }}
+                      </option>
+                    </select>
+
+                    <div class="invalid-feedback">Spécialité requise</div>
+                  </div>
+
+                  <!-- Groupe -->
+                  <div class="col-lg-4">
+                    <label class="form-label">
+                      Groupe <span class="text-danger">*</span>
+                    </label>
+
+                    <select class="form-control"
+                            formControlName="groupe"
+                            [class.is-invalid]="isInvalid('groupe')"
+                            [attr.disabled]="groupes.length === 0 ? true : null">
+                      <option value="">
+                        {{ form.get('specialite')?.value ? 'Sélectionner un groupe' : "Choisissez d'abord une spécialité" }}
+                      </option>
+
+                      <option *ngFor="let g of groupes" [value]="g">
+                        {{ g }}
+                      </option>
+                    </select>
+
+                    <div class="invalid-feedback">Groupe requis</div>
+                  </div>
+
+                  <!-- Liste étudiants du groupe -->
+                  <div class="col-lg-12" *ngIf="etudiantsGroupe.length > 0">
+                    <div class="alert alert-primary d-flex align-items-center gap-2 mb-0">
+                      <i class="feather-users fs-5"></i>
+                      <span>
+                        <strong>{{ etudiantsGroupe.length }} étudiant(s)</strong>
+                        sans soutenance dans ce groupe — une soutenance sera créée pour chacun.
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-12" *ngIf="form.get('groupe')?.value && etudiantsGroupe.length === 0">
+                    <div class="alert alert-warning d-flex align-items-center gap-2 mb-0">
+                      <i class="feather-alert-triangle fs-5"></i>
+                      <span>Aucun étudiant sans soutenance dans ce groupe.</span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- ══ DATE, HORAIRE & SALLE ═════════════════════════ -->
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title mb-0">
+                  <i class="feather-calendar me-2 text-primary"></i>
+                  Date, horaire et salle — communs au groupe
+                </h5>
+              </div>
+
+              <div class="card-body">
+                <div class="row g-4">
+
+                  <!-- Date -->
+                  <div class="col-lg-3">
+                    <label class="form-label">
+                      Date <span class="text-danger">*</span>
+                    </label>
+
+                    <input type="date"
+                           class="form-control"
+                           formControlName="date"
+                           [class.is-invalid]="isInvalid('date')">
+
+                    <div class="invalid-feedback">Date requise</div>
+                  </div>
+
+                  <!-- Heure début -->
+                  <div class="col-lg-3">
+                    <label class="form-label">
+                      Heure de début <span class="text-danger">*</span>
+                    </label>
+
+                    <input type="time"
+                           class="form-control"
+                           formControlName="heureDebut"
+                           [class.is-invalid]="isInvalid('heureDebut')">
+
+                    <div class="invalid-feedback">Heure requise</div>
+                  </div>
+
+                  <!-- Durée -->
+                  <div class="col-lg-3">
+                    <label class="form-label">
+                      Durée (min) <span class="text-danger">*</span>
+                    </label>
+
+                    <input type="number"
+                           class="form-control"
+                           formControlName="duree"
+                           min="30"
+                           max="240"
+                           placeholder="Ex: 60"
+                           [class.is-invalid]="isInvalid('duree')">
+
+                    <div class="form-text">Entre 30 et 240 min</div>
+                    <div class="invalid-feedback">Durée invalide (30–240 min)</div>
+                  </div>
+
+                  <!-- Heure fin -->
+                  <div class="col-lg-3">
+                    <label class="form-label">Heure de fin estimée</label>
+
+                    <input type="text"
+                           class="form-control bg-light fw-bold text-primary"
+                           readonly
+                           [value]="getHeureFin()">
+                  </div>
+
+                  <!-- Salle -->
+                  <div class="col-lg-6">
+                    <label class="form-label">
+                      Salle — commune <span class="text-danger">*</span>
+                    </label>
+
+                    <select class="form-control"
+                            formControlName="salleId"
+                            [class.is-invalid]="isInvalid('salleId')">
+                      <option value="">Sélectionner une salle</option>
+
+                      <optgroup label="Annexe">
+                        <option *ngFor="let s of sallesAnnexes" [value]="s.id">
+                          {{ s.code }}
+                        </option>
+                      </optgroup>
+
+                      <optgroup label="Principal">
+                        <option *ngFor="let s of sallesPrincipales" [value]="s.id">
+                          {{ s.code }}
+                        </option>
+                      </optgroup>
+                    </select>
+
+                    <div class="invalid-feedback">Veuillez sélectionner une salle</div>
+                  </div>
+
+                  <!-- Bouton disponibilité -->
+                  <div class="col-lg-3 d-flex align-items-end">
+                    <button type="button"
+                            class="btn btn-light-brand w-100"
+                            [disabled]="loadingDisponibilite"
+                            (click)="verifierDisponibilite()">
+                      <span *ngIf="loadingDisponibilite" class="spinner-border spinner-border-sm me-2"></span>
+                      <i *ngIf="!loadingDisponibilite" class="feather-search me-2"></i>
+                      {{ loadingDisponibilite ? 'Vérification...' : 'Vérifier disponibilité' }}
+                    </button>
+                  </div>
+
+                  <!-- Résultat disponibilité -->
+                  <div class="col-lg-12" *ngIf="disponibiliteResult">
+                    <div class="alert d-flex align-items-start gap-2 mb-0"
+                         [class.alert-success]="disponibiliteResult.disponible"
+                         [class.alert-danger]="!disponibiliteResult.disponible">
+                      <i class="feather-check-circle fs-5" *ngIf="disponibiliteResult.disponible"></i>
+                      <i class="feather-x-circle fs-5" *ngIf="!disponibiliteResult.disponible"></i>
+
+                      <div>
+                        <strong>
+                          {{ disponibiliteResult.disponible ? 'Salle disponible ✓' : 'Salle non disponible ✗' }}
+                        </strong>
+
+                        <ul class="mb-0 mt-1" *ngIf="disponibiliteResult.conflits?.length">
+                          <li *ngFor="let c of disponibiliteResult.conflits">
+                            {{ c }}
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- ══ JURY ══════════════════════════════════════════ -->
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title mb-0">
+                  <i class="feather-award me-2 text-primary"></i>
+                  Composition du jury — commun au groupe
+                </h5>
+              </div>
+
+              <div class="card-body">
+
+                <!-- Nombre de membres du jury -->
+                <div class="row g-4 mb-4">
+                  <div class="col-lg-4">
+                    <label class="form-label">
+                      Nombre de membres du jury <span class="text-danger">*</span>
+                    </label>
+
+                    <input type="number"
+                           class="form-control"
+                           formControlName="nbJury"
+                           min="1"
+                           max="5"
+                           placeholder="Ex: 2"
+                           [class.is-invalid]="isInvalid('nbJury')">
+
+                    <div class="form-text">
+                      Choisissez entre 1 et 5 membres.
+                    </div>
+
+                    <div class="invalid-feedback">
+                      Le nombre de membres du jury est obligatoire.
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- Alerte doublons -->
+                <div class="alert alert-warning d-flex align-items-center gap-2 mb-3"
+                     *ngIf="hasDuplicateJury()">
+                  <i class="feather-alert-triangle"></i>
+                  <span>Le même enseignant est sélectionné deux fois.</span>
+                </div>
+
+                <!-- FORMARRAY JURY -->
+                <div formArrayName="membresJury">
+                  <div class="row g-4">
+
+                    <div class="col-lg-6"
+                         *ngFor="let ctrl of membresJury.controls; let i = index">
+
+                      <label class="form-label">
+                        Membre du jury {{ i + 1 }}
+                        <span class="text-danger">*</span>
+
+                        <span class="badge ms-2"
+                              [ngClass]="i === 0 ? 'bg-warning text-dark' : 'bg-info text-white'">
+                          {{ getRoleJury(i) }}
+                        </span>
+                      </label>
+
+                      <select class="form-control"
+                              [formControlName]="i"
+                              (change)="updateJuryPreviews()"
+                              [class.is-invalid]="isInvalidJury(i)">
+                        <option value="">Sélectionner un enseignant</option>
+
+                        <option *ngFor="let e of enseignants" [value]="e.id">
+                          {{ getEnseignantDisplay(e) }}
+                        </option>
+                      </select>
+
+                      <div class="invalid-feedback">
+                        Veuillez sélectionner le membre {{ i + 1 }}
+                      </div>
+
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- Aucun champ jury si nbJury invalide -->
+                <div class="alert alert-danger mt-3"
+                     *ngIf="membresJury.length === 0 && form.get('nbJury')?.touched">
+                  <i class="feather-alert-circle me-2"></i>
+                  Veuillez saisir un nombre de membres du jury entre 1 et 5.
+                </div>
+
+                <!-- ══ APERÇU JURY ══ -->
+                <div class="col-lg-12 mt-3"
+                     *ngIf="juryPreviews.length > 0">
+
+                  <div class="card border">
+                    <div class="card-header bg-soft-primary py-2">
+                      <h6 class="mb-0 fs-13">Aperçu du jury</h6>
+                    </div>
+
+                    <div class="card-body">
+                      <div class="row g-3">
+
+                        <ng-container *ngFor="let j of juryPreviews; let i = index">
+                          <div class="col-md-6" *ngIf="j">
+
+                            <div class="d-flex align-items-center gap-3 p-3 border rounded h-100">
+
+                              <div class="avatar-text avatar-lg rounded-circle"
+                                   [ngClass]="i === 0 ? 'bg-warning text-white' : 'bg-info text-white'">
+                                {{ j.prenom?.charAt(0) }}{{ j.nom?.charAt(0) }}
+                              </div>
+
+                              <div>
+                                <div class="fs-11 text-muted">
+                                  Membre {{ i + 1 }}
+                                  —
+                                  <span [ngClass]="i === 0 ? 'text-warning' : 'text-info'">
+                                    {{ getRoleJury(i) }}
+                                  </span>
+                                </div>
+
+                                <div class="fw-semibold">
+                                  {{ j.grade }} {{ j.prenom }} {{ j.nom }}
+                                  <div class="fs-11 text-muted">{{ j.domaine }}</div>
+                                </div>
+                              </div>
+
+                            </div>
+
+                          </div>
+                        </ng-container>
+
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+
+            <!-- ══ RÉCAPITULATIF ══════════════════════════════════ -->
+            <div class="card border-dashed border-2"
+                 *ngIf="form.get('groupe')?.value && form.get('date')?.value">
+              <div class="card-header bg-soft-primary">
+                <h5 class="card-title mb-0 text-primary">
+                  <i class="feather-check-circle me-2"></i>Récapitulatif
+                </h5>
+              </div>
+
+              <div class="card-body">
+                <div class="row g-3 fs-13">
+
+                  <div class="col-md-2">
+                    <div class="text-muted">Niveau</div>
+                    <div class="fw-semibold text-primary">ING1</div>
+                  </div>
+
+                  <div class="col-md-2">
+                    <div class="text-muted">Groupe</div>
+                    <div class="fw-semibold">{{ form.get('groupe')?.value }}</div>
+                  </div>
+
+                  <div class="col-md-2">
+                    <div class="text-muted">Étudiants</div>
+                    <div class="fw-semibold">{{ etudiantsGroupe.length }}</div>
+                  </div>
+
+                  <div class="col-md-2">
+                    <div class="text-muted">Date</div>
+                    <div class="fw-semibold">{{ form.get('date')?.value }}</div>
+                  </div>
+
+                  <div class="col-md-2">
+                    <div class="text-muted">Créneau</div>
+                    <div class="fw-semibold">
+                      {{ form.get('heureDebut')?.value }} → {{ getHeureFin() }}
+                    </div>
+                  </div>
+
+                  <div class="col-md-2">
+                    <div class="text-muted">Jury</div>
+                    <div class="fw-semibold">
+                      {{ form.get('nbJury')?.value || 0 }} membre(s)
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="row g-3 fs-13 mt-2">
+                  <div class="col-md-4">
+                    <div class="text-muted">Département</div>
+                    <div class="fw-semibold">{{ form.get('departement')?.value || '—' }}</div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="text-muted">Spécialité</div>
+                    <div class="fw-semibold">{{ form.get('specialite')?.value || '—' }}</div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="text-muted">Salle</div>
+                    <div class="fw-semibold">
+                      {{ form.get('salleId')?.value || '—' }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+ <!-- ══ ALERTS ═══════════════════════════════════════════════ -->
+    <div class="px-4" *ngIf="successMessage || errorMessage">
+      <div class="alert alert-success d-flex align-items-center gap-2" *ngIf="successMessage">
+        <i class="feather-check-circle fs-5"></i>
+        <span>{{ successMessage }}</span>
+      </div>
+
+      <div class="alert alert-danger d-flex align-items-center gap-2" *ngIf="errorMessage">
+        <i class="feather-alert-circle fs-5"></i>
+        <span>{{ errorMessage }}</span>
+      </div>
+    </div>
+            <!-- ══ ACTIONS ════════════════════════════════════════ -->
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex gap-2 justify-content-end">
+
+                  <button type="button" class="btn btn-light" (click)="retour()">
+                    <i class="feather-x me-2"></i>Annuler
+                  </button>
+
+                  <button type="button"
+                          class="btn btn-primary"
+                          [disabled]="loading"
+                          (click)="soumettre()">
+                    <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                    <i *ngIf="!loading" class="feather-check me-2"></i>
+                    {{ loading ? 'Enregistrement...' : 'Planifier pour tout le groupe ING1' }}
+                  </button>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</main>

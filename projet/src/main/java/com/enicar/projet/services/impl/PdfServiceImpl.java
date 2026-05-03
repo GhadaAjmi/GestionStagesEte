@@ -2,6 +2,9 @@ package com.enicar.projet.services.impl;
 
 import com.enicar.projet.dtos.ConventionRequestDTO;
 import com.enicar.projet.dtos.LettreRequestDTO;
+import com.enicar.projet.entities.*;
+import com.enicar.projet.exceptions.NotFoundException;
+import com.enicar.projet.repositories.EntrepriseRepository;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -13,10 +16,6 @@ import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 
-import com.enicar.projet.entities.DemandeStage;
-import com.enicar.projet.entities.Document;
-import com.enicar.projet.entities.StatutDocument;
-import com.enicar.projet.entities.TypeDocument;
 import com.enicar.projet.repositories.DemandeStageRepository;
 import com.enicar.projet.repositories.DocumentRepository;
 
@@ -41,6 +40,8 @@ public class PdfServiceImpl implements PdfService {
 
     private final DocumentRepository  documentDemandeRepository;
     private final DemandeStageRepository demandeStageRepo;
+    private final EntrepriseRepository entrepriseRepository;
+
 
     // ================================================================
     // LETTRE D'AFFECTATION — public API
@@ -53,6 +54,12 @@ public class PdfServiceImpl implements PdfService {
         return saveDocument(pdfBytes, TypeDocument.LETTRE_AFFECTATION,
                 "lettre_affectation.pdf", demandeStageId);
     }
+    @Override
+    public Document generateAvenant(Long demandeStageId) throws Exception {
+        byte[] pdfBytes = buildAvenant(demandeStageId);
+        return saveDocument(pdfBytes, TypeDocument.PROLONGATION,
+                "avenant-prolongation.pdf", demandeStageId);
+    }
 
     /** Signe une lettre existante (récupérée en base) et retourne le PDF signé. */
     @Override
@@ -60,7 +67,7 @@ public class PdfServiceImpl implements PdfService {
         Document doc = documentDemandeRepository.findById(documentId)
                 .orElseThrow(() -> new RuntimeException("Document introuvable : " + documentId));
 
-        byte[] pdfSigne = ajouterSignature(doc.getContenu(), 1, 390f, 130f, 120f, 60f);
+        byte[] pdfSigne = ajouterSignature(doc.getContenu(),0, 1, 390f, 170f, 120f, 60f);
 
         doc.setContenu(pdfSigne);
         doc.setNomFichier("lettre_affectation_signee.pdf");
@@ -76,18 +83,41 @@ public class PdfServiceImpl implements PdfService {
 
     @Override
     public Document generateConvention(Long demandeStageId, ConventionRequestDTO dto) throws Exception {
-        byte[] pdfBytes = buildConvention(dto);
-        return saveDocument(pdfBytes, TypeDocument.CONVENTION,
-                "convention.pdf", demandeStageId);
-    }
 
+        DemandeStage demande = demandeStageRepo.findById(demandeStageId)
+                .orElseThrow(() -> new NotFoundException("Demande de stage introuvable : " + demandeStageId));
+
+        Entreprise entreprise = new Entreprise();
+
+        entreprise.setNom(dto.getEntreprise());
+        entreprise.setAdresse(dto.getAdresseEntreprise());
+        entreprise.setRepresentant(dto.getRepresentantEntreprise());
+        entreprise.setEmail(dto.getEmailEntreprise());
+        entreprise.setTelephone(dto.getTelephoneEntreprise());
+        entreprise.setFax(dto.getFaxEntreprise());
+
+        Entreprise savedEntreprise = entrepriseRepository.save(entreprise);
+
+        demande.setEntreprise(savedEntreprise);
+
+        demandeStageRepo.save(demande);
+
+        byte[] pdfBytes = buildConvention(dto);
+
+        return saveDocument(
+                pdfBytes,
+                TypeDocument.CONVENTION,
+                "convention-stage.pdf",
+                demandeStageId
+        );
+    }
     /** Signe une convention existante (récupérée en base) et retourne le PDF signé. */
     @Override
     public byte[] signerConvention(Long documentId) throws Exception {
         Document doc = documentDemandeRepository.findById(documentId)
                 .orElseThrow(() -> new RuntimeException("Document introuvable : " + documentId));
 
-        byte[] pdfSigne = ajouterSignature(doc.getContenu(), 1, 390f, 80f, 120f, 60f);
+        byte[] pdfSigne = ajouterSignature(doc.getContenu(),1, 1, 390f, 80f, 120f, 60f);
 
         doc.setContenu(pdfSigne);
         doc.setNomFichier("convention_signee.pdf");
@@ -96,13 +126,29 @@ public class PdfServiceImpl implements PdfService {
         documentDemandeRepository.save(doc);
         return pdfSigne;
     }
+    /** Signe une convention existante (récupérée en base) et retourne le PDF signé. */
+    @Override
+    public byte[] signerProlongation(Long documentId) throws Exception {
+        Document doc = documentDemandeRepository.findById(documentId)
+                .orElseThrow(() -> new RuntimeException("Document introuvable : " + documentId));
+
+        byte[] pdfSigne = ajouterSignature(doc.getContenu(), 2,1, 390f, 80f, 120f, 60f);
+
+        doc.setContenu(pdfSigne);
+        doc.setNomFichier("prolongation_signee.pdf");
+        doc.setStatut(StatutDocument.VALIDE);
+        doc.setDateDecision(LocalDateTime.now());
+        documentDemandeRepository.save(doc);
+        return pdfSigne;
+    }
+
 
     // ================================================================
     // BUILD INTERNE — LETTRE  (canvas / coordonnées absolues)
     // ================================================================
 
     private byte[] buildLettre(LettreRequestDTO dto) throws Exception {
-        byte[] templateBytes = loadTemplate("lettreaffectionwriter.pdf");
+        byte[] templateBytes = loadTemplate("lettre-affectation.pdf");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfDocument pdfDoc = new PdfDocument(
@@ -140,7 +186,7 @@ public class PdfServiceImpl implements PdfService {
     // ================================================================
 
     private byte[] buildConvention(ConventionRequestDTO dto) throws Exception {
-        byte[] templateBytes = loadTemplate("convention.pdf");
+        byte[] templateBytes = loadTemplate("convention-stage.pdf");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfDocument pdfDoc = new PdfDocument(
@@ -185,7 +231,7 @@ public class PdfServiceImpl implements PdfService {
      * (x, y, width, height) sur la page {@code pageNumber}, et retourne
      * le nouveau PDF en bytes.
      */
-    private byte[] ajouterSignature(byte[] pdfOriginal,
+    private byte[] ajouterSignature(byte[] pdfOriginal,int type,
                                     int    pageNumber,
                                     float  x, float y,
                                     float  width, float height) throws Exception {
@@ -194,7 +240,7 @@ public class PdfServiceImpl implements PdfService {
                 new PdfReader(new java.io.ByteArrayInputStream(pdfOriginal)),
                 new PdfWriter(baos));
 
-        drawSignatureBlock(pdfDoc, pageNumber, x, y, width, height);
+        drawSignatureBlock(pdfDoc,type, pageNumber, x, y, width, height);
 
         pdfDoc.close();
         return baos.toByteArray();
@@ -207,7 +253,7 @@ public class PdfServiceImpl implements PdfService {
      *   "(signature et cachet)"
      *   + image signature.png
      */
-    private void drawSignatureBlock(PdfDocument pdfDoc,
+    private void drawSignatureBlock(PdfDocument pdfDoc,int type,
                                     int   pageNumber,
                                     float x, float y,
                                     float width, float height) throws Exception {
@@ -216,15 +262,30 @@ public class PdfServiceImpl implements PdfService {
         PdfFont   fontN  = PdfFontFactory.createFont(StandardFonts.HELVETICA);
         PdfFont   fontB  = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
         float     lh     = 14f;
+if(type==0 ){
+//lettre d affectation
+    writeTextColor(canvas, fontN, 10f, new DeviceRgb(0, 0, 0),
+            todayFormatted(), x+45, y + height + lh * 5);
 
-        writeTextColor(canvas, fontN, 10f, new DeviceRgb(0, 0, 0),
-                "A Tunis, le " + todayFormatted(), x, y + height + lh * 3);
+}
 
-        writeTextColor(canvas, fontB, 10f, new DeviceRgb(0, 0, 0),
+else if (type==1) {
+    //convention
+    writeTextColor(canvas, fontN, 10f, new DeviceRgb(0, 0, 0),
+            todayFormatted(), x+65, y + height + lh * 4);
+
+}else {
+//prolongation
+    writeTextColor(canvas, fontN, 10f, new DeviceRgb(0, 0, 0),
+            todayFormatted(), x+85, y + height + lh * 5);
+
+}
+
+        /*  writeTextColor(canvas, fontB, 10f, new DeviceRgb(0, 0, 0),
                 "Directrice de l\u2019ENICarthage",  x, y + height + lh * 2);
 
         writeTextColor(canvas, fontN,  9f, new DeviceRgb(80, 80, 80),
-                "(signature et cachet)",             x, y + height + lh);
+                "(signature et cachet)",             x, y + height + lh);*/
 
         // Image de signature
         InputStream imgStream  = new ClassPathResource("static/signature.png").getInputStream();
@@ -258,6 +319,76 @@ public class PdfServiceImpl implements PdfService {
         return documentDemandeRepository.save(doc);
     }
 
+    public byte[] buildAvenant(Long demandeId) throws Exception {
+        byte[] templateBytes = loadTemplate("avenant-prolongation.pdf");
+
+        DemandeStage demande = demandeStageRepo.findById(demandeId)
+                .orElseThrow(() -> new RuntimeException("Demande introuvable"));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PdfDocument pdfDoc = new PdfDocument(
+                new PdfReader(new java.io.ByteArrayInputStream(templateBytes)),
+                new PdfWriter(baos));
+
+        PdfPage   page   = pdfDoc.getFirstPage();
+        PdfCanvas canvas = new PdfCanvas(page);
+        PdfFont   font   = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+        PdfFont   fontB  = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+
+        float h = page.getPageSize().getHeight();
+        System.out.println("Avenant page height: " + h);
+
+        // ── Nom étudiant dans le texte principal ──────────────────────
+        if (demande.getEtudiant() != null) {
+            writeText(canvas, fontB, 10,
+                    demande.getEtudiant().getPrenom() + " " + demande.getEtudiant().getNom(),
+                    185, h - 210);
+
+            // Spécialité
+            writeText(canvas, font, 10,
+                    demande.getEtudiant().getSpecialite() != null
+                            ? demande.getEtudiant().getSpecialite() : "",
+                    65, h - 223);
+        }
+
+        // ── Entreprise ────────────────────────────────────────────────
+        if (demande.getEntreprise() != null) {
+            writeText(canvas, font, 10,
+                    demande.getEntreprise().getNom(),
+                    55, h - 235);
+        }
+
+        // ── Date début ────────────────────────────────────────────────
+        if (demande.getDateDebut() != null) {
+            writeText(canvas, font, 10,
+                    demande.getDateDebut().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                    460, h - 235);
+        }
+
+        if (demande.getDateFin() != null) {
+            writeText(canvas, font, 10,
+                    demande.getDateFin().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                    80, h - 248);
+        }
+
+
+        // ── Nouvelle date fin (prolongation) — "jusqu'au" ─────────────
+        if (demande.getProlongation() != null
+                && demande.getProlongation().getDateFinProlongee() != null) {
+            writeText(canvas, font, 10,
+                    demande.getProlongation().getDateFinProlongee()
+                            .format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                    90, h - 300);
+        }
+
+
+
+
+
+
+        pdfDoc.close();
+        return baos.toByteArray();
+    }
     // ================================================================
     // UTILITAIRES  (portés depuis PdfGenerationService)
     // ================================================================

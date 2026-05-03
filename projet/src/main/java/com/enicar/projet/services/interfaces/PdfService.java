@@ -22,6 +22,8 @@ public interface PdfService {
      */
     byte[] signerLettre(Long documentId) throws Exception;
 
+    byte[] signerProlongation(Long documentId) throws Exception;
+
     // ── Convention de stage ───────────────────────────────────────────
 
     /**
@@ -37,4 +39,6 @@ public interface PdfService {
      * met à jour le statut à VALIDE et retourne le PDF signé en bytes.
      */
     byte[] signerConvention(Long documentId) throws Exception;
+
+    Document generateAvenant(Long demandeStageId) throws Exception;
 }

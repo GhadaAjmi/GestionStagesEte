@@ -2,6 +2,7 @@ package com.enicar.projet.services.interfaces;
 
 
 import com.enicar.projet.dtos.DemandeStageDTO;
+import com.enicar.projet.entities.StatutDemande;
 
 import java.util.List;
 
@@ -15,6 +16,6 @@ public interface DemandeStageService {
     DemandeStageDTO  findById(Long id);
 
     void delete(Long id);
-    public DemandeStageDTO update(Long id, DemandeStageDTO dto) ;
-
+     DemandeStageDTO update(Long id, DemandeStageDTO dto) ;
+    DemandeStageDTO updateStatut(Long id, StatutDemande statut);
     }

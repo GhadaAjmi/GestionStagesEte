@@ -1,0 +1,1295 @@
+<main class="nxl-container">
+  <div class="nxl-content">
+
+    <!-- [ page-header ] start -->
+    <div class="page-header">
+      <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Demande de Stage</h5>
+        </div>
+      </div>
+      <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+          <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+            <span class="badge fs-12 px-3 py-2" [ngClass]="getStatutBadgeClass(demande.statut)">
+              {{ getStatutLabel(demande.statut) }}
+            </span>
+          </div>
+        </div>
+        <div class="d-md-none d-flex align-items-center">
+          <a href="javascript:void(0)" class="page-header-right-open-toggle">
+            <i class="feather-align-right fs-20"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    <!-- [ page-header ] end -->
+
+    <!-- [ Main Content ] start -->
+    <div class="main-content" *ngIf="!loading; else loadingTpl">
+      <div class="row" *ngIf="demande && etudiant; else notFoundTpl">
+
+        <!-- ============================================================= -->
+        <!-- COL GAUCHE : Profil étudiant                                   -->
+        <!-- ============================================================= -->
+        <div class="col-xxl-4 col-xl-5">
+          <div class="card stretch stretch-full">
+            <div class="card-body">
+              <div class="mb-4 text-center">
+                <div class="wd-100 ht-100 mx-auto mb-3 position-relative">
+                  <div class="avatar-image wd-100 ht-100 border border-4 border-gray-3 d-flex align-items-center justify-content-center bg-soft-primary rounded-circle">
+                    <ng-container *ngIf="photoUrl; else initials">
+                      <img [src]="photoUrl" class="wd-100 ht-100 rounded-circle" alt="Photo">
+                    </ng-container>
+                    <ng-template #initials>
+                      <span class="fs-24 fw-bold text-primary text-uppercase">
+                        {{ etudiant.prenom?.charAt(0) }}{{ etudiant.nom?.charAt(0) }}
+                      </span>
+                    </ng-template>
+                  </div>
+                  <div class="wd-10 ht-10 bg-success rounded-circle position-absolute"
+                       style="top:76%;right:6px;border:2px solid #fff"></div>
+                </div>
+                <a href="javascript:void(0);" class="fs-15 fw-bold d-block">
+                  {{ etudiant.prenom }} {{ etudiant.nom }}
+                </a>
+                <a href="javascript:void(0);" class="fs-12 fw-normal text-muted d-block">
+                  {{ etudiant.email }}
+                </a>
+                <div class="d-flex flex-wrap gap-2 justify-content-center mt-3">
+                  <span class="badge bg-soft-primary text-primary fs-11" *ngIf="etudiant.niveau">
+                    {{ etudiant.niveau }}
+                  </span>
+                  <span class="badge bg-soft-warning text-warning fs-11" *ngIf="etudiant.specialite">
+                    {{ etudiant.specialite }}
+                  </span>
+                  <span class="badge bg-soft-teal text-teal fs-11" *ngIf="etudiant.groupe">
+                    Gr. {{ etudiant.groupe }}
+                  </span>
+                </div>
+              </div>
+
+              <ul class="list-unstyled mb-4">
+                <li class="hstack justify-content-between mb-3" *ngIf="etudiant.cin">
+                  <span class="text-muted fw-medium hstack gap-3">
+                    <i class="feather-credit-card"></i> CIN
+                  </span>
+                  <span class="fw-semibold">{{ etudiant.cin }}</span>
+                </li>
+                <li class="hstack justify-content-between mb-3" *ngIf="etudiant.departement">
+                  <span class="text-muted fw-medium hstack gap-3">
+                    <i class="feather-layers"></i> Département
+                  </span>
+                  <span class="fw-semibold">{{ etudiant.departement }}</span>
+                </li>
+                <li class="hstack justify-content-between mb-3" *ngIf="etudiant.specialite">
+                  <span class="text-muted fw-medium hstack gap-3">
+                    <i class="feather-cpu"></i> Spécialité
+                  </span>
+                  <span class="fw-semibold">{{ etudiant.specialite }}</span>
+                </li>
+                <li class="hstack justify-content-between mb-3" *ngIf="etudiant.groupe">
+                  <span class="text-muted fw-medium hstack gap-3">
+                    <i class="feather-users"></i> Groupe
+                  </span>
+                  <span class="fw-semibold">{{ etudiant.groupe }}</span>
+                </li>
+                <li class="hstack justify-content-between mb-0">
+                  <span class="text-muted fw-medium hstack gap-3">
+                    <i class="feather-mail"></i> Email
+                  </span>
+                  <a href="mailto:{{ etudiant.email }}" class="fw-semibold text-truncate" style="max-width:180px">
+                    {{ etudiant.email }}
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <!-- FIN COL GAUCHE -->
+
+        <!-- ============================================================= -->
+        <!-- COL DROITE : Onglets de gestion                               -->
+        <!-- ============================================================= -->
+        <div class="col-xxl-8 col-xl-7">
+          <div class="card border-top-0">
+
+            <!-- NAV TABS -->
+            <div class="card-header p-0">
+              <ul class="nav nav-tabs flex-nowrap w-100 text-center customers-nav-tabs" id="demandeTab" role="tablist">
+                <li class="nav-item border-top" role="presentation">
+                  <a href="javascript:void(0);" class="nav-link px-2 py-2"
+                     [class.active]="activeTab === 'general'" (click)="setTab('general')">
+                    <i class="feather-info me-1"></i><span class="nav-label">Général</span>
+                  </a>
+                </li>
+                <li class="nav-item border-top" role="presentation">
+                  <a href="javascript:void(0);" class="nav-link px-2 py-2"
+                     [class.active]="activeTab === 'documents'" (click)="setTab('documents')">
+                    <i class="feather-file-text me-1"></i><span class="nav-label">Documents</span>
+                  </a>
+                </li>
+                <li class="nav-item border-top" role="presentation" *ngIf="canSeeJournalTravauxSoutenance">
+                  <a href="javascript:void(0);" class="nav-link px-2 py-2"
+                     [class.active]="activeTab === 'journal'" (click)="setTab('journal')">
+                    <i class="feather-book me-1"></i><span class="nav-label">Journal</span>
+                  </a>
+                </li>
+                <li class="nav-item border-top" role="presentation">
+                  <a href="javascript:void(0);" class="nav-link px-2 py-2"
+                     [class.active]="activeTab === 'attestation'" (click)="setTab('attestation')">
+                    <i class="feather-award me-1"></i><span class="nav-label">Attestation</span>
+                  </a>
+                </li>
+                <li class="nav-item border-top" role="presentation">
+                  <a href="javascript:void(0);" class="nav-link px-2 py-2"
+                     [class.active]="activeTab === 'prolongation'" (click)="setTab('prolongation')">
+                    <i class="feather-calendar me-1"></i><span class="nav-label">Prolongation</span>
+                  </a>
+                </li>
+                <li class="nav-item border-top" role="presentation" *ngIf="canSeeJournalTravauxSoutenance">
+                  <a href="javascript:void(0);" class="nav-link px-2 py-2"
+                     [class.active]="activeTab === 'travaux'" (click)="setTab('travaux')">
+                    <i class="feather-upload me-1"></i><span class="nav-label">Travaux</span>
+                  </a>
+                </li>
+                <li class="nav-item border-top" role="presentation" *ngIf="canSeeJournalTravauxSoutenance">
+                  <a href="javascript:void(0);" class="nav-link px-2 py-2"
+                     [class.active]="activeTab === 'soutenance'" (click)="setTab('soutenance')">
+                    <i class="feather-monitor me-1"></i><span class="nav-label">Soutenance</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <!-- TAB CONTENT -->
+            <div class="tab-content">
+
+              <!-- ========== TAB: GÉNÉRAL ========== -->
+              <div class="tab-pane fade p-4"
+                   [class.show]="activeTab === 'general'"
+                   [class.active]="activeTab === 'general'">
+
+                <!-- HEADER -->
+                <div class="d-flex align-items-start justify-content-between mb-4">
+                  <div>
+                    <h5 class="fw-bold mb-1">{{ demande.sujet }}</h5>
+                    <p class="text-muted fs-13 mb-0">{{ demande.description }}</p>
+                  </div>
+                  <button class="btn btn-sm btn-light-brand ms-3 flex-shrink-0"
+                          (click)="modifierStatut()"
+                          *ngIf="canManageDemande">
+                    <i class="feather-edit-2 me-1"></i> Modifier statut
+                  </button>
+                </div>
+
+                <!-- Phase progress bar -->
+                <div class="row g-2 mb-3">
+
+                  <!-- Phase 1 : Initiation -->
+                  <div class="col-12 col-md-4">
+                    <div class="card border-0 p-3 h-100"
+                         [ngClass]="phase1Complete ? 'bg-soft-success border-success-subtle' : 'bg-soft-primary border-primary-subtle'">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="fw-500 fs-13"
+                              [ngClass]="phase1Complete ? 'text-success' : 'text-primary'">
+                          Phase 1 — Initiation
+                        </span>
+                        <i class="feather-check-circle text-success" *ngIf="phase1Complete"></i>
+                        <i class="feather-clock text-primary" *ngIf="!phase1Complete"></i>
+                      </div>
+                      <div class="text-muted fs-12 mb-2">Convention & Lettre d'affectation</div>
+                      <div class="d-flex gap-1 flex-wrap">
+                        <span class="badge fs-11" *ngFor="let doc of docsPhase1"
+                              [ngClass]="getDocBadgeClass(doc.statut)">
+                          {{ getDocLabel(doc.type) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Phase 2 : Stage en cours -->
+                  <div class="col-12 col-md-4" *ngIf="canSeeJournalTravauxSoutenance">
+                    <div class="card border-0 p-3 h-100"
+                         [ngClass]="phase2Active ? 'bg-soft-primary border-primary-subtle' :
+                                    phase2Complete ? 'bg-soft-success border-success-subtle' : ''">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="fw-500 fs-13"
+                              [ngClass]="phase2Active ? 'text-primary' : phase2Complete ? 'text-success' : 'text-muted'">
+                          Phase 2 — Stage en cours
+                        </span>
+                        <i class="feather-activity text-primary" *ngIf="phase2Active"></i>
+                        <i class="feather-check-circle text-success" *ngIf="phase2Complete"></i>
+                      </div>
+                      <div class="text-muted fs-12 mb-2">Journal quotidien</div>
+                      <div class="d-flex gap-1 flex-wrap">
+                        <span class="badge bg-soft-info text-info fs-11">
+                          {{ journaux.length }} entrées journal
+                        </span>
+                        <span class="badge fs-11" *ngFor="let doc of docsPhase2"
+                              [ngClass]="getDocBadgeClass(doc.statut)">
+                          {{ getDocLabel(doc.type) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Phase 3 : Clôture -->
+                  <div class="col-12 col-md-4" *ngIf="canSeeJournalTravauxSoutenance">
+                    <div class="card border-0 p-3 h-100"
+                         [ngClass]="phase3Active ? 'bg-soft-primary border-primary-subtle' :
+                                    phase3Complete ? 'bg-soft-success border-success-subtle' : ''">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="fw-500 fs-13"
+                              [ngClass]="phase3Active ? 'text-primary' : phase3Complete ? 'text-success' : 'text-muted'">
+                          Phase 3 — Clôture & soutenance
+                        </span>
+                        <i class="feather-check-circle text-success" *ngIf="phase3Complete"></i>
+                      </div>
+                      <div class="text-muted fs-12 mb-2">Attestation/  Rapport / Présentation / Poster</div>
+                      <div class="d-flex gap-1 flex-wrap">
+                        <span class="badge bg-soft-secondary text-secondary fs-11" *ngIf="!phase3Active && !phase3Complete">
+                          En attente
+                        </span>
+                        <span class="badge fs-11" *ngFor="let doc of docsPhase3"
+                              [ngClass]="getDocBadgeClass(doc.statut)">
+                          {{ getDocLabel(doc.type) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- KPI Cards -->
+                <div class="row g-3 mb-4">
+
+                  <!-- Docs à signer / déposer -->
+                  <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm h-100 p-3">
+                      <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="rounded-2 bg-soft-warning p-2 flex-shrink-0">
+                          <i class="feather-file-minus text-warning fs-18"></i>
+                        </div>
+                        <div class="fs-22 fw-500 text-warning">{{ docsEnAttente }}</div>
+                      </div>
+                      <div class="text-muted fs-12 mb-2">Docs à signer / déposer</div>
+                      <div class="d-flex gap-1 flex-wrap">
+                        <span class="badge bg-soft-warning text-warning fs-11"
+                              *ngFor="let doc of documentsEnAttente">
+                          {{ getDocLabel(doc.type) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Docs rejetés -->
+                  <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm h-100 p-3">
+                      <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="rounded-2 bg-soft-danger p-2 flex-shrink-0">
+                          <i class="feather-x-circle text-danger fs-18"></i>
+                        </div>
+                        <div class="fs-22 fw-500 text-danger">{{ docsRejetes }}</div>
+                      </div>
+                      <div class="text-muted fs-12 mb-2">Doc(s) rejeté(s)</div>
+                      <div class="d-flex gap-1 flex-wrap">
+                        <span class="badge bg-soft-danger text-danger fs-11"
+                              *ngFor="let doc of documentsRejetes">
+                          {{ getDocLabel(doc.type) }}
+                        </span>
+                        <span class="text-muted fs-11" *ngIf="docsRejetes === 0">Aucun</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Progression documentaire -->
+                  <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm h-100 p-3">
+                      <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="rounded-2 bg-soft-success p-2 flex-shrink-0">
+                          <i class="feather-check-circle text-success fs-18"></i>
+                        </div>
+                        <div class="fs-22 fw-500 text-success">
+                          {{ docsValides }}
+                          <span class="fs-13 fw-normal text-muted">/ {{ documents.length }}</span>
+                        </div>
+                      </div>
+                      <div class="text-muted fs-12 mb-2">Documents validés</div>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="progress flex-grow-1" style="height: 5px;">
+                          <div class="progress-bar bg-success" [style.width]="tauxCompletion + '%'"></div>
+                        </div>
+                        <span class="text-success fs-11 fw-500">{{ tauxCompletion }}%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Prochaine action -->
+                  <div class="col-6 col-md-3">
+                    <div class="card border-0 shadow-sm h-100 p-3">
+                      <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="rounded-2 bg-soft-info p-2 flex-shrink-0">
+                          <i class="feather-clock text-info fs-18"></i>
+                        </div>
+                        <div class="fs-13 fw-500 text-info lh-sm">{{ getProchaineAction() }}</div>
+                      </div>
+                      <div class="text-muted fs-12 mb-2">Prochaine action requise</div>
+                      <span class="badge bg-soft-info text-info fs-11">Phase {{ getPhaseActuelle() }} / 3</span>
+                    </div>
+                  </div>
+
+                </div>
+                <!-- Statut + Date -->
+                <div class="d-flex align-items-center gap-3 mb-4">
+                  <span class="badge fs-12 px-3 py-2" [ngClass]="getStatutBadgeClass(demande.statut)">
+                    <i class="feather-activity me-1"></i>{{ getStatutLabel(demande.statut) }}
+                  </span>
+                  <span class="text-muted fs-12">
+                    <i class="feather-clock me-1"></i>Soumis le {{ demande.dateDemande | date:'dd MMMM yyyy à HH:mm' }}
+                  </span>
+                </div>
+
+                <div class="row g-4">
+                  <!-- Détails -->
+                  <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                      <div class="card-header bg-transparent border-bottom py-3">
+                        <h6 class="fw-bold mb-0"><i class="feather-info me-2 text-primary"></i>Détails de la demande</h6>
+                      </div>
+                      <div class="card-body p-3">
+                        <div class="row g-0 mb-3">
+                          <div class="col-5 text-muted fs-13">Type </div>
+                          <div class="col-7 fw-semibold fs-13">{{ demande.type || '—' }}</div>
+                        </div>
+                        <div class="row g-0 mb-3">
+                          <div class="col-5 text-muted fs-13">Entreprise</div>
+                          <div class="col-7 fw-semibold fs-13">{{ demande.entreprise || '—' }}</div>
+                        </div>
+                        <div class="row g-0 mb-3">
+                          <div class="col-5 text-muted fs-13">Date Début</div>
+                          <div class="col-7 fw-semibold fs-13">{{ demande.dateDebut || '—' }} </div>
+                        </div>
+                        <div class="row g-0 mb-3">
+                          <div class="col-5 text-muted fs-13">Date Fin</div>
+                          <div class="col-7 fw-semibold fs-13 text-truncate">{{ demande.dateFin|| '—' }} </div>
+                        </div>
+                        <div class="row g-0">
+                          <div class="col-5 text-muted fs-13">Prolongation</div>
+                          <div class="col-7 fs-13">
+
+                            <!-- Pas de prolongation -->
+                            <span *ngIf="!prolongation"
+                                  class="badge bg-soft-secondary text-secondary">
+                              Non
+                            </span>
+
+                            <!-- Prolongation existante -->
+                            <ng-container *ngIf="prolongation">
+
+                              <!-- Badge statut prolongation -->
+                              <span class="badge"
+                                    [ngClass]="{
+                                      'bg-soft-success text-success': prolongation.statut === 'APPROUVEE',
+                                      'bg-soft-danger  text-danger' : prolongation.statut === 'REFUSEE' || prolongation.statut === 'REJETEE',
+                                      'bg-soft-warning text-warning': prolongation.statut === 'EN_ATTENTE'
+                                    }">
+                                {{ prolongation.statut === 'APPROUVEE' ? 'Approuvée'
+                                 : prolongation.statut === 'REFUSEE' || prolongation.statut === 'REJETEE' ? 'Refusée'
+                                 : 'En attente' }}
+                              </span>
+
+                              <!-- Infos supplémentaires si approuvée -->
+                              <div *ngIf="prolongation.statut === 'APPROUVEE'"
+                                   class="mt-2 p-2 rounded bg-soft-success"
+                                   style="border-left: 3px solid var(--bs-success);">
+                                <div class="d-flex align-items-center gap-2 fs-12 text-success-emphasis mb-1">
+                                  <i class="feather-calendar fs-12"></i>
+                                  <span class="text-muted">Nouvelle date de fin</span>
+                                </div>
+                                <div class="fw-semibold fs-13">
+                                  {{ prolongation.dateFinProlongee | date:'dd MMMM yyyy' }}
+                                </div>
+
+                              </div>
+
+                            </ng-container>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Historique -->
+                  <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100">
+                      <div class="card-header bg-transparent border-bottom py-3">
+                        <h6 class="fw-bold mb-0"><i class="feather-git-commit me-2 text-primary"></i>Historique d'avancement</h6>
+                      </div>
+                      <div class="card-body p-3">
+                        <ul class="list-unstyled mb-0">
+                          <li *ngFor="let entree of historiqueTimeline"
+                              class="d-flex gap-3 mb-3">
+
+                            <!-- Icône -->
+                            <div class="timeline-icon rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                 style="width:32px; height:32px;"
+                                 [ngClass]="{
+                                   'bg-soft-success text-success': !entree.estRejet && entree.acteur === 'responsable',
+                                   'bg-soft-danger  text-danger' :  entree.estRejet,
+                                   'bg-soft-primary text-primary': entree.acteur === 'etudiant'
+                                 }">
+                              <i [class]="entree.icone + ' fs-13'"></i>
+                            </div>
+
+                            <!-- Contenu -->
+                            <div class="flex-grow-1">
+                              <div class="fw-500 fs-13">{{ entree.titre }}</div>
+                              <div class="text-muted fs-12">{{ entree.description }}</div>
+                              <div class="text-muted fs-11 mt-1">
+                                <i class="feather-clock me-1"></i>
+                                {{ entree.date | date:'dd MMMM yyyy à HH:mm' }}
+                              </div>
+                            </div>
+
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Actions rapides -->
+                <div class="d-flex flex-wrap gap-2 pt-3 mt-3 border-top border-top-dashed border-gray-5">
+                  <!-- Approuver/Rejeter : uniquement si demande SOUMISE -->
+                  <button class="btn btn-success"
+                          (click)="approuverDemande()"
+                          *ngIf="canManageDemande && demande.statut === 'SOUMISE'">
+                    <i class="feather-check-circle me-2"></i> Approuver
+                  </button>
+                  <button class="btn btn-light-danger"
+                          (click)="rejeterDemande()"
+                          *ngIf="canManageDemande && demande.statut === 'SOUMISE'">
+                    <i class="feather-x-circle me-2"></i> Rejeter
+                  </button>
+                 
+                </div>
+              </div>
+
+              <!-- ========== TAB: DOCUMENTS ========== -->
+              <div class="tab-pane fade"
+                   [class.show]="activeTab === 'documents'"
+                   [class.active]="activeTab === 'documents'">
+
+                <!-- Convention de stage -->
+                <div class="px-4 pt-4 pb-2">
+                  <div class="mb-3 d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold mb-0">
+                      <i class="feather-file-text me-2 text-primary"></i>Convention de stage
+                    </h5>
+                  </div>
+
+                  <div *ngIf="convention; else conventionVide">
+                    <div class="border border-dashed border-gray-5 rounded p-3 mb-3">
+                      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div class="hstack gap-3">
+                          <div class="wd-45 ht-45 rounded-2 bg-soft-danger d-flex align-items-center justify-content-center">
+                            <i class="feather-file text-danger fs-20"></i>
+                          </div>
+                          <div>
+                            <div class="fw-semibold">{{ convention.nomFichier || 'convention_stage_DS-' + demande.id + '.pdf' }}</div>
+                            <div class="fs-12 text-muted mt-1">Déposé le {{ convention.dateDepot | date:'dd MMM yyyy' }}</div>
+                            <div class="mt-1">
+                              <!-- VALIDE: show signed badge only -->
+                              <ng-container *ngIf="convention.statut === 'VALIDE'; else convStatutBadge">
+                                <span class="badge bg-success-subtle text-success">
+                                  <i class="feather-check-circle me-1"></i>Signé
+                                </span>
+                              </ng-container>
+                              <ng-template #convStatutBadge>
+                                <span class="badge" [ngClass]="getDocStatutClass(convention.statut)">
+                                  {{ convention.statut }}
+                                </span>
+                              </ng-template>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="hstack gap-2">
+                          <button class="btn btn-sm btn-light-brand" (click)="voirDocument('convention', convention.id)">
+                            <i class="feather-eye me-1"></i> Voir
+                          </button>
+                          <button class="btn btn-sm btn-light-brand" (click)="telechargerDocument('convention', convention.id)">
+                            <i class="feather-download me-1"></i> Télécharger
+                          </button>
+
+                          <!-- Action buttons only when NOT validated -->
+                          <ng-container *ngIf="canManageDocuments && convention.statut !== 'VALIDE'">
+                            <button class="btn btn-sm btn-primary" (click)="signerDocument(convention.id, 'convention')">
+                              <i class="feather-pen-tool me-1"></i> Signer
+                            </button>
+                            <button class="btn btn-sm btn-danger" (click)="openRefusModal(convention.id, 'convention')">
+                              <i class="feather-x-circle me-1"></i> Refuser
+                            </button>
+                          </ng-container>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <ng-template #conventionVide>
+                    <div class="text-center py-4 border border-dashed border-gray-5 rounded">
+                      <i class="feather-file-minus fs-40 text-muted d-block mb-2"></i>
+                      <p class="text-muted mb-0">Aucune convention déposée par l'étudiant.</p>
+                    </div>
+                  </ng-template>
+                </div>
+
+                <hr class="mx-4 my-0">
+
+                <!-- Lettre d'affectation -->
+                <div class="px-4 py-4">
+                  <div class="mb-3 d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold mb-0">
+                      <i class="feather-mail me-2 text-primary"></i>Lettre d'affectation
+                    </h5>
+                  </div>
+
+                  <div *ngIf="lettreAffectation; else lettreNonGeneree">
+                    <div class="border border-dashed border-gray-5 rounded p-3">
+                      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div class="hstack gap-3">
+                          <div class="wd-45 ht-45 rounded-2 bg-soft-primary d-flex align-items-center justify-content-center">
+                            <i class="feather-file text-primary fs-20"></i>
+                          </div>
+                          <div>
+                            <div class="fw-semibold">{{ lettreAffectation.nomFichier || 'lettre_affectation_DS-' + demande.id + '.pdf' }}</div>
+                            <div class="fs-12 text-muted mt-1">Déposée le {{ lettreAffectation.dateDepot | date:'dd MMM yyyy' }}</div>
+                            <div class="mt-1">
+                              <!-- VALIDE: show signed badge only -->
+                              <ng-container *ngIf="lettreAffectation.statut === 'VALIDE'; else lettreStatutBadge">
+                                <span class="badge bg-success-subtle text-success">
+                                  <i class="feather-check-circle me-1"></i>Signé
+                                </span>
+                              </ng-container>
+                              <ng-template #lettreStatutBadge>
+                                <span class="badge" [ngClass]="getDocStatutClass(lettreAffectation.statut)">
+                                  {{ lettreAffectation.statut }}
+                                </span>
+                              </ng-template>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="hstack gap-2">
+                          <button class="btn btn-sm btn-light-brand" (click)="voirDocument('lettre', lettreAffectation.id)">
+                            <i class="feather-eye me-1"></i> Voir
+                          </button>
+                          <button class="btn btn-sm btn-light-brand" (click)="telechargerDocument('lettre', lettreAffectation.id)">
+                            <i class="feather-download me-1"></i> Télécharger
+                          </button>
+
+                          <!-- Action buttons only when NOT validated -->
+                          <ng-container *ngIf="canManageDocuments && lettreAffectation.statut !== 'VALIDE'">
+                            <button class="btn btn-sm btn-primary" (click)="signerDocument(lettreAffectation.id, 'lettre-affectation')">
+                              <i class="feather-pen-tool me-1"></i> Signer
+                            </button>
+                            <button class="btn btn-sm btn-danger" (click)="openRefusModal(lettreAffectation.id, 'lettre-affectation')">
+                              <i class="feather-x-circle me-1"></i> Refuser
+                            </button>
+                          </ng-container>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <ng-template #lettreNonGeneree>
+                    <div class="text-center py-4 border border-dashed border-gray-5 rounded">
+                      <i class="feather-file-minus fs-40 text-muted d-block mb-2"></i>
+                      <p class="text-muted mb-0">Aucune lettre d'affectation disponible.</p>
+                    </div>
+                  </ng-template>
+                </div>
+              </div>
+
+              <!-- ========== TAB: JOURNAL ========== -->
+              <div class="tab-pane fade"
+                   *ngIf="canSeeJournalTravauxSoutenance"
+                   [class.show]="activeTab === 'journal'"
+                   [class.active]="activeTab === 'journal'">
+                <div class="recent-activity p-4 pb-0">
+
+                  <!-- Header + filtres -->
+                  <div class="mb-4">
+
+                    <!-- Titre + toggle statut -->
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                      <h5 class="fw-bold mb-0">Journal de stage</h5>
+
+                      <div class="d-flex gap-2">
+                        <button class="btn btn-sm rounded-pill"
+                                [ngClass]="filtreJournal === 'all' ? 'btn-secondary' : 'btn-outline-secondary'"
+                                (click)="filtreJournal = 'all'; onStatutChange()">
+                          Toutes
+                          <span class="badge bg-light text-secondary ms-1">{{ journaux.length }}</span>
+                        </button>
+
+                        <button class="btn btn-sm rounded-pill"
+                                [ngClass]="filtreJournal === 'non_vu' ? 'btn-warning text-dark' : 'btn-outline-warning'"
+                                (click)="filtreJournal = 'non_vu';onStatutChange()">
+                          Non vues
+                          <span class="badge ms-1"
+                                [ngClass]="filtreJournal === 'non_vu' ? 'bg-white text-warning' : 'bg-warning-subtle text-warning'">
+                            {{ journauxNonVus }}
+                          </span>
+                        </button>
+
+                        <button class="btn btn-sm rounded-pill"
+                                [ngClass]="filtreJournal === 'vu' ? 'btn-success' : 'btn-outline-success'"
+                                (click)="filtreJournal = 'vu';onStatutChange()">
+                          Vues
+                          <span class="badge ms-1"
+                                [ngClass]="filtreJournal === 'vu' ? 'bg-white text-success' : 'bg-success-subtle text-success'">
+                            {{ journauxVus }}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Strip semaines scrollable -->
+                    <div class="d-flex gap-2 pb-1 week-strip">
+                      <button class="btn btn-sm rounded-pill flex-shrink-0"
+                              [ngClass]="filtreSemaine === 'all' ? 'btn-primary' : 'btn-outline-secondary'"
+                              (click)="filtreSemaine = 'all'; onSemaineChange()">
+                        Toutes les semaines
+                      </button>
+                      <button *ngFor="let s of semaines"
+                              class="btn btn-sm rounded-pill flex-shrink-0"
+                              [ngClass]="filtreSemaine === s.value ? 'btn-primary' : 'btn-outline-secondary'"
+                              (click)="filtreSemaine = s.value; onSemaineChange()">
+                        {{ s.label }}
+                      </button>
+                    </div>
+
+                  </div>
+
+                  <!-- Liste des entrées -->
+                  <ul class="list-unstyled activity-feed" *ngIf="journauxFiltres.length > 0; else journalVide">
+                    <li class="d-flex justify-content-between feed-item"
+                        *ngFor="let entry of journauxFiltres"
+                        [ngClass]="getJournalFeedClass(entry)">
+                      <div class="flex-grow-1">
+                        <span class="text-truncate-1-line lead_date">
+                          {{ entry.date | date:'dd MMM yyyy' }}
+                        </span>
+                        <span class="text">
+                          {{ entry.activitesEtObservations ? (entry.activitesEtObservations | slice:0:100) : '' }}{{ entry.activitesEtObservations && entry.activitesEtObservations.length > 100 ? '...' : '' }}
+                        </span>
+                        <div class="mt-1" *ngIf="entry.commentaireResponsable">
+                          <span class="badge bg-soft-info text-info">
+                            <i class="feather-message-circle me-1"></i>{{ entry.commentaireResponsable }}
+                          </span>
+                        </div>
+                        <div class="mt-1 d-flex gap-1 flex-wrap">
+                          <span class="badge"
+                                [ngClass]="entry.vueResponsable ? 'bg-soft-success text-success' : 'bg-soft-warning text-warning'">
+                            <i class="feather-eye me-1" *ngIf="entry.vueResponsable"></i>
+                            <i class="feather-eye-off me-1" *ngIf="!entry.vueResponsable"></i>
+                            {{ entry.vueResponsable ? 'Vue' : 'Non vue' }}
+                          </span>
+                          <span class="badge ms-1"
+                                [ngClass]="entry.valideResponsable ? 'bg-soft-success text-success' : 'bg-soft-secondary text-secondary'">
+                            {{ entry.valideResponsable ? 'Validée' : 'Non validée' }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="ms-3 d-flex gap-2 align-items-start">
+                        <button class="avatar-text avatar-sm" (click)="marquerVue(entry)"
+                                *ngIf="!entry.vueResponsable" title="Marquer comme vue">
+                          <i class="feather-eye fs-12"></i>
+                        </button>
+                        <button class="avatar-text avatar-sm" (click)="validerJournal(entry)" title="Valider">
+                          <i class="feather-check fs-12"></i>
+                        </button>
+                        <button class="avatar-text avatar-sm" (click)="toggleComment(entry)" title="Commenter">
+                          <i class="feather-message-circle fs-12"></i>
+                        </button>
+                      </div>
+
+                      <!-- Zone commentaire -->
+                      <div class="mt-2 w-100" *ngIf="entry.showCommentBox">
+                        <div class="d-flex gap-2 align-items-start">
+                          <input type="text"
+                                 class="form-control form-control-sm"
+                                 placeholder="Écrire un commentaire..."
+                                 [(ngModel)]="entry.newCommentaire">
+                          <button class="btn btn-sm btn-primary" (click)="envoyerCommentaire(entry)">Envoyer</button>
+                          <button class="btn btn-sm btn-light" (click)="toggleComment(entry)">Annuler</button>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+
+                  <ng-template #journalVide>
+                    <div class="text-center py-5">
+                      <i class="feather-book fs-48 text-muted d-block mb-3"></i>
+                      <p class="text-muted">Aucune entrée dans le journal de stage.</p>
+                    </div>
+                  </ng-template>
+
+                  <!-- ── Section Document Journal (visible si date fin atteinte) ── -->
+                  <ng-container *ngIf="journalDoc">
+                    <hr class="my-4">
+                    <div class="mb-3 d-flex align-items-center justify-content-between">
+                      <h5 class="fw-bold mb-0">
+                        <i class="feather-book-open me-2 text-primary"></i>Document journal de stage
+                      </h5>
+                    </div>
+
+                    <div *ngIf="journalDoc; else journalDocVide">
+                      <div class="border border-dashed border-gray-5 rounded p-3">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                          <div class="hstack gap-3">
+                            <div class="wd-45 ht-45 rounded-2 bg-soft-primary d-flex align-items-center justify-content-center">
+                              <i class="feather-file text-primary fs-20"></i>
+                            </div>
+                            <div>
+                              <div class="fw-semibold">
+                                {{ journalDoc.nomFichier || 'journal_stage_DS-' + demande.id + '.pdf' }}
+                              </div>
+                              <div class="fs-12 text-muted mt-1">
+                                Déposé le {{ journalDoc.dateDepot | date:'dd MMM yyyy' }}
+                              </div>
+                              <div class="mt-1">
+                                <!-- VALIDE -->
+                                <ng-container *ngIf="journalDoc.statut === 'VALIDE'; else journalDocStatutBadge">
+                                  <span class="badge bg-soft-success text-success">
+                                    <i class="feather-check-circle me-1"></i>Valide
+                                  </span>
+                                </ng-container>
+                                <ng-template #journalDocStatutBadge>
+                                  <span class="badge" [ngClass]="getDocStatutClass(journalDoc.statut)">
+                                    {{ journalDoc.statut }}
+                                  </span>
+                                </ng-template>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Actions -->
+                          <div class="hstack gap-2 flex-wrap">
+                            <button class="btn btn-sm btn-light-brand" (click)="voirDocument('journalDoc', journalDoc.id)">
+                              <i class="feather-eye me-1"></i> Voir
+                            </button>
+                            <button class="btn btn-sm btn-light-brand" (click)="telechargerDocument('journalDoc', journalDoc.id)">
+                              <i class="feather-download me-1"></i> Télécharger
+                            </button>
+                            <ng-container *ngIf="canManageDocuments && journalDoc.statut !== 'VALIDE'">
+                              <button class="btn btn-sm btn-success" (click)="validerDocument(journalDoc.id)">
+                                <i class="feather-check-circle me-1"></i> Valider
+                              </button>
+                              <button class="btn btn-sm btn-danger" (click)="openRefusModal(journalDoc.id, 'journal')">
+                                <i class="feather-x-circle me-1"></i> Refuser
+                              </button>
+                            </ng-container>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <ng-template #journalDocVide>
+                      <div class="text-center py-4 border border-dashed border-gray-5 rounded">
+                        <i class="feather-file-minus fs-40 text-muted d-block mb-2"></i>
+                        <p class="text-muted mb-0">Aucun document journal déposé par l'étudiant.</p>
+                      </div>
+                    </ng-template>
+                  </ng-container>
+
+                </div>
+              </div>
+
+              <!-- ========== TAB: ATTESTATION ========== -->
+              <div class="tab-pane fade p-4"
+                   [class.show]="activeTab === 'attestation'"
+                   [class.active]="activeTab === 'attestation'">
+
+                <div class="mb-4 d-flex align-items-center justify-content-between">
+                  <h5 class="fw-bold mb-0">Gestion de l'attestation :</h5>
+                </div>
+
+                <!-- Avertissement si aucune attestation -->
+                <div class="alert alert-soft-warning-message p-4 d-flex mb-4" *ngIf="!attestation">
+                  <div class="me-3"><i class="feather-alert-triangle fs-24"></i></div>
+                  <div>
+                    <p class="fw-bold mb-1">Attestation non encore déposée</p>
+                    <p class="fs-12 text-muted mb-0" *ngIf="!stageTermine(demande.dateFin)">
+                      L'attestation sera disponible après la clôture du stage.
+                    </p>
+                  </div>
+                </div>
+                <!-- Attestation déposée -->
+                <div *ngIf="attestation; else aucuneAttestation">
+                  <div class="border border-dashed border-gray-5 rounded p-3 mb-3">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+                      <!-- INFO ATTENTION -->
+                      <div class="hstack gap-3">
+                        <div class="wd-50 ht-50 rounded-2 bg-soft-success d-flex align-items-center justify-content-center">
+                          <i class="feather-award text-success fs-22"></i>
+                        </div>
+                        <div>
+                          <div class="fw-semibold">{{ attestation.nomFichier || 'attestation_stage_DS-' + demande.id + '.pdf' }}</div>
+                          <div class="fs-12 text-muted mt-1">
+                            Déposée le {{ attestation.dateDepot | date:'dd MMM yyyy' }}
+                          </div>
+                          <div class="mt-1">
+                            <span class="badge" [ngClass]="getDocStatutClass(attestation.statut)">
+                              <i class="feather-pen-tool me-1"></i>{{ attestation.statut }}
+                            </span>
+                            <!-- Message en retard si stage terminé mais attestation pas validée -->
+                            <span class="badge bg-warning ms-2" *ngIf="stageTermine(demande.dateFin) && attestation.statut !== 'VALIDE'">
+                              En retard
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- BOUTONS -->
+                      <div class="hstack gap-2">
+                        <button class="btn btn-sm btn-light-brand"
+                                (click)="voirDocument('attestation', attestation.id)">
+                          <i class="feather-eye me-1"></i> Voir
+                        </button>
+                        <button class="btn btn-sm btn-light-brand"
+                                (click)="telechargerDocument('attestation', attestation.id)">
+                          <i class="feather-download me-1"></i> Télécharger
+                        </button>
+
+                        <!-- Valider seulement si pas encore validé ou refusé -->
+                        <button class="btn btn-sm btn-primary"
+                                (click)="validerDocument(attestation.id)"
+                                *ngIf="canManageDocuments && attestation.statut !== 'VALIDE' && attestation.statut !== 'REJETE'">
+                          <i class="feather-check-circle me-1"></i> Valider
+                        </button>
+
+                        <!-- Refuser seulement si soumis -->
+                        <button class="btn btn-sm btn-danger"
+                                (click)="openRefusModal(attestation.id, 'attestation')"
+                                *ngIf="canManageDocuments && attestation.statut === 'SOUMIS'">
+                          <i class="feather-x-circle me-1"></i> Refuser
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Aucune attestation : le responsable n'en génère pas -->
+                <ng-template #aucuneAttestation>
+                  <div class="text-center py-4 border border-dashed border-gray-5 rounded">
+                    <i class="feather-award fs-40 text-muted d-block mb-2"></i>
+                    <p class="text-muted mb-0">Aucune attestation disponible pour ce stage.</p>
+                  </div>
+                </ng-template>
+
+              </div>
+
+              <!-- ========== TAB: PROLONGATION ========== -->
+              <div class="tab-pane fade p-4"
+                   [class.show]="activeTab === 'prolongation'"
+                   [class.active]="activeTab === 'prolongation'">
+                <div class="mb-4">
+
+                  <h6 class="fw-semibold text-muted text-uppercase fs-11 mb-3 d-flex align-items-center gap-2">
+                    <i class="feather-send"></i> Demande de prolongation
+                  </h6>
+
+                  <div *ngIf="prolongation as p; else prolongationVide">
+                    <div class="border border-dashed border-gray-5 rounded p-3">
+
+                      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+                        <!-- INFO -->
+                        <div class="hstack gap-3">
+                          <div>
+                            <div class="fw-semibold text-warning">
+                              <i class="feather-calendar me-1"></i>
+                              Prolongé jusqu’au {{ p.dateFinProlongee | date:'dd MMMM yyyy' }}
+                            </div>
+                            <div class="fs-12 text-muted">
+                              soumise le {{ p.dateSoumission | date:'dd MMM yyyy' }}
+                            </div>
+
+                            <div class="mt-1">
+                              <span class="badge" [ngClass]="getProlStatutClass(p.statut)">
+                                {{ p.statut }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+
+                  </div>
+                  <!-- VIDE -->
+                  <ng-template #prolongationVide>
+                    <div class="text-center py-3 border border-dashed border-gray-5 rounded text-muted fs-13">
+                      <i class="feather-inbox d-block fs-30 mb-2"></i>
+                      Aucun demande de prolongation soumise.
+                    </div>
+                  </ng-template>
+                  <br>
+                  <h6 class="fw-semibold text-muted text-uppercase fs-11 mb-3 d-flex align-items-center gap-2">
+                    <i class="feather-file-text"></i> Document de prolongation
+                  </h6>
+
+                  <div *ngIf="prolongationDoc as doc; else prolongationDocVide">
+                    <div class="border border-dashed border-gray-5 rounded p-3">
+
+                      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+
+                        <!-- INFO -->
+                        <div class="hstack gap-3">
+                          <div class="wd-45 ht-45 rounded-2 bg-soft-warning d-flex align-items-center justify-content-center">
+                            <i class="feather-file text-warning fs-20"></i>
+                          </div>
+
+                          <div>
+                            <div class="fw-semibold">{{ doc?.nomFichier }}</div>
+
+                            <div class="fs-12 text-muted">
+                              Déposé le {{ doc.dateDepot | date:'dd MMM yyyy' }}
+                            </div>
+
+                            <div class="mt-1">
+                              <span class="badge" [ngClass]="getDocStatutClass(doc.statut)">
+                                {{ doc.statut }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- ACTIONS -->
+                        <div class="hstack gap-2">
+
+                          <button class="btn btn-sm btn-light-brand"
+                                  (click)="voirDocument('prolongationDoc', doc.id)">
+                            <i class="feather-eye me-1"></i> Voir
+                          </button>
+
+                          <button class="btn btn-sm btn-light-brand"
+                                  (click)="telechargerDocument('prolongationDoc', doc.id)">
+                            <i class="feather-download me-1"></i> Télécharger
+                          </button>
+
+                          <!-- REFUSER -->
+                          <button class="btn btn-sm btn-danger"
+                                  (click)="openRefusModal(doc.id, 'prolongation')"
+                                  *ngIf="canManageDocuments && doc.statut === 'SOUMIS'">
+                            <i class="feather-x-circle me-1"></i> Refuser
+                          </button>
+
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- VIDE -->
+                  <ng-template #prolongationDocVide>
+                    <div class="text-center py-3 border border-dashed border-gray-5 rounded text-muted fs-13">
+                      <i class="feather-inbox d-block fs-30 mb-2"></i>
+                      Aucun document de prolongation soumis.
+                    </div>
+                  </ng-template>
+
+                </div>
+              </div>
+
+              <!-- ========== TAB: TRAVAUX ========== -->
+              <div class="tab-pane fade p-4"
+                   *ngIf="canSeeJournalTravauxSoutenance"
+                   [class.show]="activeTab === 'travaux'"
+                   [class.active]="activeTab === 'travaux'">
+
+                <div class="mb-4">
+                  <h5 class="fw-bold mb-0">Travaux soumis par l'étudiant :</h5>
+                </div>
+
+                <!-- Rapport : seulement si niveau inclut '2' -->
+                <div class="mb-4" *ngIf="etudiant.niveau?.includes('2')">
+                  <h6 class="fw-semibold text-muted text-uppercase fs-11 mb-3 d-flex align-items-center gap-2">
+                    <i class="feather-file-text"></i> Rapport de stage
+                  </h6>
+                  <div *ngIf="rapport; else rapportVide">
+                    <div class="border border-dashed border-gray-5 rounded p-3">
+                      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div class="hstack gap-3">
+                          <div class="wd-45 ht-45 rounded-2 bg-soft-danger d-flex align-items-center justify-content-center">
+                            <i class="feather-file text-danger fs-20"></i>
+                          </div>
+                          <div>
+                            <div class="fw-semibold">{{ rapport.nomFichier }}</div>
+                            <div class="fs-12 text-muted">
+                              Déposé le {{ rapport.dateDepot | date:'dd MMM yyyy' }}
+                            </div>
+                            <div class="mt-1">
+                              <span class="badge" [ngClass]="getDocStatutClass(rapport.statut)">
+                                {{ rapport.statut }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="hstack gap-2">
+                          <button class="btn btn-sm btn-light-brand" (click)="voirDocument('rapport',rapport.id)">
+                            <i class="feather-eye me-1"></i> Voir
+                          </button>
+                          <button class="btn btn-sm btn-light-brand" (click)="telechargerDocument('rapport',rapport.id)">
+                            <i class="feather-download me-1"></i> Télécharger
+                          </button>
+                          <button class="btn btn-sm btn-success"
+                                  (click)="validerDocument(rapport.id)"
+                                  *ngIf="canManageDocuments && rapport.statut === 'SOUMIS'">
+                            <i class="feather-check me-1"></i> Valider
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <ng-template #rapportVide>
+                    <div class="text-center py-3 border border-dashed border-gray-5 rounded text-muted fs-13">
+                      <i class="feather-inbox d-block fs-30 mb-2"></i>
+                      Aucun rapport soumis par l'étudiant.
+                    </div>
+                  </ng-template>
+                </div>
+
+                <!-- Présentation : seulement si niveau inclut ''2' -->
+                <div class="mb-4" *ngIf="etudiant.niveau?.includes('2')">
+                  <h6 class="fw-semibold text-muted text-uppercase fs-11 mb-3 d-flex align-items-center gap-2">
+                    <i class="feather-monitor"></i> Présentation
+                  </h6>
+                  <div *ngIf="presentation; else presentationVide">
+                    <div class="border border-dashed border-gray-5 rounded p-3">
+                      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div class="hstack gap-3">
+                          <div class="wd-45 ht-45 rounded-2 bg-soft-warning d-flex align-items-center justify-content-center">
+                            <i class="feather-layout text-warning fs-20"></i>
+                          </div>
+                          <div>
+                            <div class="fw-semibold">{{ presentation.nomFichier }}</div>
+                            <div class="fs-12 text-muted">
+                              Déposée le {{ presentation.dateDepot | date:'dd MMM yyyy' }}
+                            </div>
+                            <div class="mt-1">
+                              <span class="badge" [ngClass]="getDocStatutClass(presentation.statut)">
+                                {{ presentation.statut }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="hstack gap-2">
+                          <button class="btn btn-sm btn-light-brand" (click)="voirDocument('presentation',presentation.id)">
+                            <i class="feather-eye me-1"></i> Voir
+                          </button>
+                          <button class="btn btn-sm btn-light-brand" (click)="telechargerDocument('presentation',presentation.id)">
+                            <i class="feather-download me-1"></i> Télécharger
+                          </button>
+                          <button class="btn btn-sm btn-success"
+                                  (click)="validerDocument(presentation.id)"
+                                  *ngIf="canManageDocuments && presentation.statut === 'SOUMIS'">
+                            <i class="feather-check me-1"></i> Valider
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <ng-template #presentationVide>
+                    <div class="text-center py-3 border border-dashed border-gray-5 rounded text-muted fs-13">
+                      <i class="feather-inbox d-block fs-30 mb-2"></i>
+                      Aucune présentation soumise par l'étudiant.
+                    </div>
+                  </ng-template>
+                </div>
+                <!-- Poster : seulement si niveau inclut '1' -->
+                <div class="mb-4" *ngIf="etudiant.niveau?.includes('1')">
+                  <h6 class="fw-semibold text-muted text-uppercase fs-11 mb-3 d-flex align-items-center gap-2">
+                    <i class="feather-monitor"></i> Poster
+                  </h6>
+                  <div *ngIf="poster; else posterVide">
+                    <div class="border border-dashed border-gray-5 rounded p-3">
+                      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div class="hstack gap-3">
+                          <div class="wd-45 ht-45 rounded-2 bg-soft-warning d-flex align-items-center justify-content-center">
+                            <i class="feather-layout text-warning fs-20"></i>
+                          </div>
+                          <div>
+                            <div class="fw-semibold">{{ poster.nomFichier }}</div>
+                            <div class="fs-12 text-muted">
+                              Déposé le {{ poster.dateDepot | date:'dd MMM yyyy' }}
+                            </div>
+                            <div class="mt-1">
+                              <span class="badge" [ngClass]="getDocStatutClass(poster.statut)">
+                                {{ poster.statut }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="hstack gap-2">
+                          <button class="btn btn-sm btn-light-brand" (click)="voirDocument('poster',poster.id)">
+                            <i class="feather-eye me-1"></i> Voir
+                          </button>
+                          <button class="btn btn-sm btn-light-brand" (click)="telechargerDocument('poster',poster.id)">
+                            <i class="feather-download me-1"></i> Télécharger
+                          </button>
+                          <button class="btn btn-sm btn-success"
+                                  (click)="validerDocument(poster.id)"
+                                  *ngIf="canManageDocuments && poster.statut === 'SOUMIS'">
+                            <i class="feather-check me-1"></i> Valider
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <ng-template #posterVide>
+                    <div class="text-center py-3 border border-dashed border-gray-5 rounded text-muted fs-13">
+                      <i class="feather-inbox d-block fs-30 mb-2"></i>
+                      Aucun poster soumis par l'étudiant.
+                    </div>
+                  </ng-template>
+                </div>
+
+              </div>
+              <!-- ========== TAB: SOUTENANCE ========== -->
+              <div class="tab-pane fade p-4"
+                   *ngIf="canSeeJournalTravauxSoutenance"
+                   [class.show]="activeTab === 'soutenance'"
+                   [class.active]="activeTab === 'soutenance'">
+
+                <div class="mb-4 d-flex align-items-center justify-content-between">
+                  <h5 class="fw-bold mb-0">
+                    <i class="feather-monitor me-2 text-primary"></i>Soutenance
+                  </h5>
+                </div>
+
+                <div *ngIf="soutenance; else soutenanceNonPlanifiee">
+                  <div class="row g-0 mb-3 p-4 border border-dashed border-gray-5 rounded">
+                    <div class="col-sm-5 text-muted mb-2">Date :</div>
+                    <div class="col-sm-7 fw-semibold mb-2">{{ soutenance.date | date:'EEEE dd MMMM yyyy' }}</div>
+                    <div class="col-sm-5 text-muted mb-2">Heure :</div>
+                    <div class="col-sm-7 fw-semibold mb-2">{{ soutenance.heureDebut }}</div>
+                    <div class="col-sm-5 text-muted mb-2">Durée :</div>
+                    <div class="col-sm-7 fw-semibold mb-2">{{ soutenance.duree }} minutes</div>
+                    <div class="col-sm-5 text-muted mb-2">Salle :</div>
+                    <div class="col-sm-7 fw-semibold mb-2">{{ soutenance.codeSalle }} — {{ soutenance.localisationSalle }}</div>
+                    <div class="col-sm-5 text-muted mb-0">Statut :</div>
+                    <div class="col-sm-7 mb-0">
+                      <span class="badge fs-12 px-3 py-1" [ngClass]="getSoutenanceStatutClass(soutenance.statut)">
+                        {{ soutenance.statut }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <h6 class="fw-bold mb-3">
+                    <i class="feather-users me-2 text-primary"></i>Composition du jury
+                  </h6>
+                  <div class="table-responsive mb-4">
+                    <table class="table mb-0">
+                      <thead>
+                        <tr class="border-top">
+                          <th>Enseignant</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let membre of soutenance.membresJury">
+                          <td class="fw-semibold">{{ membre.nomEnseignant }} {{ membre.prenomEnseignant }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div class="d-flex flex-wrap gap-2">
+                    <!-- Annuler uniquement si la soutenance n'est pas déjà annulée ou terminée -->
+                    <button class="btn btn-sm btn-light-danger" (click)="annulerSoutenance()"
+                            *ngIf="soutenance.statut !== 'ANNULEE' && soutenance.statut !== 'VALIDEE'">
+                      <i class="feather-x-circle me-1"></i> Annuler
+                    </button>
+                  </div>
+                </div>
+
+                <ng-template #soutenanceNonPlanifiee>
+                  <div class="text-center py-5 border border-dashed border-gray-5 rounded">
+                    <i class="feather-monitor fs-48 text-muted d-block mb-3"></i>
+                    <h6 class="fw-bold">Aucune soutenance planifiée</h6>
+                    <p class="text-muted fs-13 mb-4">La soutenance n'a pas encore été planifiée pour cette demande de stage.</p>
+
+                  </div>
+                </ng-template>
+              </div>
+
+            </div>
+            <!-- /tab-content -->
+          </div>
+        </div>
+        <!-- FIN COL DROITE -->
+
+      </div>
+    </div>
+    <!-- [ Main Content ] end -->
+
+    <!-- ── Modal Refus réutilisable ── -->
+    <div *ngIf="showRefusModal && canManageDocuments" class="modal-overlay" (click)="closeRefusModal()">
+      <div class="modal-content-custom" (click)="$event.stopPropagation()">
+        <div class="modal-header border-bottom-0 pb-0">
+          <h5 class="modal-title fw-bold">
+            <i class="feather-alert-triangle me-2 text-danger"></i>Refuser le document
+          </h5>
+          <button type="button" class="btn-close" (click)="closeRefusModal()"></button>
+        </div>
+        <div class="modal-body pt-2">
+          <p class="text-muted fs-13 mb-3">
+            Veuillez indiquer le motif de rejet. L'étudiant sera notifié et devra corriger et redéposer le document.
+          </p>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Motif de rejet <span class="text-danger">*</span></label>
+            <textarea class="form-control" rows="4"
+                      [(ngModel)]="motifRefusEnCours"
+                      placeholder="Ex : Le document est incomplet...">
+            </textarea>
+            <div *ngIf="motifRefusError" class="text-danger fs-12 mt-1">
+              <i class="feather-alert-circle me-1"></i>Le motif est obligatoire.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top-0 pt-0">
+          <button type="button" class="btn btn-light" (click)="closeRefusModal()">Annuler</button>
+          <button type="button" class="btn btn-danger" (click)="confirmerRefus()">
+            <i class="feather-x-circle me-1"></i>Confirmer le rejet
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #loadingTpl>
+      <div class="d-flex justify-content-center align-items-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+        <span class="ms-3 text-muted">Chargement des données...</span>
+      </div>
+    </ng-template>
+
+    <ng-template #notFoundTpl>
+      <div class="text-center py-5">
+        <i class="feather-alert-circle fs-48 text-danger d-block mb-3"></i>
+        <h5 class="fw-bold">Demande introuvable</h5>
+        <p class="text-muted mb-4">La demande de stage demandée n'existe pas ou a été supprimée.</p>
+        <a routerLink="/demandes" class="btn btn-primary">
+          <i class="feather-arrow-left me-2"></i> Retour à la liste
+        </a>
+      </div>
+    </ng-template>
+
+  </div>
+</main>

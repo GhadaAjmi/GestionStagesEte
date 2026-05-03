@@ -15,7 +15,7 @@ import { UtilisateurService } from '../../services/utilisateur.service';
 export class ProfileeditComponent implements OnInit {
   profileForm!: FormGroup;
   currentUser: Utilisateur | null = null;
-  photoUrl: SafeUrl | string = 'assets/images/avatar/default.png';
+  photoUrl: SafeUrl | string = 'assets/images/avatar/undefined.jpg';
   selectedPhoto?: File;
   isSaving = false;
   errorMessage = '';

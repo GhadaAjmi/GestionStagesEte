@@ -27,4 +27,8 @@ public interface SoutenanceRepository extends JpaRepository<Soutenance, Long> {
       AND LOWER(s.demandeStage.etudiant.niveau) = LOWER(:niveau)
 """)
     List<Soutenance> findByEtudiantNiveau(@Param("niveau") String niveau);
+
+    Optional<Soutenance> findByDemandeStage_Etudiant_Id(Long etudiantId);
+
+    Optional<Soutenance> findByDemandeStage_Id(Long demandeStageId);
 }

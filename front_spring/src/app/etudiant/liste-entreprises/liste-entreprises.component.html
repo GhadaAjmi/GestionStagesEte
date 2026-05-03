@@ -1,0 +1,347 @@
+<main class="nxl-container">
+  <div class="nxl-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Entreprises</h5>
+        </div>
+      </div>
+
+      <div class="page-header-right ms-auto">
+        <div class="page-header-right-items">
+          <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
+
+            <a href="javascript:void(0);"
+               class="btn btn-light-brand position-relative"
+               (click)="toggleFilters()">
+              <i class="feather-filter me-2"></i>
+              Filtres
+
+              <span *ngIf="filtresActifsCount > 0"
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                    style="font-size:9px">
+                {{ filtresActifsCount }}
+              </span>
+            </a>
+
+            <button class="btn btn-light-brand"
+                    [disabled]="loading"
+                    (click)="load()">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+              <i *ngIf="!loading" class="feather-refresh-cw me-2"></i>
+              Actualiser
+            </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="row">
+
+        <!-- Filtres -->
+        <div class="row mb-4" *ngIf="showFilters">
+          <div class="col-12">
+            <div class="card stretch">
+              <div class="card-body">
+
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <h6 class="fw-bold mb-0">
+                    <i class="feather-filter me-2"></i>
+                    Filtres entreprises
+                  </h6>
+
+                  <span class="badge bg-soft-primary text-primary fs-12">
+                    {{ filteredEntreprises.length }} / {{ entreprises.length }} entreprise(s)
+                  </span>
+                </div>
+
+                <div class="row g-3">
+
+                  <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Recherche globale</label>
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Nom, adresse, représentant, email..."
+                           [(ngModel)]="filter.recherche"
+                           (input)="applyFilters()">
+                  </div>
+
+                  <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Nom entreprise</label>
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Rechercher par nom..."
+                           [(ngModel)]="filter.nom"
+                           (input)="applyFilters()">
+                  </div>
+
+                  <div class="col-lg-4 col-md-6">
+                    <label class="form-label">Adresse</label>
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Rechercher par adresse..."
+                           [(ngModel)]="filter.adresse"
+                           (input)="applyFilters()">
+                  </div>
+
+                  <div class="col-lg-3 col-md-12 d-flex align-items-end">
+                    <button class="btn btn-light-brand w-100"
+                            type="button"
+                            (click)="resetFilters()">
+                      <i class="feather-refresh-cw me-2"></i>
+                      Réinitialiser
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tableau -->
+        <div class="col-lg-12">
+
+          <div *ngIf="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+          </div>
+
+          <div *ngIf="error" class="alert alert-danger">
+            {{ error }}
+          </div>
+
+          <div class="card stretch stretch-full" *ngIf="!loading && !error">
+            <div class="card-body p-0">
+
+              <div class="table-responsive">
+                <table class="table table-hover" id="entrepriseList">
+                  <thead>
+                    <tr>
+                      <th>Entreprise</th>
+                      <th>Adresse</th>
+                      <th>Représentant</th>
+                      <th>Email</th>
+                      <th>Téléphone</th>
+                      <th>Fax</th>
+                      <th class="text-end">Détails</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr *ngFor="let e of filteredEntreprises" class="single-item">
+
+                      <td>
+                        <div class="hstack gap-3">
+                          <div class="avatar-text avatar-md rounded bg-soft-primary text-primary">
+                            <i class="feather-briefcase"></i>
+                          </div>
+
+                          <div>
+                            <span class="text-truncate-1-line fw-bold">
+                              {{ e.nom }}
+                            </span>
+
+                            <span class="fs-11 d-block text-muted">
+                              #{{ e.id }}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td>
+                        <div class="hstack gap-2">
+                          <div class="avatar-text avatar-sm bg-soft-success text-success">
+                            <i class="feather-map-pin"></i>
+                          </div>
+
+                          <span>{{ e.adresse || '—' }}</span>
+                        </div>
+                      </td>
+
+                      <td>
+                        <span>{{ e.representant || '—' }}</span>
+                      </td>
+
+                      <td>
+                        <a *ngIf="e.email"
+                           href="mailto:{{ e.email }}"
+                           class="text-primary">
+                          {{ e.email }}
+                        </a>
+
+                        <span *ngIf="!e.email" class="text-muted fs-11">
+                          —
+                        </span>
+                      </td>
+
+                      <td>
+                        <span>{{ e.telephone || '—' }}</span>
+                      </td>
+
+                      <td>
+                        <span>{{ e.fax || '—' }}</span>
+                      </td>
+
+                      <td>
+                        <div class="hstack gap-2 justify-content-end">
+                          <a href="javascript:void(0)"
+                             class="avatar-text avatar-md"
+                             title="Consulter"
+                             (click)="openDetail(e)">
+                            <i class="feather feather-eye"></i>
+                          </a>
+                        </div>
+                      </td>
+
+                    </tr>
+
+                    <tr *ngIf="filteredEntreprises.length === 0">
+                      <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="feather-inbox fs-32 d-block mb-2"></i>
+                        Aucune entreprise trouvée
+                      </td>
+                    </tr>
+
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Modal détail -->
+<div class="modal fade"
+     [class.show]="showDetailModal"
+     [style.display]="showDetailModal ? 'block' : 'none'"
+     tabindex="-1"
+     *ngIf="selectedEntreprise">
+
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <div class="hstack gap-3">
+          <div class="avatar-text avatar-lg rounded bg-soft-primary text-primary">
+            <i class="feather-briefcase fs-20"></i>
+          </div>
+
+          <div>
+            <h5 class="modal-title mb-0">
+              {{ selectedEntreprise.nom }}
+            </h5>
+            <small class="text-muted">
+              Entreprise #{{ selectedEntreprise.id }}
+            </small>
+          </div>
+        </div>
+
+        <button type="button" class="btn-close" (click)="closeDetail()"></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row g-4">
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-map-pin me-2"></i>
+                  Adresse
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedEntreprise.adresse || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-user me-2"></i>
+                  Représentant
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedEntreprise.representant || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-mail me-2"></i>
+                  Email
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedEntreprise.email || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-phone me-2"></i>
+                  Téléphone
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedEntreprise.telephone || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 bg-light">
+              <div class="card-body">
+                <h6 class="text-muted mb-1">
+                  <i class="feather-printer me-2"></i>
+                  Fax
+                </h6>
+                <p class="fw-semibold mb-0">
+                  {{ selectedEntreprise.fax || '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button"
+                class="btn btn-light-brand"
+                (click)="closeDetail()">
+          Fermer
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade"
+     [class.show]="showDetailModal"
+     *ngIf="showDetailModal"
+     (click)="closeDetail()">
+</div>

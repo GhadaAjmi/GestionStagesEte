@@ -15,7 +15,7 @@ import { Utilisateur } from '../../models/utilisateur.models';
 })
 export class NavbarComponent implements OnInit, OnDestroy {
 
-  imageUrl: SafeUrl | string = 'assets/images/avatar/default.png';
+  imageUrl: SafeUrl | string = 'assets/images/avatar/undefined.jpg';
 
   @Input() userId: number | null = null;
 
@@ -65,7 +65,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   private loadProfilePhoto(): void {
     if (!this.userId) {
-      this.imageUrl = 'assets/images/avatar/default.png';
+      this.imageUrl = 'assets/images/avatar/undefined.jpg';
       return;
     }
 
@@ -75,12 +75,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
           const objectURL = URL.createObjectURL(blob);
           this.imageUrl = this.sanitizer.bypassSecurityTrustUrl(objectURL);
         } else {
-          this.imageUrl = 'assets/images/avatar/default.png';
+          this.imageUrl = 'assets/images/avatar/undefined.jpg';
         }
       },
       error: (err) => {
         console.error('Erreur récupération photo', err);
-        this.imageUrl = 'assets/images/avatar/default.png';
+        this.imageUrl = 'assets/images/avatar/undefined.jpg';
       }
     });
   }

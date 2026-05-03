@@ -10,6 +10,7 @@ import { UtilisateurService } from '../../services/utilisateur.service';
   standalone: false
 })
 export class UtilisateursComponent implements OnInit {
+defaultPhoto = 'assets/images/avatar/undefined.jpg';
 
   utilisateurs:        Utilisateur[] = [];
   utilisateursFiltres: Utilisateur[] = [];
@@ -73,7 +74,7 @@ export class UtilisateursComponent implements OnInit {
               this.photos[user.id!] = this.sanitizer.bypassSecurityTrustUrl(objectURL);
             },
             error: () => {
-              this.photos[user.id!] = 'assets/images/avatar/default.png';
+              this.photos[user.id!] = 'assets/images/avatar/undefined.jpg';
             }
           });
         });

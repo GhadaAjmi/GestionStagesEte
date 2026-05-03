@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MembreJuryRepository extends JpaRepository<MembreJury, Long> {
@@ -26,6 +27,10 @@ public interface MembreJuryRepository extends JpaRepository<MembreJury, Long> {
             @Param("enseignantId") Long enseignantId,
             @Param("date") LocalDate date
     );
+
+    List<MembreJury> findByEnseignant_Id(Long enseignantId);
+
+    List<MembreJury> findBySoutenance_Id(Long soutenanceId);
 }
 
 

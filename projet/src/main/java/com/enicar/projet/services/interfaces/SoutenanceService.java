@@ -26,4 +26,7 @@ public interface SoutenanceService {
             Long soutenanceId,
             PlanificationGroupeDTO dto
     );
+    SoutenanceDTO getSoutenanceByEtudiant(Long etudiantId);
+
+    List<SoutenanceDTO> getSoutenancesByEnseignant(Long enseignantId);
 }

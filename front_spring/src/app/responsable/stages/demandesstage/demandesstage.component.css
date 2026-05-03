@@ -1,0 +1,58 @@
+.customers-nav-tabs {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+
+.customers-nav-tabs .nav-item {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.customers-nav-tabs .nav-link {
+  font-size: 0.75rem;
+  padding: 0.75rem 0.25rem !important; /* plus de hauteur, moins de largeur */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.customers-nav-tabs .nav-label {
+  font-size: 0.78rem;
+}
+
+/* Masquer les labels sur petits écrans, garder les icônes */
+@media (max-width: 768px) {
+  .customers-nav-tabs .nav-label {
+    display: none;
+  }
+  .customers-nav-tabs .nav-link {
+    padding: 0.4rem 0.5rem;
+  }
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1055;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content-custom {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  padding: 1.25rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+.week-strip {
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}

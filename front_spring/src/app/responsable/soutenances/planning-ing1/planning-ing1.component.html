@@ -1,0 +1,356 @@
+<main class="nxl-container">
+  <div class="nxl-content">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+          <h5 class="m-b-10">
+            <span class="badge bg-primary me-2">ING1</span>
+            Génération automatique du planning
+          </h5>
+        </div>
+      </div>
+
+      <div class="page-header-right ms-auto">
+        <button type="button" class="btn btn-light" (click)="retour()">
+          <i class="feather-arrow-left me-2"></i>
+          Retour
+        </button>
+      </div>
+    </div>
+
+    <!-- INFO -->
+    <div class="px-4 mb-3">
+      <div class="alert alert-primary d-flex align-items-center gap-3 mb-0">
+        <div class="avatar-text avatar-md bg-primary text-white rounded-circle">
+          <i class="feather-cpu fs-5"></i>
+        </div>
+
+        <div>
+          <strong>Mode ING1 — Génération automatique avec OR-Tools</strong><br>
+          <span class="fs-13">
+            ING1 est toujours planifié en mode <strong>poster</strong>.
+            Les salles utilisées sont les salles de l’annexe compatibles poster.
+            Les enseignants sont choisis dans le même département que le groupe.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <form [formGroup]="form">
+
+        <div class="row">
+          <div class="col-lg-12">
+
+            <!-- FORMULAIRE -->
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title mb-0">
+                  <i class="feather-sliders me-2 text-primary"></i>
+                  Paramètres du planning
+                </h5>
+              </div>
+
+              <div class="card-body">
+                <div class="row g-4">
+
+                  <!-- Département -->
+                  <div class="col-lg-4">
+                    <label class="form-label">
+                      Département <span class="text-danger">*</span>
+                    </label>
+
+                    <select class="form-control"
+                            formControlName="departement"
+                            [class.is-invalid]="isInvalid('departement')">
+                      <option value="">Sélectionner un département</option>
+
+                      <option *ngFor="let d of departements" [value]="d">
+                        {{ d }}
+                      </option>
+                    </select>
+
+                    <div class="invalid-feedback">Département requis</div>
+                  </div>
+
+                  <!-- Spécialité -->
+                  <div class="col-lg-4">
+                    <label class="form-label">
+                      Spécialité <span class="text-danger">*</span>
+                    </label>
+
+                    <select class="form-control"
+                            formControlName="specialite"
+                            [class.is-invalid]="isInvalid('specialite')"
+                            [attr.disabled]="specialites.length === 0 ? true : null">
+                      <option value="">
+                        {{ form.get('departement')?.value ? 'Sélectionner une spécialité' : "Choisissez d'abord un département" }}
+                      </option>
+
+                      <option *ngFor="let s of specialites" [value]="s">
+                        {{ s }}
+                      </option>
+                    </select>
+
+                    <div class="invalid-feedback">Spécialité requise</div>
+                  </div>
+
+                  <!-- Nombre jury -->
+                  <div class="col-lg-2">
+                    <label class="form-label">
+                      Nb jury <span class="text-danger">*</span>
+                    </label>
+
+                    <input type="number"
+                           class="form-control"
+                           formControlName="nbJury"
+                           min="1"
+                           max="5"
+                           [class.is-invalid]="isInvalid('nbJury')">
+
+                    <div class="invalid-feedback">Nombre invalide</div>
+                  </div>
+
+                  <!-- Durée -->
+                  <div class="col-lg-2">
+                    <label class="form-label">
+                      Durée / étudiant <span class="text-danger">*</span>
+                    </label>
+
+                    <input type="number"
+                           class="form-control"
+                           formControlName="dureeParEtudiant"
+                           min="5"
+                           max="60"
+                           [class.is-invalid]="isInvalid('dureeParEtudiant')">
+
+                    <div class="form-text">En minutes</div>
+                    <div class="invalid-feedback">Durée invalide</div>
+                  </div>
+
+                  <!-- Nombre de jours -->
+                  <div class="col-lg-3">
+                    <label class="form-label">
+                      Nombre de jours <span class="text-danger">*</span>
+                    </label>
+
+                    <input type="number"
+                           class="form-control"
+                           formControlName="nombreJours"
+                           min="1"
+                           max="10"
+                           [class.is-invalid]="isInvalid('nombreJours')">
+
+                    <div class="invalid-feedback">Nombre de jours invalide</div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- JOURS -->
+            <div class="card">
+              <div class="card-header">
+                <h5 class="card-title mb-0">
+                  <i class="feather-calendar me-2 text-primary"></i>
+                  Jours et plages horaires
+                </h5>
+              </div>
+
+              <div class="card-body">
+                <div formArrayName="jours">
+
+                  <div class="row g-4 mb-3"
+                       *ngFor="let jour of jours.controls; let i = index"
+                       [formGroupName]="i">
+
+                    <div class="col-lg-3">
+                      <label class="form-label">
+                        Date jour {{ i + 1 }} <span class="text-danger">*</span>
+                      </label>
+
+                      <input type="date"
+                             class="form-control"
+                             formControlName="date"
+                             [class.is-invalid]="isJourInvalid(i, 'date')">
+
+                      <div class="invalid-feedback">Date requise</div>
+                    </div>
+
+                    <div class="col-lg-3">
+                      <label class="form-label">
+                        Heure début <span class="text-danger">*</span>
+                      </label>
+
+                      <input type="time"
+                             class="form-control"
+                             formControlName="heureDebut"
+                             [class.is-invalid]="isJourInvalid(i, 'heureDebut')">
+
+                      <div class="invalid-feedback">Heure début requise</div>
+                    </div>
+
+                    <div class="col-lg-3">
+                      <label class="form-label">
+                        Heure fin <span class="text-danger">*</span>
+                      </label>
+
+                      <input type="time"
+                             class="form-control"
+                             formControlName="heureFin"
+                             [class.is-invalid]="isJourInvalid(i, 'heureFin')">
+
+                      <div class="invalid-feedback">Heure fin requise</div>
+                    </div>
+
+                    <div class="col-lg-3 d-flex align-items-end">
+                      <div class="alert alert-info mb-0 w-100 py-2">
+                        <i class="feather-info me-1"></i>
+                        Jour {{ i + 1 }}
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- ALERTES -->
+            <div class="px-4" *ngIf="successMessage || errorMessage">
+              <div class="alert alert-success d-flex align-items-center gap-2" *ngIf="successMessage">
+                <i class="feather-check-circle fs-5"></i>
+                <span>{{ successMessage }}</span>
+              </div>
+
+              <div class="alert alert-danger d-flex align-items-center gap-2" *ngIf="errorMessage">
+                <i class="feather-alert-circle fs-5"></i>
+                <span>{{ errorMessage }}</span>
+              </div>
+            </div>
+
+            <!-- ACTIONS FORMULAIRE -->
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex justify-content-end gap-2">
+
+                  <button type="button"
+                          class="btn btn-light"
+                          (click)="resetPlanning()"
+                          [disabled]="loading">
+                    <i class="feather-rotate-ccw me-2"></i>
+                    Réinitialiser résultat
+                  </button>
+
+                  <button type="button"
+                          class="btn btn-primary"
+                          [disabled]="loading"
+                          (click)="genererPlanning()">
+                    <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+                    <i *ngIf="!loading" class="feather-cpu me-2"></i>
+                    {{ loading ? 'Génération...' : 'Générer le planning' }}
+                  </button>
+
+                </div>
+              </div>
+            </div>
+
+            <!-- PLANNING GÉNÉRÉ -->
+            <div class="card" *ngIf="planningResult.length > 0">
+              <div class="card-header bg-soft-primary d-flex align-items-center justify-content-between">
+                <h5 class="card-title mb-0 text-primary">
+                  <i class="feather-list me-2"></i>
+                  Planning généré
+                </h5>
+
+                <span class="badge bg-primary">
+                  {{ planningResult.length }} soutenance(s)
+                </span>
+              </div>
+
+              <div class="card-body">
+
+                <div class="alert alert-info d-flex align-items-center gap-2">
+                  <i class="feather-info fs-5"></i>
+                  <span>
+                    Le planning ci-dessous a été généré et enregistré par le backend.
+                  </span>
+                </div>
+
+                <div class="mb-4" *ngFor="let groupe of planningGroupes">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h6 class="mb-0">
+                      <i class="feather-users me-2 text-primary"></i>
+                      {{ groupe.groupe }}
+                    </h6>
+
+                    <span class="badge bg-soft-primary text-primary">
+                      {{ groupe.soutenances.length }} étudiant(s)
+                    </span>
+                  </div>
+
+                  <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Heure</th>
+                          <th>Durée</th>
+                          <th>Étudiant</th>
+                          <th>Salle</th>
+                          <th>Jury</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        <tr *ngFor="let s of groupe.soutenances">
+                          <td>{{ s.date }}</td>
+
+                          <td>
+                            <span class="badge bg-soft-info text-info">
+                              {{ s.heureDebut }}
+                            </span>
+                          </td>
+
+                          <td>{{ s.duree }} min</td>
+
+                          <td>
+                            <div class="fw-semibold">
+                              {{ s.etudiantPrenom }} {{ s.etudiantNom }}
+                            </div>
+                            <div class="fs-11 text-muted">
+                              {{ s.etudiantSpecialite }}
+                            </div>
+                          </td>
+
+                          <td>
+                            <span class="badge bg-soft-secondary text-secondary">
+                              {{ s.codeSalle || s.salleId || '—' }}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span class="fs-12">
+                              {{ getJuryText(s) }}
+                            </span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <hr>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</main>
