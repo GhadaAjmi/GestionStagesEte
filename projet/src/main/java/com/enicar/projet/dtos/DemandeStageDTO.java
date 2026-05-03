@@ -15,8 +15,9 @@ public class DemandeStageDTO {
     private Long id;
     private String sujet;
     private String entreprise;
+    private String tuteurStage;
+    private String anneeUniversitaire;
 
-    private String type;
     private String description;
     private Long etudiantId;
     private Long soutenanceId;

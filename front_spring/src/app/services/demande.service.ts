@@ -3,7 +3,10 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { DemandeStage } from '../models/demandeStage';
-
+import { ConventionRequestDTO } from '../models/ConventionRequestDTO';
+import { LettreRequestDTO } from '../models/lettreRequestDTO'
+import { DemandeRequestDTO } from '../models/demandeRequest';
+import { DemandeSoumissionResponseDTO } from '../models/demandeResponse';
 export type StatutDemande = 'EN_ATTENTE' | 'VALIDEE' | 'REFUSEE' | string;
 
 @Injectable({
@@ -12,6 +15,7 @@ export type StatutDemande = 'EN_ATTENTE' | 'VALIDEE' | 'REFUSEE' | string;
 export class DemandeService {
 
   private readonly apiUrl = 'http://localhost:8087/api/demandes';
+  private readonly baseUrl = 'http://localhost:8087/api';
 
   constructor(private http: HttpClient) {}
 
@@ -41,11 +45,7 @@ export class DemandeService {
     return this.getDemandeByEtudiant(etudiantId);
   }
 
-  // ── Créer une demande ─────────────────────────────────────────
 
-  creerDemande(demande: Partial<DemandeStage>): Observable<DemandeStage> {
-    return this.http.post<DemandeStage>(this.apiUrl, demande);
-  }
 
   // ── Modifier une demande complète ─────────────────────────────
 
@@ -82,7 +82,63 @@ export class DemandeService {
     });
   }
 
+//-----------------------------------------
 
+
+
+
+  creerDemande(demande: DemandeStage): Observable<DemandeStage> {
+    return this.http.post<DemandeStage>(
+      `${this.baseUrl}/demandes`, demande
+    );
+  }
+
+  // ── PDF ────────────────────────────────────────────────────────────
+
+  genererLettre(demandeId: number, dto: LettreRequestDTO) {
+    return this.http.post(
+      `${this.baseUrl}/pdf/demande/${demandeId}/lettre-affectation`, dto, {
+    responseType: 'blob'
+  }
+    );
+  }
+
+  genererConvention(demandeId: number, dto: ConventionRequestDTO) {
+    return this.http.post(
+      `${this.baseUrl}/pdf/demande/${demandeId}/convention`, dto, {
+    responseType: 'blob'
+  }
+    );
+  }
+
+  telechargerDocument(documentId: number): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/documents/telecharger/${documentId}`,
+      { responseType: 'blob' }
+    );
+  }
+  telechargerAvenant(demandeId: number): Observable<Blob> {
+  return this.http.get(
+    `${this.baseUrl}/pdf/demande/${demandeId}/avenant`,
+    { responseType: 'blob' }
+  );
+}
+demanderProlongation(demandeId: number, dateFinProlongee: string): Observable<any> {
+  return this.http.post(
+    `${this.baseUrl}/prolongations?demandeId=${demandeId}&dateFinProlongee=${dateFinProlongee}`,
+    {}
+  );
+}
+
+soumettreDemandeComplete(dto: DemandeRequestDTO): Observable<Blob> {
+  return this.http.post(
+    `${this.baseUrl}/demandes/soumettre`,
+    dto,
+    {
+      responseType: 'blob'
+    }
+  );
+}
 
 }
 

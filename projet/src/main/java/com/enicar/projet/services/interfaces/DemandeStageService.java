@@ -1,6 +1,8 @@
 package com.enicar.projet.services.interfaces;
 
 
+import com.enicar.projet.dtos.DemandeRequestDTO;
+import com.enicar.projet.dtos.DemandeSoumissionResponseDTO;
 import com.enicar.projet.dtos.DemandeStageDTO;
 import com.enicar.projet.entities.StatutDemande;
 
@@ -18,4 +20,7 @@ public interface DemandeStageService {
     void delete(Long id);
      DemandeStageDTO update(Long id, DemandeStageDTO dto) ;
     DemandeStageDTO updateStatut(Long id, StatutDemande statut);
+
+    public byte[] soumettreDemandeComplete(DemandeRequestDTO request) ;
+
     }

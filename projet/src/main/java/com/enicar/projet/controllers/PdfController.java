@@ -30,12 +30,21 @@ public class PdfController {
      */
     @PostMapping(value = "/demande/{demandeId}/lettre-affectation",
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Long> generateLettre(@PathVariable Long demandeId,
+    public ResponseEntity<byte[]> generateLettre(@PathVariable Long demandeId,
                                                @RequestBody LettreRequestDTO dto) throws Exception {
-        Document doc = pdfService.generateLettre(demandeId, dto);
-        return ResponseEntity.ok(doc.getId());
+        byte[] pdf = pdfService.generateLettre(demandeId, dto);
+        return pdfResponse(pdf, "lettre-affectation.pdf");
     }
-
+    @GetMapping("/demande/{demandeId}/avenant")
+    public ResponseEntity<byte[]> generateAvenant(@PathVariable Long demandeId) throws Exception {
+        byte[] pdf = pdfService.generateAvenant(demandeId);
+        return pdfResponse(pdf, "avenant_prolongation.pdf");
+    }
+    @GetMapping("/demande/{demandeId}/journal")
+    public ResponseEntity<byte[]> generateJournal(@PathVariable Long demandeId) throws Exception {
+        byte[] pdf = pdfService.generateJournal(demandeId);
+        return pdfResponse(pdf, "journal_stage.pdf");
+    }
     /**
      * Signe la lettre identifiée par {documentId}.
      * POST /api/pdf/lettre-affectation/{documentId}/signer
@@ -58,18 +67,12 @@ public class PdfController {
      */
     @PostMapping(value = "/demande/{demandeId}/convention",
             consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Long> generateConvention(@PathVariable Long demandeId,
+    public ResponseEntity<byte[]>  generateConvention(@PathVariable Long demandeId,
                                                    @RequestBody ConventionRequestDTO dto) throws Exception {
-        Document doc = pdfService.generateConvention(demandeId, dto);
-        return ResponseEntity.ok(doc.getId());
+        byte[] pdf = pdfService.generateConvention(demandeId, dto);
+        return pdfResponse(pdf, "journal_stage.pdf");
     }
-    @PostMapping(value = "/demande/{demandeId}/prolongation",
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Long> generateProlongation(@PathVariable Long demandeId,
-                                                   @RequestBody ConventionRequestDTO dto) throws Exception {
-        Document doc = pdfService.generateAvenant(demandeId);
-        return ResponseEntity.ok(doc.getId());
-    }
+
 
     /**
      * Signe la convention identifiée par {documentId}.
@@ -81,11 +84,11 @@ public class PdfController {
         byte[] pdfSigne = pdfService.signerConvention(documentId);
         return pdfResponse(pdfSigne, "convention_signee.pdf");
     }
-    /**
-     * Signe la convention identifiée par {documentId}.
-     * POST /api/pdf/prolongation/{documentId}/signer
-     * Retourne le PDF signé en téléchargement.
-     */
+    // ----------------------------------------------------------------
+    // Prolongation
+    // ----------------------------------------------------------------
+
+
     @PostMapping("/prolongation/{documentId}/signer")
     public ResponseEntity<byte[]> signerProlongation(@PathVariable Long documentId) throws Exception {
         byte[] pdfSigne = pdfService.signerProlongation(documentId);

@@ -1,1 +1,105 @@
-<p>mes-documents works!</p>
+<main class="nxl-container">
+  <div class="nxl-content">
+<div class="page-header">
+  <div class="page-header-left d-flex align-items-center">
+    <div class="page-header-title">
+      <h5 class="m-b-10">Mes Documents</h5>
+    </div>
+    <ul class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/etudiant/dashboard">Accueil</a></li>
+      <li class="breadcrumb-item">Mes Documents</li>
+    </ul>
+  </div>
+</div>
+
+<div class="main-content">
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <div *ngIf="!loading">
+
+    <div *ngIf="!stage" class="card">
+      <div class="card-body text-center py-5">
+        <i data-feather="alert-circle"
+           style="width:48px;height:48px;" class="text-warning mb-3"></i>
+        <h5 class="fw-bold">Aucun stage enregistré</h5>
+        <a routerLink="/etudiant/mon-stage" class="btn btn-primary mt-2">
+          Faire une demande de stage
+        </a>
+      </div>
+    </div>
+
+    <div *ngIf="stage">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">
+            <i data-feather="folder" class="me-2"></i>
+            Gérez vos documents
+          </h5>
+          <p class="text-muted fs-12 mb-0">
+            Déposez vos livrables avant la date limite.
+          </p>
+        </div>
+        <div class="card-body p-0">
+
+          <div *ngFor="let requis of documentsRequis"
+               class="d-flex align-items-center justify-content-between p-4 border-bottom">
+
+            <div class="d-flex align-items-center gap-3">
+              <div class="avatar-text avatar-md"
+                   [ngClass]="getStatut(requis.type) === 'EN_ATTENTE' ?
+                   'bg-soft-secondary text-secondary' :
+                   'bg-soft-success text-success'">
+                <i [attr.data-feather]="getStatut(requis.type) === 'EN_ATTENTE' ?
+                   'clock' : 'check-circle'"></i>
+              </div>
+              <div>
+                <h6 class="fw-bold mb-0">{{ requis.label }}</h6>
+                <div class="d-flex align-items-center gap-2 mt-1">
+                  <span class="badge fs-10"
+                        [ngClass]="getBadgeClass(requis.type)">
+                    {{ getBadgeLabel(requis.type) }}
+                  </span>
+                  <span class="text-muted fs-11"
+                        *ngIf="getDocument(requis.type)?.dateDepot">
+                    Déposé le
+                    {{ getDocument(requis.type)?.dateDepot | date:'dd/MM/yyyy' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2">
+              <div *ngIf="getStatut(requis.type) === 'EN_ATTENTE'">
+                <label class="btn btn-primary btn-sm mb-0"
+                       [for]="'file-' + requis.type"
+                       style="cursor:pointer;">
+                  <i data-feather="upload" class="me-1"></i>
+                  Déposer
+                </label>
+                <input type="file"
+                       [id]="'file-' + requis.type"
+                       [accept]="requis.accept"
+                       style="display:none;"
+                       (change)="onFileSelected($event, requis.type)">
+              </div>
+
+              <div *ngIf="getStatut(requis.type) !== 'EN_ATTENTE'"
+                   class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-danger"
+                        (click)="supprimerDocument(requis.type)">
+                  eliminer
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+  </div>
+</main>

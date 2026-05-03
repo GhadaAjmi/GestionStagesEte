@@ -1,9 +1,15 @@
 package com.enicar.projet.controllers;
 
+import com.enicar.projet.dtos.DemandeRequestDTO;
+import com.enicar.projet.dtos.DemandeSoumissionResponseDTO;
 import com.enicar.projet.dtos.DemandeStageDTO;
 import com.enicar.projet.entities.StatutDemande;
 import com.enicar.projet.services.interfaces.DemandeStageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +29,20 @@ public class DemandeStageController {
     }
 
 
+    @PostMapping("/soumettre")
+    public ResponseEntity<byte[]> soumettreDemande(
+            @RequestBody DemandeRequestDTO request
+    ) {
+        byte[] zipBytes = service.soumettreDemandeComplete(request);
+
+        return ResponseEntity.ok()
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"documents_stage.zip\""
+                )
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .body(zipBytes);
+    }
     @GetMapping
     public List<DemandeStageDTO> all(){
         return service.findAll();

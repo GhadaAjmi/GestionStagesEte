@@ -1,10 +1,8 @@
 package com.enicar.projet.services.impl;
 
 import com.enicar.projet.dtos.ConventionRequestDTO;
-import com.enicar.projet.dtos.LettreRequestDTO;
-import com.enicar.projet.entities.*;
 import com.enicar.projet.exceptions.NotFoundException;
-import com.enicar.projet.repositories.EntrepriseRepository;
+import com.enicar.projet.dtos.LettreRequestDTO;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -16,9 +14,15 @@ import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.*;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 
+import com.enicar.projet.entities.DemandeStage;
+import com.enicar.projet.entities.Document;
+import com.enicar.projet.entities.Entreprise;
+import com.enicar.projet.entities.Journal;
+import com.enicar.projet.entities.StatutDocument;
+import com.enicar.projet.entities.TypeDocument;
 import com.enicar.projet.repositories.DemandeStageRepository;
 import com.enicar.projet.repositories.DocumentRepository;
-
+import com.enicar.projet.repositories.EntrepriseRepository;
 import com.enicar.projet.services.interfaces.PdfService;
 
 import lombok.RequiredArgsConstructor;
@@ -33,6 +37,7 @@ import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -42,112 +47,16 @@ public class PdfServiceImpl implements PdfService {
     private final DemandeStageRepository demandeStageRepo;
     private final EntrepriseRepository entrepriseRepository;
 
-
     // ================================================================
-    // LETTRE D'AFFECTATION — public API
+    // LETTRE D'AFFECTATION
     // ================================================================
-
-    /** Génère la lettre SANS signature et la sauvegarde en base. */
-    @Override
-    public Document generateLettre(Long demandeStageId, LettreRequestDTO dto) throws Exception {
-        byte[] pdfBytes = buildLettre(dto);
-        return saveDocument(pdfBytes, TypeDocument.LETTRE_AFFECTATION,
-                "lettre_affectation.pdf", demandeStageId);
-    }
-    @Override
-    public Document generateAvenant(Long demandeStageId) throws Exception {
-        byte[] pdfBytes = buildAvenant(demandeStageId);
-        return saveDocument(pdfBytes, TypeDocument.PROLONGATION,
-                "avenant-prolongation.pdf", demandeStageId);
-    }
-
-    /** Signe une lettre existante (récupérée en base) et retourne le PDF signé. */
-    @Override
-    public byte[] signerLettre(Long documentId) throws Exception {
-        Document doc = documentDemandeRepository.findById(documentId)
-                .orElseThrow(() -> new RuntimeException("Document introuvable : " + documentId));
-
-        byte[] pdfSigne = ajouterSignature(doc.getContenu(),0, 1, 390f, 170f, 120f, 60f);
-
-        doc.setContenu(pdfSigne);
-        doc.setNomFichier("lettre_affectation_signee.pdf");
-        doc.setStatut(StatutDocument.VALIDE);
-        doc.setDateDecision(LocalDateTime.now());
-        documentDemandeRepository.save(doc);
-        return pdfSigne;
-    }
-
-    // ================================================================
-    // CONVENTION DE STAGE — public API
-    // ================================================================
-
-    @Override
-    public Document generateConvention(Long demandeStageId, ConventionRequestDTO dto) throws Exception {
-
-        DemandeStage demande = demandeStageRepo.findById(demandeStageId)
-                .orElseThrow(() -> new NotFoundException("Demande de stage introuvable : " + demandeStageId));
-
-        Entreprise entreprise = new Entreprise();
-
-        entreprise.setNom(dto.getEntreprise());
-        entreprise.setAdresse(dto.getAdresseEntreprise());
-        entreprise.setRepresentant(dto.getRepresentantEntreprise());
-        entreprise.setEmail(dto.getEmailEntreprise());
-        entreprise.setTelephone(dto.getTelephoneEntreprise());
-        entreprise.setFax(dto.getFaxEntreprise());
-
-        Entreprise savedEntreprise = entrepriseRepository.save(entreprise);
-
-        demande.setEntreprise(savedEntreprise);
-
-        demandeStageRepo.save(demande);
-
-        byte[] pdfBytes = buildConvention(dto);
-
-        return saveDocument(
-                pdfBytes,
-                TypeDocument.CONVENTION,
-                "convention-stage.pdf",
-                demandeStageId
-        );
-    }
-    /** Signe une convention existante (récupérée en base) et retourne le PDF signé. */
-    @Override
-    public byte[] signerConvention(Long documentId) throws Exception {
-        Document doc = documentDemandeRepository.findById(documentId)
-                .orElseThrow(() -> new RuntimeException("Document introuvable : " + documentId));
-
-        byte[] pdfSigne = ajouterSignature(doc.getContenu(),1, 1, 390f, 80f, 120f, 60f);
-
-        doc.setContenu(pdfSigne);
-        doc.setNomFichier("convention_signee.pdf");
-        doc.setStatut(StatutDocument.VALIDE);
-        doc.setDateDecision(LocalDateTime.now());
-        documentDemandeRepository.save(doc);
-        return pdfSigne;
-    }
-    /** Signe une convention existante (récupérée en base) et retourne le PDF signé. */
-    @Override
-    public byte[] signerProlongation(Long documentId) throws Exception {
-        Document doc = documentDemandeRepository.findById(documentId)
-                .orElseThrow(() -> new RuntimeException("Document introuvable : " + documentId));
-
-        byte[] pdfSigne = ajouterSignature(doc.getContenu(), 2,1, 390f, 80f, 120f, 60f);
-
-        doc.setContenu(pdfSigne);
-        doc.setNomFichier("prolongation_signee.pdf");
-        doc.setStatut(StatutDocument.VALIDE);
-        doc.setDateDecision(LocalDateTime.now());
-        documentDemandeRepository.save(doc);
-        return pdfSigne;
-    }
 
 
     // ================================================================
     // BUILD INTERNE — LETTRE  (canvas / coordonnées absolues)
     // ================================================================
-
-    private byte[] buildLettre(LettreRequestDTO dto) throws Exception {
+@Override
+   public byte[] generateLettre(Long demandeStageId, LettreRequestDTO dto) throws Exception {
         byte[] templateBytes = loadTemplate("lettre-affectation.pdf");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -182,10 +91,10 @@ public class PdfServiceImpl implements PdfService {
     }
 
     // ================================================================
-    // BUILD INTERNE — CONVENTION  (canvas / coordonnées absolues)
+    // BUILD CONVENTION
     // ================================================================
-
-    private byte[] buildConvention(ConventionRequestDTO dto) throws Exception {
+@Override
+    public byte[] generateConvention(Long demandeStageId, ConventionRequestDTO dto) throws Exception {
         byte[] templateBytes = loadTemplate("convention-stage.pdf");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -205,6 +114,7 @@ public class PdfServiceImpl implements PdfService {
         writeText(canvas, font,  10, dto.getTuteurStage(),             320, 575);
         writeText(canvas, font,  10, dto.getEmailEntreprise(),          70, 560);
         writeText(canvas, font,  10, dto.getTelephoneEntreprise(),     270, 560);
+        writeText(canvas, font,  10, dto.getFaxEntreprise(),     270, 560);
 
         // ── Étudiant ────────────────────────────────────────────────
         writeText(canvas, fontB, 10, dto.getPrenomEtudiant(),  70, 520);
@@ -212,7 +122,7 @@ public class PdfServiceImpl implements PdfService {
         writeText(canvas, font,  10, dto.getSpecialite(),      70, 479);
         writeText(canvas, font,  10, dto.getCin(),             70, 465);
         writeText(canvas, font,  10, dto.getTelephone(),      240, 465);
-
+      writeText(canvas, font, 10, dto.getEmail(), 360, 466);
         // ── Stage ───────────────────────────────────────────────────
         writeText(canvas, font, 10, dto.getDateDebut(),  60, 440);
         writeText(canvas, font, 10, dto.getDateFin(),   260, 440);
@@ -220,106 +130,17 @@ public class PdfServiceImpl implements PdfService {
 
         pdfDoc.close();
         return baos.toByteArray();
+
+
     }
 
     // ================================================================
-    // SIGNATURE — méthode unifiée (réutilisée par lettre ET convention)
+    // Avenant prolongation
     // ================================================================
 
-    /**
-     * Ouvre le PDF binaire fourni, dessine le bloc signature à la position
-     * (x, y, width, height) sur la page {@code pageNumber}, et retourne
-     * le nouveau PDF en bytes.
-     */
-    private byte[] ajouterSignature(byte[] pdfOriginal,int type,
-                                    int    pageNumber,
-                                    float  x, float y,
-                                    float  width, float height) throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PdfDocument pdfDoc = new PdfDocument(
-                new PdfReader(new java.io.ByteArrayInputStream(pdfOriginal)),
-                new PdfWriter(baos));
 
-        drawSignatureBlock(pdfDoc,type, pageNumber, x, y, width, height);
-
-        pdfDoc.close();
-        return baos.toByteArray();
-    }
-
-    /**
-     * Dessine sur le canvas :
-     *   "A Tunis, le jj/mm/aaaa"
-     *   "Directrice de l'ENICarthage"
-     *   "(signature et cachet)"
-     *   + image signature.png
-     */
-    private void drawSignatureBlock(PdfDocument pdfDoc,int type,
-                                    int   pageNumber,
-                                    float x, float y,
-                                    float width, float height) throws Exception {
-        PdfPage   page   = pdfDoc.getPage(pageNumber);
-        PdfCanvas canvas = new PdfCanvas(page);
-        PdfFont   fontN  = PdfFontFactory.createFont(StandardFonts.HELVETICA);
-        PdfFont   fontB  = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
-        float     lh     = 14f;
-if(type==0 ){
-//lettre d affectation
-    writeTextColor(canvas, fontN, 10f, new DeviceRgb(0, 0, 0),
-            todayFormatted(), x+45, y + height + lh * 5);
-
-}
-
-else if (type==1) {
-    //convention
-    writeTextColor(canvas, fontN, 10f, new DeviceRgb(0, 0, 0),
-            todayFormatted(), x+65, y + height + lh * 4);
-
-}else {
-//prolongation
-    writeTextColor(canvas, fontN, 10f, new DeviceRgb(0, 0, 0),
-            todayFormatted(), x+85, y + height + lh * 5);
-
-}
-
-        /*  writeTextColor(canvas, fontB, 10f, new DeviceRgb(0, 0, 0),
-                "Directrice de l\u2019ENICarthage",  x, y + height + lh * 2);
-
-        writeTextColor(canvas, fontN,  9f, new DeviceRgb(80, 80, 80),
-                "(signature et cachet)",             x, y + height + lh);*/
-
-        // Image de signature
-        InputStream imgStream  = new ClassPathResource("static/signature.png").getInputStream();
-        byte[]      imageBytes = imgStream.readAllBytes();
-        ImageData   imageData  = ImageDataFactory.create(imageBytes);
-        canvas.addImageFittedIntoRectangle(imageData,
-                new Rectangle(x, y, width, height), false);
-
-        canvas.release();
-    }
-
-    // ================================================================
-    // SAVE EN BASE
-    // ================================================================
-
-    private Document saveDocument(byte[]       contenu,
-                                  TypeDocument type,
-                                  String       nomFichier,
-                                  Long         demandeStageId) {
-        DemandeStage demande = demandeStageRepo.findById(demandeStageId)
-                .orElseThrow(() -> new RuntimeException("Demande introuvable : " + demandeStageId));
-
-        Document doc = new Document();
-        doc.setType(type);
-        doc.setNomFichier(nomFichier);
-        doc.setContenu(contenu);
-        doc.setStatut(StatutDocument.GENERE);
-        doc.setDateDepot(LocalDateTime.now());
-        doc.setDemandeStage(demande);
-
-        return documentDemandeRepository.save(doc);
-    }
-
-    public byte[] buildAvenant(Long demandeId) throws Exception {
+    @Override
+    public byte[] generateAvenant(Long demandeId) throws Exception {
         byte[] templateBytes = loadTemplate("avenant-prolongation.pdf");
 
         DemandeStage demande = demandeStageRepo.findById(demandeId)
@@ -389,6 +210,267 @@ else if (type==1) {
         pdfDoc.close();
         return baos.toByteArray();
     }
+
+    // ================================================================
+    // Journal
+    // ================================================================
+
+
+    @Override
+    public byte[] generateJournal(Long demandeId) throws Exception {
+        byte[] templateBytes = loadTemplate("journal-stage.pdf");
+
+        DemandeStage demande = demandeStageRepo.findById(demandeId)
+                .orElseThrow(() -> new RuntimeException("Demande introuvable"));
+
+        List<Journal> entrees = demande.getJournaux();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PdfDocument pdfDoc = new PdfDocument(
+                new PdfReader(new java.io.ByteArrayInputStream(templateBytes)),
+                new PdfWriter(baos),
+                new StampingProperties().preserveEncryption());
+
+        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+
+        // ── Page 1 : Identification ──────────────────────────────────
+        PdfPage   page1   = pdfDoc.getPage(1);
+        PdfCanvas canvas1 = new PdfCanvas(page1);
+        correctRotation(canvas1, page1);
+
+        // Année universitaire
+        writeText(canvas1, font, 10,
+                demande != null && demande.getDateDemande() != null
+                        ? String.valueOf(demande.getDateDemande().getYear())
+                        : "",
+                620, 757);
+        // Nom étudiant
+        if (demande.getEtudiant() != null) {
+            writeText(canvas1, font, 10,
+                    demande.getEtudiant().getPrenom() + " " + demande.getEtudiant().getNom(),
+                    650, 732);
+            writeText(canvas1, font, 10,
+                    demande.getEtudiant().getNumeroInscription() != null
+                            ? demande.getEtudiant().getNumeroInscription() : "",
+                    620, 705);
+            writeText(canvas1, font, 10,
+                    demande.getEtudiant().getSpecialite() != null
+                            ? demande.getEtudiant().getSpecialite() : "",
+                    610, 683);
+        }
+
+        // Dates de stage
+        if (demande.getDateDebut() != null && demande.getDateFin() != null) {
+            writeText(canvas1, font, 10,
+                    formatDate(demande.getDateDebut().toString()) +
+                            " au " + formatDate(demande.getDateFin().toString()),
+                    620, 586);
+        }
+
+        // Entreprise
+        if (demande.getEntreprise() != null) {
+            writeText(canvas1, font, 10,
+                    demande.getEntreprise().getNom() != null
+                            ? demande.getEntreprise().getNom() : "",
+                    620, 561);
+            writeText(canvas1, font, 10,
+                    demande.getEntreprise().getAdresse() != null
+                            ? demande.getEntreprise().getAdresse() : "",
+                    620, 513);
+            writeText(canvas1, font, 10,
+                    demande.getEntreprise().getTelephone() != null
+                            ? demande.getEntreprise().getTelephone() : "",
+                    580, 410);
+        }
+
+        // Tuteur de stage
+        writeText(canvas1, font, 10,
+                demande.getTuteurStage() != null ? demande.getTuteurStage() : "",
+                630, 463);
+
+        // ── Pages journal (page 6 et suivantes) ──────────────────────
+        if (!entrees.isEmpty() && pdfDoc.getNumberOfPages() >= 6) {
+            int entreeIndex = 0;
+
+            for (int pageNum = 6;
+                 pageNum <= pdfDoc.getNumberOfPages() && entreeIndex < entrees.size();
+                 pageNum++) {
+
+                PdfPage   pageJournal   = pdfDoc.getPage(pageNum);
+                PdfCanvas canvasJournal = new PdfCanvas(pageJournal);
+                correctRotation(canvasJournal, pageJournal);
+
+                if (pageNum == 6) {
+                    // PAGE 6 : 1 seul tableau à DROITE — 18 lignes
+                    float y = 690;
+                    for (int i = 0; i < 18 && entreeIndex < entrees.size(); i++) {
+                        Journal entree = entrees.get(entreeIndex);
+                        writeText(canvasJournal, font, 8,
+                                entree.getDate() != null
+                                        ? formatDate(entree.getDate().toString()) : "",
+                                472, y);
+                        writeText(canvasJournal, font, 8,
+                                truncate(entree.getActivitesEtObservations(), 35),
+                                530, y);
+                        y -= 22;
+                        entreeIndex++;
+                    }
+                } else {
+                    // PAGES 7+ : 2 tableaux GAUCHE + DROITE — 21 lignes chacun
+                    float yGauche = 763;
+                    for (int i = 0; i < 21 && entreeIndex < entrees.size(); i++) {
+                        Journal entree = entrees.get(entreeIndex);
+                        writeText(canvasJournal, font, 8,
+                                entree.getDate() != null
+                                        ? formatDate(entree.getDate().toString()) : "",
+                                52, yGauche);
+                        writeText(canvasJournal, font, 8,
+                                truncate(entree.getActivitesEtObservations(), 35),
+                                120, yGauche);
+                        yGauche -= 21;
+                        entreeIndex++;
+                    }
+
+                    float yDroite = 763;
+                    for (int i = 0; i < 21 && entreeIndex < entrees.size(); i++) {
+                        Journal entree = entrees.get(entreeIndex);
+                        writeText(canvasJournal, font, 8,
+                                entree.getDate() != null
+                                        ? formatDate(entree.getDate().toString()) : "",
+                                472, yDroite);
+                        writeText(canvasJournal, font, 8,
+                                truncate(entree.getActivitesEtObservations(), 35),
+                                530, yDroite);
+                        yDroite -= 21;
+                        entreeIndex++;
+                    }
+                }
+            }
+        }
+
+        pdfDoc.close();
+        return baos.toByteArray();
+    }
+
+
+    // ================================================================
+    // SIGNATURE
+    // ================================================================
+    /** Signe une lettre (récupérée en base) et retourne le PDF signé. */
+
+    @Override
+    public byte[] signerLettre(Long documentId) throws Exception {
+        Document doc = documentDemandeRepository.findById(documentId)
+                .orElseThrow(() -> new RuntimeException("Document introuvable : " + documentId));
+
+        byte[] pdfSigne = ajouterSignature(doc.getContenu(),0, 1, 390f, 170f, 120f, 60f);
+
+        doc.setContenu(pdfSigne);
+        doc.setNomFichier("lettre_affectation_signee.pdf");
+        doc.setStatut(StatutDocument.VALIDE);
+        doc.setDateDecision(LocalDateTime.now());
+        documentDemandeRepository.save(doc);
+        return pdfSigne;
+    }
+    /** Signe une convention (récupérée en base) et retourne le PDF signé. */
+
+    @Override
+    public byte[] signerConvention(Long documentId) throws Exception {
+        Document doc = documentDemandeRepository.findById(documentId)
+                .orElseThrow(() -> new RuntimeException("Document introuvable : " + documentId));
+
+        byte[] pdfSigne = ajouterSignature(doc.getContenu(),1, 1, 390f, 80f, 120f, 60f);
+
+        doc.setContenu(pdfSigne);
+        doc.setNomFichier("convention_signee.pdf");
+        doc.setStatut(StatutDocument.VALIDE);
+        doc.setDateDecision(LocalDateTime.now());
+        documentDemandeRepository.save(doc);
+        return pdfSigne;
+    }
+    /** Signe une prolongation (récupérée en base) et retourne le PDF signé. */
+    @Override
+    public byte[] signerProlongation(Long documentId) throws Exception {
+        Document doc = documentDemandeRepository.findById(documentId)
+                .orElseThrow(() -> new RuntimeException("Document introuvable : " + documentId));
+
+        byte[] pdfSigne = ajouterSignature(doc.getContenu(), 2,1, 390f, 80f, 120f, 60f);
+
+        doc.setContenu(pdfSigne);
+        doc.setNomFichier("prolongation_signee.pdf");
+        doc.setStatut(StatutDocument.VALIDE);
+        doc.setDateDecision(LocalDateTime.now());
+        documentDemandeRepository.save(doc);
+        return pdfSigne;
+    }
+
+
+    private byte[] ajouterSignature(byte[] pdfOriginal,int type,
+                                    int    pageNumber,
+                                    float  x, float y,
+                                    float  width, float height) throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PdfDocument pdfDoc = new PdfDocument(
+                new PdfReader(new java.io.ByteArrayInputStream(pdfOriginal)),
+                new PdfWriter(baos));
+
+        drawSignatureBlock(pdfDoc,type, pageNumber, x, y, width, height);
+
+        pdfDoc.close();
+        return baos.toByteArray();
+    }
+
+    /**
+     * Dessine sur le canvas :
+     *   "A Tunis, le jj/mm/aaaa"
+     *   "Directrice de l'ENICarthage"
+     *   "(signature et cachet)"
+     *   + image signature.png
+     */
+    private void drawSignatureBlock(PdfDocument pdfDoc,int type,
+                                    int   pageNumber,
+                                    float x, float y,
+                                    float width, float height) throws Exception {
+        PdfPage   page   = pdfDoc.getPage(pageNumber);
+        PdfCanvas canvas = new PdfCanvas(page);
+        PdfFont   fontN  = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+        PdfFont   fontB  = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+        float     lh     = 14f;
+        if(type==0 ){
+//lettre d affectation
+            writeTextColor(canvas, fontN, 10f, new DeviceRgb(0, 0, 0),
+                    todayFormatted(), x+45, y + height + lh * 5);
+
+        }
+
+        else if (type==1) {
+            //convention
+            writeTextColor(canvas, fontN, 10f, new DeviceRgb(0, 0, 0),
+                    todayFormatted(), x+65, y + height + lh * 4);
+
+        }else {
+//prolongation
+            writeTextColor(canvas, fontN, 10f, new DeviceRgb(0, 0, 0),
+                    todayFormatted(), x+85, y + height + lh * 5);
+
+        }
+
+        /*  writeTextColor(canvas, fontB, 10f, new DeviceRgb(0, 0, 0),
+                "Directrice de l\u2019ENICarthage",  x, y + height + lh * 2);
+
+        writeTextColor(canvas, fontN,  9f, new DeviceRgb(80, 80, 80),
+                "(signature et cachet)",             x, y + height + lh);*/
+
+        // Image de signature
+        InputStream imgStream  = new ClassPathResource("static/signature.png").getInputStream();
+        byte[]      imageBytes = imgStream.readAllBytes();
+        ImageData   imageData  = ImageDataFactory.create(imageBytes);
+        canvas.addImageFittedIntoRectangle(imageData,
+                new Rectangle(x, y, width, height), false);
+
+        canvas.release();
+    }
+
     // ================================================================
     // UTILITAIRES  (portés depuis PdfGenerationService)
     // ================================================================
@@ -472,4 +554,7 @@ else if (type==1) {
             return 0;
         }
     }
+
+
+
 }

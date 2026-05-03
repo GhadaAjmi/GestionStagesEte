@@ -1,1 +1,239 @@
-<p>journal-stage works!</p>
+<main class="nxl-container">
+  <div class="nxl-content">
+
+    <div class="page-header">
+      <div class="page-header-left d-flex align-items-center">
+        <div class="page-header-title">
+          <h5 class="m-b-10">Journal de Stage</h5>
+        </div>
+        <ul class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a routerLink="/etudiant/dashboard">Accueil</a>
+          </li>
+          <li class="breadcrumb-item">Journal de Stage</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="main-content">
+
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+      </div>
+
+      <div *ngIf="!loading">
+
+        <div *ngIf="!demande" class="card">
+          <div class="card-body text-center py-5">
+            <i data-feather="alert-circle"
+               style="width:48px;height:48px;" class="text-warning mb-3"></i>
+            <h5 class="fw-bold">Aucun stage enregistré</h5>
+            <a routerLink="/etudiant/mon-stage" class="btn btn-primary">
+              Faire une demande
+            </a>
+          </div>
+        </div>
+
+        <div *ngIf="demande">
+
+          <!-- Infos stage + stats -->
+          <div class="row mb-4">
+            <div class="col-lg-4">
+              <div class="card">
+                <div class="card-body">
+                  <h6 class="fw-bold mb-3">Mon Stage</h6>
+                  <p class="text-muted fs-12 mb-1">
+                    <strong>Entreprise :</strong> {{ demande.entreprise}}
+                  </p>
+                  <p class="text-muted fs-12 mb-1">
+                    <strong>Du :</strong> {{ demande.dateDebut | date:'dd/MM/yyyy' }}
+                  </p>
+                  <p class="text-muted fs-12 mb-0">
+                    <strong>Au :</strong> {{ demande.dateFin | date:'dd/MM/yyyy' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="card">
+                <div class="card-body text-center">
+                  <div class="display-4 fw-bold text-primary">
+                    {{ entrees.length }}
+                  </div>
+                  <p class="text-muted mb-0">Entrées enregistrées</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="card">
+                <div class="card-body text-center">
+                  <button class="btn btn-success w-100 mb-2"
+                          (click)="showFormulaire = !showFormulaire">
+                    <i data-feather="plus" class="me-2"></i>
+                    Nouvelle entrée
+                  </button>
+                  <button class="btn btn-outline-primary w-100"
+                          (click)="telechargerJournalPDF()"
+                          [disabled]="entrees.length === 0">
+                    <i data-feather="download" class="me-2"></i>
+                    Générer PDF
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulaire nouvelle entrée -->
+          <div class="card mb-4" *ngIf="showFormulaire">
+            <div class="card-header">
+              <h5 class="card-title">
+                <i data-feather="edit" class="me-2"></i>
+                Nouvelle entrée du journal
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label fw-bold">
+                    Date <span class="text-danger">*</span>
+                  </label>
+                  <input type="date"
+                         class="form-control"
+                         [(ngModel)]="nouvelleEntree.dateEntree">
+                </div>
+                <div class="col-md-8">
+                  <label class="form-label fw-bold">
+                    Activités et Observations
+                    <span class="text-danger">*</span>
+                  </label>
+                  <textarea class="form-control"
+                            rows="4"
+                            [(ngModel)]="nouvelleEntree.activitesEtObservations"
+                            placeholder="Décrivez vos activités du jour...">
+                  </textarea>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer d-flex justify-content-end gap-2">
+              <button class="btn btn-light"
+                      (click)="showFormulaire = false">
+                Annuler
+              </button>
+              <button class="btn btn-success"
+                      (click)="ajouterEntree()"
+                      [disabled]="!nouvelleEntree.activitesEtObservations.trim()">
+                <i data-feather="save" class="me-2"></i>
+                Enregistrer
+              </button>
+            </div>
+          </div>
+
+          <!-- Liste des entrées -->
+          <div class="card" *ngIf="entrees.length > 0">
+            <div class="card-header">
+              <h5 class="card-title">
+                <i data-feather="book" class="me-2"></i>
+                Mes entrées
+              </h5>
+            </div>
+            <div class="card-body p-0">
+              <div *ngFor="let entree of entrees" class="p-4 border-bottom">
+
+                <!-- Mode lecture -->
+                <div *ngIf="entreeEnModification?.id !== entree.id">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar-text avatar-sm bg-soft-primary text-primary">
+                        <i data-feather="calendar"></i>
+                      </div>
+                      <span class="fw-bold text-dark">
+                        {{ entree.date | date:'EEEE dd MMMM yyyy' }}
+                      </span>
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button class="btn btn-sm btn-outline-primary"
+                              (click)="commencerModification(entree)">
+                        modifier
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger"
+                              (click)="supprimerEntree(entree.id)">
+                        supprimer
+                      </button>
+                    </div>
+                  </div>
+
+                  <p class="text-muted mb-0 ms-5">
+                    {{ entree.activitesEtObservations }}
+                  </p>
+
+                  <!-- Commentaire responsable -->
+                  <div *ngIf="entree.commentaireResponsable"
+                       class="mt-3 ms-5 p-3 bg-soft-primary rounded">
+                    <small class="fw-bold text-primary d-block mb-1">
+                      <i data-feather="message-circle" class="me-1"></i>
+                      Commentaire du responsable :
+                    </small>
+                    <p class="text-muted fs-12 mb-0">
+                      {{ entree.commentaireResponsable }}
+                    </p>
+                  </div>
+
+                 
+                </div>
+
+                <!-- Mode modification -->
+                <div *ngIf="entreeEnModification?.id === entree.id">
+                  <div class="row g-3">
+                    <div class="col-md-4">
+                      <label class="form-label fw-bold fs-12">Date</label>
+                      <input type="date"
+                             class="form-control form-control-sm"
+                             [(ngModel)]="entreeEnModification!.date">
+                    </div>
+                    <div class="col-md-8">
+                      <label class="form-label fw-bold fs-12">
+                        Activités et Observations
+                      </label>
+                      <textarea class="form-control form-control-sm"
+                                rows="3"
+                                [(ngModel)]="entreeEnModification!.activitesEtObservations">
+                      </textarea>
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-end gap-2 mt-2">
+                    <button class="btn btn-sm btn-light"
+                            (click)="entreeEnModification = null">
+                      Annuler
+                    </button>
+                    <button class="btn btn-sm btn-primary"
+                            (click)="sauvegarderModification()">
+                      <i data-feather="save" class="me-1"></i>
+                      Sauvegarder
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Journal vide -->
+          <div class="card" *ngIf="entrees.length === 0">
+            <div class="card-body text-center py-5">
+              <i data-feather="book-open"
+                 style="width:48px;height:48px;" class="text-muted mb-3"></i>
+              <h5 class="fw-bold text-muted">Journal vide</h5>
+              <p class="text-muted mb-0">
+                Commencez à remplir votre journal dès aujourd'hui !
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+ 

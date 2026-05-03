@@ -5,8 +5,6 @@ package com.enicar.projet.services.interfaces;
 import com.enicar.projet.dtos.PlanificationGroupeDTO;
 import com.enicar.projet.dtos.SoutenanceDTO;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 public interface SoutenanceService {

@@ -1,1 +1,451 @@
-<p>demande-stage works!</p>
+<main class="nxl-container">
+  <div class="nxl-content">
+<div class="page-header">
+  <div class="page-header-left d-flex align-items-center">
+    <div class="page-header-title">
+      <h5 class="m-b-10">Demande de Stage</h5>
+    </div>
+    <ul class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/dashboard">Accueil</a></li>
+      <li class="breadcrumb-item">Demande de Stage</li>
+    </ul>
+  </div>
+</div>
+
+<div class="main-content">
+  <div class="row">
+
+    <!-- Formulaire principal -->
+    <div class="col-lg-8">
+
+      <!-- Étapes de progression -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <!-- Étape 1 -->
+            <div class="d-flex flex-column align-items-center">
+              <div class="avatar-text avatar-md"
+                   [ngClass]="etapeActuelle >= 1 ?
+                   'bg-primary text-white' : 'bg-soft-secondary text-secondary'">
+                <i data-feather="file-text"></i>
+              </div>
+              <span class="fs-11 mt-1 fw-bold">Entreprise</span>
+            </div>
+
+            <!-- Ligne -->
+            <div class="flex-grow-1 mx-2 border-top border-2"
+                 [ngClass]="etapeActuelle >= 2 ?
+                 'border-primary' : 'border-secondary'"></div>
+
+            <!-- Étape 2 -->
+            <div class="d-flex flex-column align-items-center">
+              <div class="avatar-text avatar-md"
+                   [ngClass]="etapeActuelle >= 2 ?
+                   'bg-primary text-white' : 'bg-soft-secondary text-secondary'">
+                <i data-feather="briefcase"></i>
+              </div>
+              <span class="fs-11 mt-1 fw-bold">Stage</span>
+            </div>
+
+            <!-- Ligne -->
+            <div class="flex-grow-1 mx-2 border-top border-2"
+                 [ngClass]="etapeActuelle >= 3 ?
+                 'border-primary' : 'border-secondary'"></div>
+
+            <!-- Étape 3 -->
+            <div class="d-flex flex-column align-items-center">
+              <div class="avatar-text avatar-md"
+                   [ngClass]="etapeActuelle >= 3 ?
+                   'bg-primary text-white' : 'bg-soft-secondary text-secondary'">
+                <i data-feather="check-circle"></i>
+              </div>
+              <span class="fs-11 mt-1 fw-bold">Confirmation</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Succès -->
+      <div *ngIf="etapeActuelle === 4" class="card">
+        <div class="card-body text-center py-5">
+          <div class="avatar-text avatar-xl bg-soft-success text-success mx-auto mb-4">
+            <i data-feather="check-circle" style="width:40px;height:40px;"></i>
+          </div>
+          <h4 class="fw-bold text-dark">Stage Validé !</h4>
+          <p class="text-muted mb-4">
+            Vous pouvez maintenant télécharger vos documents officiels.
+          </p>
+          <div class="d-flex justify-content-center gap-3">
+            <button class="btn btn-primary"
+                    (click)="telechargerPDF('lettre-affectation')">
+              <i data-feather="download" class="me-2"></i>
+              Lettre d'affectation
+            </button>
+            <button class="btn btn-outline-primary"
+                    (click)="telechargerPDF('convention')">
+              <i data-feather="download" class="me-2"></i>
+              Convention de stage
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulaire -->
+      <form [formGroup]="stageForm" *ngIf="etapeActuelle < 4">
+
+        <!-- Étape 1 : Infos Entreprise -->
+        <div class="card" *ngIf="etapeActuelle === 1">
+          <div class="card-header">
+            <h5 class="card-title">
+              <i data-feather="building" class="me-2"></i>
+              Informations de l'Entreprise
+            </h5>
+          </div>
+          <div class="card-body">
+
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label fw-bold">
+                  Nom de l'entreprise <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       class="form-control"
+                       formControlName="entreprise"
+                       placeholder="Ex: TunisieTelecom">
+                <div *ngIf="stageForm.get('entreprise')?.invalid &&
+                            stageForm.get('entreprise')?.touched"
+                     class="text-danger fs-12 mt-1">
+                  Ce champ est obligatoire
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label class="form-label fw-bold">
+                  Adresse <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       class="form-control"
+                       formControlName="adresseEntreprise"
+                       placeholder="Ex: Tunis, Tunisie">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">
+                  Représentant <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       class="form-control"
+                       formControlName="representantEntreprise"
+                       placeholder="Ex: Mr. Mohamed">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">
+                  Tuteur de stage <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       class="form-control"
+                       formControlName="tuteurStage"
+                       placeholder="Ex: Mr. Salah">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">
+                  Email entreprise <span class="text-danger">*</span>
+                </label>
+                <input type="email"
+                       class="form-control"
+                       formControlName="emailEntreprise"
+                       placeholder="contact@entreprise.tn">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">
+                  Téléphone <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       class="form-control"
+                       formControlName="telephoneEntreprise"
+                       placeholder="Ex: 71 123 456">
+              </div>
+            </div>
+
+          </div>
+          <div class="card-footer d-flex justify-content-end">
+            <button class="btn btn-primary" (click)="etapeSuivante()">
+              Suivant <i data-feather="arrow-right" class="ms-2"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Étape 2 : Infos Stage -->
+        <div class="card" *ngIf="etapeActuelle === 2">
+          <div class="card-header">
+            <h5 class="card-title">
+              <i data-feather="briefcase" class="me-2"></i>
+              Informations du Stage
+            </h5>
+          </div>
+          <div class="card-body">
+
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label fw-bold">
+                  Sujet du stage <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       class="form-control"
+                       formControlName="sujet"
+                       placeholder="Ex: Développement d'une application web">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">
+                  Date de début <span class="text-danger">*</span>
+                </label>
+                <input type="date"
+                       class="form-control"
+                       formControlName="dateDebut">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">
+                  Date de fin <span class="text-danger">*</span>
+                </label>
+                <input type="date"
+                       class="form-control"
+                       formControlName="dateFin">
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label fw-bold">
+                  Année universitaire <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       class="form-control"
+                       formControlName="anneeUniversitaire"
+                       placeholder="Ex: 2025/2026">
+              </div>
+            </div>
+
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <button class="btn btn-light" (click)="etapePrecedente()">
+              <i data-feather="arrow-left" class="me-2"></i> Retour
+            </button>
+            <button class="btn btn-primary" (click)="etapeSuivante()">
+              Suivant <i data-feather="arrow-right" class="ms-2"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Étape 3 : Confirmation -->
+        <div class="card" *ngIf="etapeActuelle === 3">
+          <div class="card-header">
+            <h5 class="card-title">
+              <i data-feather="check-circle" class="me-2"></i>
+              Confirmation
+            </h5>
+          </div>
+          <div class="card-body">
+
+            <div class="alert alert-info mb-4">
+              <i data-feather="info" class="me-2"></i>
+              Vérifiez vos informations avant de soumettre.
+            </div>
+
+            <!-- Résumé -->
+            <div class="row g-3">
+              <div class="col-md-6">
+                <div class="p-3 border border-dashed rounded">
+                  <h6 class="fw-bold text-dark mb-3">Entreprise</h6>
+                  <p class="text-muted fs-12 mb-1">
+                    <strong>Nom :</strong>
+                    {{ stageForm.get('entreprise')?.value }}
+                  </p>
+                  <p class="text-muted fs-12 mb-1">
+                    <strong>Tuteur :</strong>
+                    {{ stageForm.get('tuteurStage')?.value }}
+                  </p>
+                  <p class="text-muted fs-12 mb-0">
+                    <strong>Email :</strong>
+                    {{ stageForm.get('emailEntreprise')?.value }}
+                  </p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 border border-dashed rounded">
+                  <h6 class="fw-bold text-dark mb-3">Stage</h6>
+                  <p class="text-muted fs-12 mb-1">
+                    <strong>Sujet :</strong>
+                    {{ stageForm.get('sujet')?.value }}
+                  </p>
+                  <p class="text-muted fs-12 mb-1">
+                    <strong>Début :</strong>
+                    {{ stageForm.get('dateDebut')?.value | date:'dd/MM/yyyy' }}
+                  </p>
+                  <p class="text-muted fs-12 mb-0">
+                    <strong>Fin :</strong>
+                    {{ stageForm.get('dateFin')?.value | date:'dd/MM/yyyy' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Erreur -->
+            <div *ngIf="erreur" class="alert alert-danger mt-3">
+              {{ erreur }}
+            </div>
+
+          </div>
+          <div class="card-footer d-flex justify-content-between">
+            <button class="btn btn-light" (click)="etapePrecedente()">
+              <i data-feather="arrow-left" class="me-2"></i> Retour
+            </button>
+            <button class="btn btn-success"
+                    (click)="soumettre()"
+                    [disabled]="loading">
+              <span *ngIf="loading"
+                    class="spinner-border spinner-border-sm me-2"></span>
+              <i *ngIf="!loading" data-feather="send" class="me-2"></i>
+              Soumettre la demande
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Sidebar droite : Processus -->
+    <div class="col-lg-4">
+      <div class="card bg-primary text-white">
+        <div class="card-body p-4">
+          <h5 class="text-white fw-bold mb-4">Processus de Stage</h5>
+
+          <div class="d-flex gap-3 mb-3">
+            <div class="avatar-text avatar-sm bg-white text-primary fw-bold">1</div>
+            <div>
+              <h6 class="text-white fw-bold mb-1">Inscription</h6>
+              <p class="text-white-50 fs-12 mb-0">
+                Remplir le formulaire pour générer automatiquement la convention.
+              </p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3 mb-3">
+            <div class="avatar-text avatar-sm bg-white text-primary fw-bold">2</div>
+            <div>
+              <h6 class="text-white fw-bold mb-1">Signature</h6>
+              <p class="text-white-50 fs-12 mb-0">
+                Faire signer les documents par l'entreprise et les déposer.
+              </p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3 mb-3">
+            <div class="avatar-text avatar-sm bg-white text-primary fw-bold">3</div>
+            <div>
+              <h6 class="text-white fw-bold mb-1">Validation</h6>
+              <p class="text-white-50 fs-12 mb-0">
+                L'administration examine et signe électroniquement.
+              </p>
+            </div>
+          </div>
+
+          <div class="d-flex gap-3">
+            <div class="avatar-text avatar-sm bg-white text-primary fw-bold">4</div>
+            <div>
+              <h6 class="text-white fw-bold mb-1">Soutenance</h6>
+              <p class="text-white-50 fs-12 mb-0">
+                Dépôt du rapport final et planification.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Stage existant -->
+      <div class="card mt-3" *ngIf="stageExistant">
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="avatar-text avatar-md bg-soft-success text-success">
+              <i data-feather="check-circle"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-0">Stage Enregistré</h6>
+              <span class="fs-12 text-muted">{{ stageExistant.statut }}</span>
+            </div>
+          </div>
+          <p class="text-muted fs-12 mb-1">
+            <strong>Entreprise :</strong> {{ stageExistant.entreprise }}
+          </p>
+          <p class="text-muted fs-12 mb-3">
+            <strong>Sujet :</strong> {{ stageExistant.sujet }}
+          </p>
+          <div class="d-grid gap-2">
+            <button class="btn btn-sm btn-outline-primary"
+                    (click)="telechargerPDF('lettre-affectation')">
+              <i data-feather="download" class="me-1"></i>
+              Lettre d'affectation
+            </button>
+            <button class="btn btn-sm btn-outline-primary"
+                    (click)="telechargerPDF('convention')">
+              <i data-feather="download" class="me-1"></i>
+              Convention de stage
+            </button>
+          </div>
+          <!-- Prolongation optionnelle -->
+<div class="mt-3 border-top pt-3">
+  <h6 class="fw-bold text-dark mb-2">Prolongation</h6>
+
+  <div *ngIf="!showProlongation">
+    <p class="text-muted fs-12 mb-2">
+      Besoin de prolonger votre stage ?
+    </p>
+    <button class="btn btn-sm btn-outline-warning w-100"
+            (click)="showProlongation = true">
+      <i data-feather="clock" class="me-1"></i>
+      Demander une prolongation
+    </button>
+  </div>
+
+  <div *ngIf="showProlongation">
+    <label class="form-label fw-bold fs-12">
+      Nouvelle date de fin <span class="text-danger">*</span>
+    </label>
+    <input type="date"
+           class="form-control form-control-sm mb-2"
+           [(ngModel)]="dateFinProlongation">
+    <div class="d-grid gap-2">
+      <button class="btn btn-sm btn-warning"
+              (click)="soumettrePrologation()"
+              [disabled]="!dateFinProlongation">
+        <i data-feather="save" class="me-1"></i>
+        Confirmer la prolongation
+      </button>
+      <button class="btn btn-sm btn-outline-secondary"
+              (click)="showProlongation = false">
+        Annuler
+      </button>
+    </div>
+    <button class="btn btn-sm btn-outline-primary w-100 mt-2"
+    (click)="telechargerPDF('prolongation')">
+  <i data-feather="download" class="me-1"></i>
+  Télécharger l'avenant
+</button>
+  </div>
+
+</div>
+        </div>
+        
+      </div>
+      
+
+    </div>
+  </div>
+</div>
+</div>
+</main>

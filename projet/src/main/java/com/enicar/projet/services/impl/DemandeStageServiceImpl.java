@@ -1,20 +1,27 @@
 package com.enicar.projet.services.impl;
 
-import com.enicar.projet.dtos.DemandeStageDTO;
-import com.enicar.projet.entities.DemandeStage;
-import com.enicar.projet.entities.Etudiant;
-import com.enicar.projet.entities.StatutDemande;
+import com.enicar.projet.dtos.*;
+import com.enicar.projet.entities.*;
 import com.enicar.projet.exceptions.NotFoundException;
 import com.enicar.projet.repositories.DemandeStageRepository;
+import com.enicar.projet.repositories.EntrepriseRepository;
 import com.enicar.projet.repositories.UtilisateurRepository;
 import com.enicar.projet.services.interfaces.DemandeStageService;
+import com.enicar.projet.services.interfaces.DocumentDemandeService;
+import com.enicar.projet.services.interfaces.PdfService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +29,11 @@ public class DemandeStageServiceImpl implements DemandeStageService {
 
     private final DemandeStageRepository repository;
     private final UtilisateurRepository etudiantRepository;
+    private final EntrepriseRepository entrepriseRepository;
+    private final DemandeStageRepository demandeStageRepository;
+    private final DocumentDemandeService documentService;
+
+    private final PdfService pdfService;
 
     @Override
     public DemandeStageDTO save(DemandeStageDTO dto) {
@@ -37,6 +49,7 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         ds.setSujet(dto.getSujet());
         ds.setDateDebut(dto.getDateDebut());
         ds.setDateFin(dto.getDateFin());
+        ds.setTuteurStage(dto.getTuteurStage());
 
         ds.setStatut(dto.getStatut());
         ds.setEtudiant(etudiant);
@@ -94,6 +107,7 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         ds.setStatut(dto.getStatut());
         ds.setDateDebut(dto.getDateDebut());
         ds.setDateFin(dto.getDateFin());
+        ds.setTuteurStage(dto.getTuteurStage());
 
         ds.setEtudiant(etudiant);
 
@@ -106,6 +120,7 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         if (ds == null) return null;
 
         DemandeStageDTO dto = new DemandeStageDTO();
+        dto.setTuteurStage(ds.getTuteurStage());
 
         dto.setId(ds.getId());
         dto.setSujet(ds.getSujet());
@@ -113,7 +128,11 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         dto.setDateDemande(ds.getDateDemande());
         dto.setDateDebut(ds.getDateDebut());
         dto.setDateFin(ds.getDateFin());
-
+        dto.setAnneeUniversitaire(
+                ds.getDateDemande() != null
+                        ? String.valueOf(ds.getDateDemande().getYear())
+                        : ""
+        );
         // Entreprise peut être null au début
         if (ds.getEntreprise() != null) {
             dto.setEntreprise(ds.getEntreprise().getNom());
@@ -143,5 +162,208 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         DemandeStage updated = repository.save(ds);
 
         return toDTO(updated);
+    }
+@Transactional
+    @Override
+    public byte[]  soumettreDemandeComplete(DemandeRequestDTO request) {
+
+        // 1. Récupérer l'étudiant
+        Etudiant etudiant = (Etudiant) etudiantRepository.findById(request.getEtudiantId())
+                .orElseThrow(() -> new RuntimeException("Étudiant introuvable"));
+
+        // 2. Créer l'entreprise
+        Entreprise entreprise = new Entreprise();
+        entreprise.setNom(request.getEntreprise());
+        entreprise.setAdresse(request.getAdresseEntreprise());
+        entreprise.setRepresentant(request.getRepresentantEntreprise());
+        entreprise.setEmail(request.getEmailEntreprise());
+        entreprise.setTelephone(request.getTelephoneEntreprise());
+        entreprise.setFax(request.getFaxEntreprise());
+
+        entreprise = entrepriseRepository.save(entreprise);
+
+        // 3. Créer la demande
+        DemandeStage demande = new DemandeStage();
+        demande.setSujet(request.getSujet());
+        demande.setDateDebut(LocalDate.parse(request.getDateDebut()));
+        demande.setDateFin(LocalDate.parse(request.getDateFin()));
+        demande.setStatut(StatutDemande.SOUMISE);
+        demande.setDateDemande(LocalDateTime.now());
+        demande.setEtudiant(etudiant);
+        demande.setEntreprise(entreprise);
+        demande.setTuteurStage(request.getTuteurStage());
+        demande = demandeStageRepository.save(demande);
+
+        // 4. Préparer LettreRequestDTO
+        LettreRequestDTO lettreDTO = new LettreRequestDTO();
+        lettreDTO.setNomEtudiant(etudiant.getNom());
+        lettreDTO.setPrenomEtudiant(etudiant.getPrenom());
+        lettreDTO.setCin(etudiant.getCin());
+        lettreDTO.setDateDelivranceCin(etudiant.getDateDelivranceCin());
+        lettreDTO.setLieuDelivranceCin(etudiant.getLieuDelivranceCin());
+        lettreDTO.setNiveau(etudiant.getNiveau());
+        lettreDTO.setSpecialite(etudiant.getSpecialite());
+        lettreDTO.setEntreprise(entreprise.getNom());
+        lettreDTO.setDateDebut(formatDateFr(demande.getDateDebut()));
+        lettreDTO.setDateFin(formatDateFr(demande.getDateFin()));
+
+        // 5. Générer et enregistrer lettre
+        byte[] lettrePdf;
+
+        try {
+            lettrePdf = pdfService.generateLettre(demande.getId(), lettreDTO);
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Erreur lors de la génération de la lettre d'affectation pour la demande ID : "
+                            + demande.getId(),
+                    e
+            );
+        }
+
+        // 6. Préparer ConventionRequestDTO
+        ConventionRequestDTO conventionDTO = new ConventionRequestDTO();
+
+        conventionDTO.setEntreprise(entreprise.getNom());
+        conventionDTO.setAdresseEntreprise(entreprise.getAdresse());
+        conventionDTO.setRepresentantEntreprise(entreprise.getRepresentant());
+        conventionDTO.setTuteurStage(demande.getTuteurStage());
+        conventionDTO.setEmailEntreprise(entreprise.getEmail());
+        conventionDTO.setTelephoneEntreprise(entreprise.getTelephone());
+        conventionDTO.setFaxEntreprise(entreprise.getFax());
+
+        conventionDTO.setNomEtudiant(etudiant.getNom());
+        conventionDTO.setPrenomEtudiant(etudiant.getPrenom());
+        conventionDTO.setCin(etudiant.getCin());
+        conventionDTO.setTelephone(etudiant.getTelephone());
+        conventionDTO.setEmail(etudiant.getEmail());
+        conventionDTO.setSpecialite(etudiant.getSpecialite());
+
+        conventionDTO.setDateDebut(formatDateFr(demande.getDateDebut()));
+        conventionDTO.setDateFin(formatDateFr(demande.getDateFin()));
+
+        conventionDTO.setIng(isIngenieur(etudiant.getNiveau()));
+        conventionDTO.setMastere(isMastere(etudiant.getNiveau()));
+
+        conventionDTO.setInfo(isInfo(etudiant.getSpecialite()));
+        conventionDTO.setElectrique(isElectrique(etudiant.getSpecialite()));
+        conventionDTO.setIndus(isIndus(etudiant.getSpecialite()));
+
+        conventionDTO.setPremiere(isPremiereAnnee(etudiant.getNiveau()));
+        conventionDTO.setDeuxieme(isDeuxiemeAnnee(etudiant.getNiveau()));
+
+        // 7. Générer et enregistrer convention
+
+        byte[] conventionPdf;
+        try {
+           conventionPdf =  pdfService.generateConvention(demande.getId(), conventionDTO);
+
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Erreur lors de la génération de la lettre de convetion pour la demande ID : "
+                            + demande.getId(),
+                    e
+            );
+        }
+
+        // 8. Retourner la réponse frontend
+        return creerZipDocuments(lettrePdf, conventionPdf);
+
+    }
+    private byte[] creerZipDocuments(byte[] lettrePdf, byte[] conventionPdf) {
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+            try (ZipOutputStream zipOutputStream = new ZipOutputStream(byteArrayOutputStream)) {
+
+                ZipEntry lettreEntry = new ZipEntry("lettre_affectation.pdf");
+                zipOutputStream.putNextEntry(lettreEntry);
+                zipOutputStream.write(lettrePdf);
+                zipOutputStream.closeEntry();
+
+                ZipEntry conventionEntry = new ZipEntry("convention.pdf");
+                zipOutputStream.putNextEntry(conventionEntry);
+                zipOutputStream.write(conventionPdf);
+                zipOutputStream.closeEntry();
+            }
+
+            return byteArrayOutputStream.toByteArray();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la création du fichier ZIP", e);
+        }
+    }
+    private String formatDateFr(LocalDate date) {
+        if (date == null) {
+            return "";
+        }
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        return date.format(formatter);
+    }
+
+    private String formatDateFr(String date) {
+        if (date == null || date.isBlank()) {
+            return "";
+        }
+
+        LocalDate localDate = LocalDate.parse(date);
+        return formatDateFr(localDate);
+    }
+
+    private boolean isMastere(String niveau) {
+        if (niveau == null) return false;
+
+        String value = niveau.toLowerCase();
+        return value.contains("master") || value.contains("mastère");
+    }
+
+    private boolean isIngenieur(String niveau) {
+        return !isMastere(niveau);
+    }
+
+    private boolean isInfo(String specialite) {
+        if (specialite == null) return false;
+
+        String value = specialite.toLowerCase();
+        return value.contains("info") ||
+                value.contains("informatique") ||
+                value.contains("data") ||
+                value.contains("logiciel");
+    }
+
+    private boolean isElectrique(String specialite) {
+        if (specialite == null) return false;
+
+        String value = specialite.toLowerCase();
+        return value.contains("electrique") ||
+                value.contains("électrique") ||
+                value.contains("electronique") ||
+                value.contains("électronique");
+    }
+
+    private boolean isIndus(String specialite) {
+        if (specialite == null) return false;
+
+        String value = specialite.toLowerCase();
+        return value.contains("indus") ||
+                value.contains("industriel");
+    }
+
+    private boolean isPremiereAnnee(String niveau) {
+        if (niveau == null) return false;
+
+        String value = niveau.toLowerCase();
+
+        return value.equals("1")   ;
+    }
+
+    private boolean isDeuxiemeAnnee(String niveau) {
+        if (niveau == null) return false;
+
+        String value = niveau.toLowerCase();
+
+        return value.equals("2") ;
+
+
     }
 }

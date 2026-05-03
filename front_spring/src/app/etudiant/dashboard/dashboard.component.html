@@ -1,1 +1,228 @@
-<p>dashboard works!</p>
+<main class="nxl-container">
+  <div class="nxl-content">
+<div class="page-header">
+  <div class="page-header-left d-flex align-items-center">
+    <div class="page-header-title">
+      <h5 class="m-b-10">Tableau de bord</h5>
+    </div>
+    <ul class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#">Accueil</a></li>
+      <li class="breadcrumb-item">Dashboard</li>
+    </ul>
+  </div>
+</div>
+
+<div class="main-content">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+
+  <div *ngIf="!loading">
+
+    <!-- Bonjour -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <h4 class="fw-bold text-dark">
+          Bonjour, {{ etudiant?.prenom }} {{ etudiant?.nom }} ! 
+        </h4>
+        <p class="text-muted">Voici un aperçu de vos activités récentes.</p>
+      </div>
+    </div>
+
+    <div class="row">
+
+      <!-- Timeline -->
+      <div class="col-lg-8">
+        <div class="card stretch stretch-full">
+          <div class="card-header">
+            <h5 class="card-title">État d'avancement</h5>
+          </div>
+          <div class="card-body">
+
+  <!-- Étape 1 : Demande de Stage -->
+  <div class="d-flex align-items-center mb-4">
+    <div class="avatar-text avatar-md me-3"
+         [ngClass]="getStepIconClass(1)">
+      <i [attr.data-feather]="getStepIcon(1)"></i>
+    </div>
+    <div class="flex-grow-1">
+      <h6 class="mb-0 fw-bold" [class.text-muted]="getStepStatus(1) === 'pending'">
+        Demande de Stage
+      </h6>
+      <span class="text-muted fs-12">
+        {{ demande?.dateDemande | date:'dd MMM yyyy' }}
+      </span>
+    </div>
+    <span class="badge" [ngClass]="getStepBadgeClass(1)">
+      {{ getStepLabel(1) }}
+    </span>
+  </div>
+
+  <div class="ms-3 mb-3 border-start border-2 ps-3"
+       [ngClass]="getConnectorClass(1)"
+       style="height:20px;"></div>
+
+  <!-- Étape 2 : Période de Stage -->
+  <div class="d-flex align-items-center mb-4">
+    <div class="avatar-text avatar-md me-3"
+         [ngClass]="getStepIconClass(2)">
+      <i [attr.data-feather]="getStepIcon(2)"></i>
+    </div>
+    <div class="flex-grow-1">
+      <h6 class="mb-0 fw-bold" [class.text-muted]="getStepStatus(2) === 'pending'">
+        Période de Stage
+      </h6>
+      <span class="text-muted fs-12">
+        {{ demande?.dateDebut | date:'dd MMM' }} →
+        {{ demande?.dateFin | date:'dd MMM yyyy' }}
+      </span>
+    </div>
+    <span class="badge" [ngClass]="getStepBadgeClass(2)">
+      {{ getStepLabel(2) }}
+    </span>
+  </div>
+
+  <div class="ms-3 mb-3 border-start border-2 ps-3"
+       [ngClass]="getConnectorClass(2)"
+       style="height:20px;"></div>
+
+  <!-- Étape 3 : Dépôt du livrable -->
+  <div class="d-flex align-items-center mb-4">
+    <div class="avatar-text avatar-md me-3"
+         [ngClass]="getStepIconClass(3)">
+      <i [attr.data-feather]="getStepIcon(3)"></i>
+    </div>
+    <div class="flex-grow-1">
+      <h6 class="mb-0 fw-bold" [class.text-muted]="getStepStatus(3) === 'pending'">
+        Dépôt du livrable final
+      </h6>
+      <span class="text-muted fs-12">
+        <ng-container *ngIf="getStepStatus(3) === 'done'">Déposé</ng-container>
+        <ng-container *ngIf="getStepStatus(3) !== 'done'">En attente</ng-container>
+      </span>
+    </div>
+    <span class="badge" [ngClass]="getStepBadgeClass(3)">
+      {{ getStepLabel(3) }}
+    </span>
+  </div>
+
+  <div class="ms-3 mb-3 border-start border-2 ps-3"
+       [ngClass]="getConnectorClass(3)"
+       style="height:20px;"></div>
+
+  <!-- Étape 4 : Soutenance -->
+  <div class="d-flex align-items-center">
+    <div class="avatar-text avatar-md me-3"
+         [ngClass]="getStepIconClass(4)">
+      <i [attr.data-feather]="getStepIcon(4)"></i>
+    </div>
+    <div class="flex-grow-1">
+      <h6 class="mb-0 fw-bold" [class.text-muted]="getStepStatus(4) === 'pending'">
+        Soutenance
+      </h6>
+      <span class="text-muted fs-12">
+        <ng-container *ngIf="getStepStatus(4) === 'done'">Validée</ng-container>
+        <ng-container *ngIf="getStepStatus(4) !== 'done'">En attente</ng-container>
+      </span>
+    </div>
+    <span class="badge" [ngClass]="getStepBadgeClass(4)">
+      {{ getStepLabel(4) }}
+    </span>
+  </div>
+
+</div>
+        </div>
+      </div>
+
+      <!-- Colonne droite -->
+      <div class="col-lg-4">
+
+        <!-- Prochaine Échéance -->
+        <div class="card bg-primary text-white">
+          <div class="card-body text-center p-4">
+            <i data-feather="calendar" class="mb-3" style="width:40px;height:40px;"></i>
+            <h5 class="text-white fw-bold">Prochaine Échéance</h5>
+            <p class="text-white-50">Dépôt du livrable final</p>
+            <div class="display-4 fw-bold text-white my-3">
+              {{ joursRestants }}
+            </div>
+            <p class="text-white-50 mb-0">Jours restants</p>
+          </div>
+        </div>
+
+        <!-- Mes Documents -->
+        <div class="card mt-3">
+          <div class="card-body">
+            <h6 class="fw-bold mb-3">Mes Documents</h6>
+
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted fs-12">Lettre d'affectation</span>
+              <span class="badge" [ngClass]="getBadgeClass('LETTRE_AFFECTATION')">
+                {{ getBadgeLabel('LETTRE_AFFECTATION') }}
+              </span>
+            </div>
+
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted fs-12">Convention</span>
+              <span class="badge" [ngClass]="getBadgeClass('CONVENTION')">
+                {{ getBadgeLabel('CONVENTION') }}
+              </span>
+            </div>
+
+            <div class="d-flex justify-content-between mb-2">
+              <span class="text-muted fs-12">Journal de demande</span>
+              <span class="badge bg-soft-primary text-primary">En cours</span>
+            </div>
+
+            <div class="d-flex justify-content-between mb-2">
+  <span class="text-muted fs-12">
+    {{ etudiant?.niveau === '1' ? 'Poster' : 'Présentation' }}
+  </span>
+  <span class="badge"
+    [ngClass]="getBadgeClass(etudiant?.niveau === '1A' ? 'POSTER' : 'PRESENTATION')">
+    {{ getBadgeLabel(etudiant?.niveau === '1' ? 'POSTER' : 'PRESENTATION') }}
+  </span>
+</div>
+
+            <div class="d-flex justify-content-between mb-2">
+  <span class="text-muted fs-12">Attestation de demande</span>
+  <span class="badge"
+    [ngClass]="getBadgeClass('ATTESTATION')">
+    {{ getBadgeLabel('ATTESTATION') }}
+  </span>
+</div>
+
+            <div class="d-flex justify-content-between">
+              <span class="text-muted fs-12">Rapport final</span>
+              <span class="badge" [ngClass]="getBadgeClass('RAPPORT_FINAL')">
+                {{ getBadgeLabel('RAPPORT_FINAL') }}
+              </span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Infos demande -->
+        <div class="card mt-3" *ngIf="demande">
+          <div class="card-body">
+            <h6 class="fw-bold mb-3">Ma demande</h6>
+            <p class="text-muted fs-12 mb-1">
+              <strong>Entreprise :</strong> {{ demande.entreprise}}
+            </p>
+            <p class="text-muted fs-12 mb-1">
+              <strong>Sujet :</strong> {{ demande.sujet }}
+            </p>
+            
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</main>

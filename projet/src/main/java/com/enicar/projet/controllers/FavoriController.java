@@ -7,25 +7,31 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// FavoriController.java
 @RestController
 @RequestMapping("/api/favoris")
 @RequiredArgsConstructor
-@CrossOrigin("*")
-
 public class FavoriController {
 
     private final FavoriService favoriService;
 
     // Toggle favori
     @PostMapping("/{travailId}/toggle")
-    public ResponseEntity<Boolean> toggle(@PathVariable Long travailId) {
-        return ResponseEntity.ok(favoriService.toggleFavori(travailId));
+    public ResponseEntity<Boolean> toggle(
+            @PathVariable Long travailId,
+            @RequestParam Long utilisateurId
+    ) {
+        return ResponseEntity.ok(
+                favoriService.toggleFavori(utilisateurId, travailId)
+        );
     }
 
-    // Récupérer les IDs favoris de l'utilisateur connecté
-    @GetMapping()
-    public ResponseEntity<List<Long>> getMesIds() {
-        return ResponseEntity.ok(favoriService.getMesFavorisIds());
+    // Récupérer les IDs favoris d'un utilisateur
+    @GetMapping
+    public ResponseEntity<List<Long>> getMesIds(
+            @RequestParam Long utilisateurId
+    ) {
+        return ResponseEntity.ok(
+                favoriService.getMesFavorisIds(utilisateurId)
+        );
     }
 }

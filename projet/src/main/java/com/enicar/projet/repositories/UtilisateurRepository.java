@@ -111,4 +111,5 @@ AND e.id NOT IN (
     List<Enseignant> findEnseignantsActifsByDepartement(
             @Param("departement") String departement
     );
+
 }

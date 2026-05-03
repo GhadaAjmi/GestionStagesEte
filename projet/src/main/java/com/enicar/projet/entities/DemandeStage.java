@@ -25,6 +25,9 @@ public class DemandeStage {
     @Column(nullable = false, length = 200)
     private String sujet;
 
+    @Column(nullable = false, length = 200)
+    private String tuteurStage;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "entreprise_id", nullable = true)
     private Entreprise entreprise;

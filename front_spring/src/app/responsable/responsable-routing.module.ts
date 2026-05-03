@@ -17,6 +17,7 @@ const routes: Routes = [
     { path: 'soutenances/planning', component: PlanningIng1Component },
 
   { path: 'soutenances/edit-groupe/:id', component: EditSoutenanceComponent },
+  { path: '', component: DemandesstageComponent},
 
   { path: 'demandes', component: DemandesstageComponent},
   { path: 'demandes/details', component: DemandeDetailsComponent },

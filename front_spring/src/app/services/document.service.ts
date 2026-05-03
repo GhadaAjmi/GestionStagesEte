@@ -151,4 +151,33 @@ export class DocumentService {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+  getDocumentsByDemande(demandeId: number): Observable<DocumentDemande[]> {
+    return this.http.get<DocumentDemande[]>(
+      `${this.apiUrl}/demande/${demandeId}`
+    );
+  }
+
+  deposerDocument(formData: FormData): Observable<any> {
+    return this.http.post(
+      `${this.apiUrl}`, formData  
+    );
+  }
+
+  supprimerDocument(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  telechargerDocument(id: number): Observable<Blob> {
+    return this.http.get(
+      `${this.apiUrl}/telecharger/${id}`,
+      { responseType: 'blob' }
+    );
+  }
+
+  ouvrirDocument(id: number): Observable<Blob> {
+    return this.http.get(
+      `${this.apiUrl}/ouvrir/${id}`,
+      { responseType: 'blob' }
+    );
+  }
 }

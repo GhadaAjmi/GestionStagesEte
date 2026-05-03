@@ -150,6 +150,7 @@ public class DocumentDemandeServiceImpl implements DocumentDemandeService {
                 .anneeDepot(doc.getDateDepot() != null ? doc.getDateDepot().getYear() : null)
                 .build();
     }
+    @Override
     public DocumentDemandeDTO refuserDocument(Long id, String motif) {
 
         Document doc = documentRepo.findById(id)
@@ -163,6 +164,7 @@ public class DocumentDemandeServiceImpl implements DocumentDemandeService {
 
         return  toDTO(documentRepo.save(doc));
     }
+    @Override
     public DocumentDemandeDTO validerDocument(Long id) {
 
         Document doc = documentRepo.findById(id)
@@ -175,4 +177,5 @@ public class DocumentDemandeServiceImpl implements DocumentDemandeService {
 
         return  toDTO(documentRepo.save(doc));
     }
+
 }

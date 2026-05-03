@@ -27,8 +27,8 @@ public interface UtilisateurService {
 
     Utilisateur update( Utilisateur utilisateur);
     void changePassword(Long userId, ChangePasswordRequest request);
-    public UtilisateurDTO createUtilisateur(UtilisateurDTO dto);
-    public List<String> getDepartements() ;
+    UtilisateurDTO createUtilisateur(UtilisateurDTO dto);
+   List<String> getDepartements() ;
 
     List<String> getNiveaux(String departement, String specialite) ;
     List<String> getSpecialites(String departement, String niveau);

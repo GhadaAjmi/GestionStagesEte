@@ -57,9 +57,14 @@ public class ProlongationServiceImpl implements ProlongationService {
         p.setDateSoumission(LocalDate.now());
         p.setStatut(StatutProlongation.EN_ATTENTE);
 
-        return toDTO(prolongationRepository.save(p));
-    }
+        Prolongation saved = prolongationRepository.save(p);
 
+        // ← Lier la prolongation à la demande
+        demande.setProlongation(saved);
+        demandeRepository.save(demande);   // ← met à jour prolongation_id
+
+        return toDTO(saved);
+    }
     // ── Approuver une prolongation ────────────────────────────────────────────
     @Override
     public ProlongationDTO approuver(Long id) {

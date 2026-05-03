@@ -83,4 +83,35 @@ export class JournalService {
   commenterJournal(id: number, commentaire: string): Observable<JournalStage> {
     return this.commenter(id, commentaire);
   }
+   private baseUrl = 'http://localhost:8087/api';
+
+
+  getJournalByDemande(demandeId: number): Observable<JournalStage[]> {
+    return this.http.get<JournalStage[]>(
+      `${this.baseUrl}/journal/demande/${demandeId}`
+    );
+  }
+
+  ajouterEntree(entree: any): Observable<JournalStage> {
+    return this.http.post<JournalStage>(
+      `${this.baseUrl}/journal`, entree
+    );
+  }
+
+  modifierEntree(id: number, entree: any): Observable<JournalStage> {
+    return this.http.put<JournalStage>(
+      `${this.baseUrl}/journal/${id}`, entree
+    );
+  }
+
+  supprimerEntree(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/journal/${id}`);
+  }
+
+  telechargerJournalPDF(demandeId: number): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/pdf/demande/${demandeId}/journal`,
+      { responseType: 'blob' }
+    );
+  }
 }
