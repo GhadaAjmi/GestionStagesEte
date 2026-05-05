@@ -1,6 +1,8 @@
 package com.enicar.projet.services.impl;
 
 import com.enicar.projet.dtos.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.enicar.projet.entities.*;
 import com.enicar.projet.exceptions.NotFoundException;
 import com.enicar.projet.repositories.DemandeStageRepository;
@@ -34,14 +36,21 @@ public class DemandeStageServiceImpl implements DemandeStageService {
     private final DocumentDemandeService documentService;
 
     private final PdfService pdfService;
+    private static final Logger log =
+            LogManager.getLogger(DemandeStageServiceImpl.class);
 
     @Override
     public DemandeStageDTO save(DemandeStageDTO dto) {
+    	log.info("Création demande de stage pour étudiant id={}",
+                dto.getEtudiantId());
 
         Etudiant etudiant = (Etudiant) etudiantRepository.findById(dto.getEtudiantId())
-                .orElseThrow(() -> new NotFoundException("Etudiant introuvable"));
+                .orElseThrow(() ->{
+                    log.error("Etudiant introuvable id={}", dto.getEtudiantId());
+                    return new NotFoundException("Etudiant introuvable");
+                });
 
-        // Chercher une demande existante pour cet étudiant
+        
         Optional<DemandeStage> existante = repository.findByEtudiantId(dto.getEtudiantId());
 
         DemandeStage ds = existante.orElse(new DemandeStage());
@@ -54,12 +63,16 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         ds.setStatut(dto.getStatut());
         ds.setEtudiant(etudiant);
 
-        // Seulement pour une nouvelle demande
+        
         if (ds.getId() == null) {
             ds.setDateDemande(LocalDateTime.now());
+            log.info("Nouvelle demande créée pour étudiant id={}",
+                    dto.getEtudiantId());
         }
 
         DemandeStage saved = repository.save(ds);
+        log.info("Demande id={} sauvegardée avec statut={}",
+                saved.getId(), saved.getStatut());
         return toDTO(saved);
     }
 
@@ -79,18 +92,26 @@ public class DemandeStageServiceImpl implements DemandeStageService {
     }
     @Override
     public DemandeStageDTO findByEtudiantId(Long id) {
+    	log.debug("Recherche demande pour étudiant id={}", id);
         DemandeStage ds = repository.findByEtudiantId(id)
-                .orElseThrow(() -> new NotFoundException("Demande introuvable pour cet etudiant"));
+                .orElseThrow(() -> {
+                    log.warn("Aucune demande pour étudiant id={}", id);
+                    return new NotFoundException(
+                        "Demande introuvable pour cet etudiant");
+                });
         return toDTO(ds);
     }
 
 
     @Override
     public void delete(Long id) {
+    	log.info("Suppression demande id={}", id);
         if (!repository.existsById(id)) {
+        	log.error("Demande id={} introuvable pour suppression", id);
             throw new NotFoundException("Demande introuvable");
         }
         repository.deleteById(id);
+        log.info("Demande id={} supprimée", id);
     }
 
     @Override
@@ -100,7 +121,10 @@ public class DemandeStageServiceImpl implements DemandeStageService {
                 .orElseThrow(() -> new NotFoundException("Demande introuvable"));
 
         Etudiant etudiant = (Etudiant) etudiantRepository.findById(dto.getEtudiantId())
-                .orElseThrow(() -> new NotFoundException("Etudiant introuvable"));
+                .orElseThrow(() -> {
+                    log.error("Etudiant introuvable id={}", dto.getEtudiantId());
+                    return new NotFoundException("Etudiant introuvable");
+                });
 
         ds.setSujet(dto.getSujet());
 
@@ -133,7 +157,7 @@ public class DemandeStageServiceImpl implements DemandeStageService {
                         ? String.valueOf(ds.getDateDemande().getYear())
                         : ""
         );
-        // Entreprise peut être null au début
+        
         if (ds.getEntreprise() != null) {
             dto.setEntreprise(ds.getEntreprise().getNom());
         } else {
@@ -251,7 +275,7 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         conventionDTO.setPremiere(isPremiereAnnee(etudiant.getNiveau()));
         conventionDTO.setDeuxieme(isDeuxiemeAnnee(etudiant.getNiveau()));
 
-        // 7. Générer et enregistrer convention
+      
 
         byte[] conventionPdf;
         try {
@@ -265,7 +289,7 @@ public class DemandeStageServiceImpl implements DemandeStageService {
             );
         }
 
-        // 8. Retourner la réponse frontend
+      
         return creerZipDocuments(lettrePdf, conventionPdf);
 
     }

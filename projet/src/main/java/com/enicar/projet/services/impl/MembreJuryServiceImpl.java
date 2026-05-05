@@ -1,6 +1,8 @@
 package com.enicar.projet.services.impl;
 
 import com.enicar.projet.dtos.MembreJuryDTO;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.enicar.projet.entities.Enseignant;
 import com.enicar.projet.entities.MembreJury;
 import com.enicar.projet.entities.Soutenance;
@@ -18,6 +20,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class MembreJuryServiceImpl implements MembreJuryService {
+	private static final Logger log = LogManager.getLogger(MembreJuryServiceImpl.class);
 
     private final MembreJuryRepository repo;
     private final SoutenanceRepository soutenanceRepo;
@@ -25,21 +28,33 @@ public class MembreJuryServiceImpl implements MembreJuryService {
 
     @Override
     public MembreJuryDTO ajouter(MembreJuryDTO dto) {
+    	log.info("Ajout membre jury - soutenanceId={}, enseignantId={}",
+                dto.getSoutenanceId(), dto.getEnseignantId());
 
-        // 🔥 éviter doublon
+       
         if (repo.existsBySoutenanceIdAndEnseignantId(dto.getSoutenanceId(), dto.getEnseignantId())) {
+            log.warn("Doublon détecté pour soutenanceId={} et enseignantId={}",
+                    dto.getSoutenanceId(), dto.getEnseignantId());
             throw new BadRequestException("Enseignant déjà dans ce jury");
         }
 
+
         Soutenance soutenance = soutenanceRepo.findById(dto.getSoutenanceId())
-                .orElseThrow(() -> new NotFoundException("Soutenance introuvable"));
+                .orElseThrow(() -> {
+                    log.error("Soutenance introuvable id={}", dto.getSoutenanceId());
+                    return new NotFoundException("Soutenance introuvable");
+                });
 
         Enseignant enseignant =(Enseignant) enseignantRepo.findById(dto.getEnseignantId())
-                .orElseThrow(() -> new NotFoundException("Enseignant introuvable"));
+                .orElseThrow(() -> {
+                    log.error("Enseignant introuvable id={}", dto.getEnseignantId());
+                    return new NotFoundException("Enseignant introuvable");
+                });
 
         MembreJury m = new MembreJury();
         m.setSoutenance(soutenance);
         m.setEnseignant(enseignant);
+        log.debug("Sauvegarde en cours...");
 
         return toDTO(repo.save(m));
     }
@@ -73,13 +88,16 @@ public class MembreJuryServiceImpl implements MembreJuryService {
 
     @Override
     public void supprimer(Long id) {
+    	log.info("Suppression membre jury id={}", id);
         if (!repo.existsById(id)) {
+            log.error("Membre jury introuvable pour suppression id={}", id);
             throw new NotFoundException("Membre introuvable");
         }
         repo.deleteById(id);
+        log.info("Membre jury supprimé id={}", id);
     }
 
-    // 🔁 Mapper
+   
     private MembreJuryDTO toDTO(MembreJury m) {
         return MembreJuryDTO.builder()
                 .id(m.getId())

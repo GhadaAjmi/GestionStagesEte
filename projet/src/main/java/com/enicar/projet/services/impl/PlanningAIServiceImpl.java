@@ -1,6 +1,8 @@
 package com.enicar.projet.services.impl;
 
 import com.enicar.projet.dtos.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.enicar.projet.entities.*;
 import com.enicar.projet.repositories.*;
 import com.enicar.projet.services.interfaces.PlanningAIService;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class PlanningAIServiceImpl implements PlanningAIService {
+	private static final Logger log = LogManager.getLogger(PlanningAIServiceImpl.class);
 
     private final DemandeStageRepository demandeStageRepository;
     private final UtilisateurRepository enseignantRepository;
@@ -42,6 +45,7 @@ public class PlanningAIServiceImpl implements PlanningAIService {
     @Override
     @Transactional
     public List<SoutenanceDTO> genererPlanningING1(PlanningING1Request request) {
+    	log.info("=== Génération planning ING1 ===");
 
         validerRequete(request);
 
@@ -55,18 +59,26 @@ public class PlanningAIServiceImpl implements PlanningAIService {
                 .filter(d -> request.getSpecialite() == null
                         || request.getSpecialite().equalsIgnoreCase(d.getEtudiant().getSpecialite()))
                 .collect(Collectors.toList());
+        log.info("Demandes ING1 trouvées: {}", demandesING1.size());
 
-        if (demandesING1.isEmpty())
-            throw new RuntimeException("Aucune demande ING1 validée sans soutenance trouvée.");
+        if (demandesING1.isEmpty()){
+            log.error("Aucune demande ING1 disponible");
+            throw new RuntimeException("Aucune demande ING1 validée.");
+        }
 
         // ── 2. Salles poster dans l'annexe (type fixe ING1) ──────────────
         List<Salle> sallesDisponibles = salleRepository.findAll().stream()
                 .filter(s -> Boolean.TRUE.equals(s.getSupportePoster()))
                 .filter(this::estEnAnnexe)
                 .collect(Collectors.toList());
+        log.info("Salles disponibles: {}", sallesDisponibles.size());
 
-        if (sallesDisponibles.isEmpty())
-            throw new RuntimeException("Aucune salle poster disponible dans l'annexe.");
+
+        if (sallesDisponibles.isEmpty()){
+            log.error("Aucune salle disponible");
+            throw new RuntimeException("Aucune salle disponible.");
+        }
+
 
         int nbJury   = request.getNbJury()           != null ? request.getNbJury()           : 2;
         int dureeEtu = request.getDureeParEtudiant() != null ? request.getDureeParEtudiant() : 15;
@@ -108,6 +120,7 @@ public class PlanningAIServiceImpl implements PlanningAIService {
 
         // ── 5. Créneaux ──────────────────────────────────────────────────
         List<Creneau> creneaux = construireCreneaux(request.getJours(), dureeEtu);
+        log.info("Créneaux générés: {}", creneaux.size());
 
         log.info("[ING1-Poster] {} blocs | {} créneaux de {}min | {} salles | {} jurys/soutenance",
                 blocs.size(), creneaux.size(), dureeEtu, sallesDisponibles.size(), nbJury);
@@ -124,12 +137,14 @@ public class PlanningAIServiceImpl implements PlanningAIService {
     // ════════════════════════════════════════════════════════════════════
 
     private List<SoutenanceDTO> resoudreEtPersister(
+    		
             List<BlocGroupe> blocs,
             List<Creneau> creneaux,
             List<Salle> salles,
             Map<String, List<Enseignant>> enseignantsParDept,
             int nbJury,
             int dureeEtu) {
+    	log.debug("Initialisation du modèle OR-Tools");
 
         // Liste globale unique d'enseignants (tous départements confondus)
         // On maintient une Map bloc→indices enseignants éligibles pour la contrainte C3/C5
@@ -172,10 +187,12 @@ public class PlanningAIServiceImpl implements PlanningAIService {
         solver.getParameters().setMaxTimeInSeconds(60.0);
         solver.getParameters().setNumWorkers(4);
         CpSolverStatus status = solver.solve(model);
+        log.info("Statut solveur: {}", status);
 
-        if (status != CpSolverStatus.OPTIMAL && status != CpSolverStatus.FEASIBLE)
-            throw new RuntimeException(
-                    "Aucune solution ING1 trouvée. Vérifiez les salles poster de l'annexe et les créneaux.");
+        if (status != CpSolverStatus.OPTIMAL && status != CpSolverStatus.FEASIBLE){
+            log.error("Aucune solution trouvée pour ING1");
+            throw new RuntimeException("Aucune solution trouvée.");
+        }
 
         return persisterSolution(solver, assignation, jury,
                 blocs, creneaux, salles, tousEnseignants, dureeEtu);

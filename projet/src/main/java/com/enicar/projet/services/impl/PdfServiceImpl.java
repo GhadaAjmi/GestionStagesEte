@@ -1,6 +1,8 @@
 package com.enicar.projet.services.impl;
 
 import com.enicar.projet.dtos.ConventionRequestDTO;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.enicar.projet.exceptions.NotFoundException;
 import com.enicar.projet.dtos.LettreRequestDTO;
 import com.itextpdf.io.font.constants.StandardFonts;
@@ -37,11 +39,13 @@ import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class PdfServiceImpl implements PdfService {
+	private static final Logger log = LogManager.getLogger(PdfServiceImpl.class);
 
     private final DocumentRepository  documentDemandeRepository;
     private final DemandeStageRepository demandeStageRepo;
@@ -57,12 +61,15 @@ public class PdfServiceImpl implements PdfService {
     // ================================================================
 @Override
    public byte[] generateLettre(Long demandeStageId, LettreRequestDTO dto) throws Exception {
+	log.info("Génération lettre - demandeStageId={}", demandeStageId);
+
         byte[] templateBytes = loadTemplate("lettre-affectation.pdf");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfDocument pdfDoc = new PdfDocument(
                 new PdfReader(new java.io.ByteArrayInputStream(templateBytes)),
                 new PdfWriter(baos));
+        log.debug("Template lettre chargé avec succès");
 
         PdfPage   page   = pdfDoc.getFirstPage();
         PdfCanvas canvas = new PdfCanvas(page);
@@ -87,6 +94,7 @@ public class PdfServiceImpl implements PdfService {
         writeText(canvas, font,  10, todayFormatted(),            390, 130);
 
         pdfDoc.close();
+        log.info("Lettre générée avec succès pour demandeStageId={}", demandeStageId);
         return baos.toByteArray();
     }
 
@@ -95,6 +103,7 @@ public class PdfServiceImpl implements PdfService {
     // ================================================================
 @Override
     public byte[] generateConvention(Long demandeStageId, ConventionRequestDTO dto) throws Exception {
+	log.info("Génération convention - demandeStageId={}", demandeStageId);
         byte[] templateBytes = loadTemplate("convention-stage.pdf");
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -129,6 +138,7 @@ public class PdfServiceImpl implements PdfService {
         writeText(canvas, font, 10, todayFormatted(),   390,  80);
 
         pdfDoc.close();
+        log.info("Convention générée avec succès");
         return baos.toByteArray();
 
 
@@ -141,10 +151,15 @@ public class PdfServiceImpl implements PdfService {
 
     @Override
     public byte[] generateAvenant(Long demandeId) throws Exception {
+    	log.info("Génération avenant - demandeId={}", demandeId);
+
         byte[] templateBytes = loadTemplate("avenant-prolongation.pdf");
 
         DemandeStage demande = demandeStageRepo.findById(demandeId)
-                .orElseThrow(() -> new RuntimeException("Demande introuvable"));
+                .orElseThrow(() -> {
+                    log.error("Demande introuvable id={}", demandeId);
+                    return new RuntimeException("Demande introuvable");
+                });
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfDocument pdfDoc = new PdfDocument(
@@ -218,6 +233,7 @@ public class PdfServiceImpl implements PdfService {
 
     @Override
     public byte[] generateJournal(Long demandeId) throws Exception {
+    	log.info("Génération journal - demandeId={}", demandeId);
         byte[] templateBytes = loadTemplate("journal-stage.pdf");
 
         DemandeStage demande = demandeStageRepo.findById(demandeId)
@@ -360,8 +376,12 @@ public class PdfServiceImpl implements PdfService {
 
     @Override
     public byte[] signerLettre(Long documentId) throws Exception {
+    	log.info("Signature lettre documentId={}", documentId);
         Document doc = documentDemandeRepository.findById(documentId)
-                .orElseThrow(() -> new RuntimeException("Document introuvable : " + documentId));
+                .orElseThrow(() ->{
+                    log.error("Document introuvable id={}", documentId);
+                    return new RuntimeException("Document introuvable : " + documentId);
+                });
 
         byte[] pdfSigne = ajouterSignature(doc.getContenu(),0, 1, 390f, 170f, 120f, 60f);
 
@@ -370,6 +390,7 @@ public class PdfServiceImpl implements PdfService {
         doc.setStatut(StatutDocument.VALIDE);
         doc.setDateDecision(LocalDateTime.now());
         documentDemandeRepository.save(doc);
+        log.info("Lettre signée avec succès documentId={}", documentId);
         return pdfSigne;
     }
     /** Signe une convention (récupérée en base) et retourne le PDF signé. */

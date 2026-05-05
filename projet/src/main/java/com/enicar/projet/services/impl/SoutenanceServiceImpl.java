@@ -1,6 +1,8 @@
 package com.enicar.projet.services.impl;
 
 import com.enicar.projet.dtos.MembreJuryDTO;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.enicar.projet.dtos.PlanificationGroupeDTO;
 import com.enicar.projet.dtos.SoutenanceDTO;
 import com.enicar.projet.entities.*;
@@ -21,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class SoutenanceServiceImpl implements SoutenanceService {
+	private static final Logger log = LogManager.getLogger(SoutenanceServiceImpl.class);
 
     private final SoutenanceRepository repo;
     private final DemandeStageRepository demandeRepo;
@@ -32,6 +35,8 @@ public class SoutenanceServiceImpl implements SoutenanceService {
 
     @Override
     public SoutenanceDTO ajouter(SoutenanceDTO dto) {
+    	log.info("Ajout d'une soutenance pour demandeStageId={}", dto.getDemandeStageId());
+
         Soutenance s = new Soutenance();
         DemandeStage d = new DemandeStage();
 
@@ -42,28 +47,38 @@ public class SoutenanceServiceImpl implements SoutenanceService {
 
         if (dto.getDemandeStageId() != null) {
             d = demandeRepo.findById(dto.getDemandeStageId())
-                    .orElseThrow(() -> new NotFoundException(
-                            "Demande introuvable : " + dto.getDemandeStageId()));
+                    .orElseThrow(() -> {
+                        log.error("Demande introuvable id={}", dto.getDemandeStageId());
+                        return new NotFoundException("Demande introuvable : " + dto.getDemandeStageId());
+                    });
             s.setDemandeStage(d);
         }
 
         if (dto.getSalleId() != null) {
             Salle salle = salleRepo.findById(dto.getSalleId())
-                    .orElseThrow(() -> new NotFoundException(
-                            "Salle introuvable : " + dto.getSalleId()));
+                    .orElseThrow(() ->  {
+                        log.error("Salle introuvable id={}", dto.getSalleId());
+                        return new NotFoundException("Salle introuvable : " + dto.getSalleId());
+                    });
             s.setSalle(salle);
         }
 
         Soutenance saved = repo.save(s);
         d.setSoutenance(saved);
         List<MembreJury> membres = saveMembres(dto.getMembresJury(), saved);
+        log.info("Soutenance créée id={}", saved.getId());
+
         return toDTO(saved, membres);
     }
 
     @Override
     public SoutenanceDTO modifier(Long id, SoutenanceDTO dto) {
+    	log.info("Modification soutenance id={}", id);
         Soutenance s = repo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Soutenance introuvable : " + id));
+                .orElseThrow(() ->  {
+                    log.error("Soutenance introuvable id={}", id);
+                    return new NotFoundException("Soutenance introuvable : " + id);
+                });
 
         s.setDate(dto.getDate());
         s.setHeureDebut(dto.getHeureDebut());
@@ -87,11 +102,15 @@ public class SoutenanceServiceImpl implements SoutenanceService {
         Soutenance saved = repo.save(s);
         membreJuryRepo.deleteBySoutenanceId(id);
         List<MembreJury> membres = saveMembres(dto.getMembresJury(), saved);
+        log.info("Soutenance modifiée id={}", id);
+
         return toDTO(saved, membres);
     }
 
     @Override
     public SoutenanceDTO modifierStatut(Long id, String statut) {
+    	log.info("Changement statut soutenance id={} vers {}", id, statut);
+
         Soutenance s = repo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Soutenance introuvable : " + id));
 
@@ -103,6 +122,7 @@ public class SoutenanceServiceImpl implements SoutenanceService {
         try {
             s.setStatut(StatutSoutenance.valueOf(statut));
         } catch (IllegalArgumentException e) {
+        	log.error("Statut invalide={} pour id={}", statut, id);
             throw new IllegalArgumentException("Statut invalide : " + statut);
         }
 
@@ -111,6 +131,7 @@ public class SoutenanceServiceImpl implements SoutenanceService {
     }
     @Override
     public List<SoutenanceDTO> getAllIng2() {
+    	 log.info("Récupération de toutes les soutenances");
         return repo.findByEtudiantNiveau("ING2")
                 .stream()
                 .map(s -> toDTO(s, membreJuryRepo.findBySoutenanceId(s.getId())))
@@ -118,10 +139,14 @@ public class SoutenanceServiceImpl implements SoutenanceService {
     }
     @Override
     public void supprimer(Long id) {
-        if (!repo.existsById(id))
+    	log.warn("Suppression soutenance id={}", id);
+        if (!repo.existsById(id)){
+            log.error("Tentative suppression soutenance inexistante id={}", id);
             throw new NotFoundException("Soutenance introuvable : " + id);
+        }
         membreJuryRepo.deleteBySoutenanceId(id);
         repo.deleteById(id);
+        log.info("Soutenance supprimée id={}", id);
     }
 
     @Override
@@ -140,6 +165,10 @@ public class SoutenanceServiceImpl implements SoutenanceService {
 
     @Override
     public List<SoutenanceDTO> planifierGroupe(PlanificationGroupeDTO dto) {
+
+        log.info("Planification groupe salleId={} nbEtudiants={}",
+                dto.getSalleId(),
+                dto.getEtudiantIds().size());
         Salle salle = salleRepo.findById(dto.getSalleId())
                 .orElseThrow(() -> new NotFoundException("Salle introuvable : " + dto.getSalleId()));
 
@@ -157,6 +186,7 @@ public class SoutenanceServiceImpl implements SoutenanceService {
             s.setSalle(salle);
 
             Soutenance saved = repo.save(s);
+            log.info("Soutenance créée pour étudiantId={} id={}", etudiantId, saved.getId());
             List<MembreJury> membres = saveMembres(dto.getMembresJury(), saved);
             return toDTO(saved, membres);
         }).toList();
@@ -166,6 +196,7 @@ public class SoutenanceServiceImpl implements SoutenanceService {
     // ── Mapping central ─────────────────────────────────────────────────────
 
     private SoutenanceDTO toDTO(Soutenance s, List<MembreJury> membres) {
+    	
 
         // Étudiant
         DemandeStage demande  = s.getDemandeStage();
@@ -382,6 +413,7 @@ public class SoutenanceServiceImpl implements SoutenanceService {
 
     @Override
     public List<SoutenanceDTO> getSoutenancesByEnseignant(Long enseignantId) {
+    	log.info("Recherche soutenances enseignantId={}", enseignantId);
         return membreJuryRepo.findByEnseignantId(enseignantId)
                 .stream()
                 .map(MembreJury::getSoutenance)
