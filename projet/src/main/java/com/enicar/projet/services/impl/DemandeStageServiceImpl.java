@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -34,12 +36,17 @@ public class DemandeStageServiceImpl implements DemandeStageService {
     private final DocumentDemandeService documentService;
 
     private final PdfService pdfService;
+    private static final Logger log =
+            LogManager.getLogger(DemandeStageServiceImpl.class);
 
     @Override
     public DemandeStageDTO save(DemandeStageDTO dto) {
 
         Etudiant etudiant = (Etudiant) etudiantRepository.findById(dto.getEtudiantId())
-                .orElseThrow(() -> new NotFoundException("Etudiant introuvable"));
+                .orElseThrow(() ->{
+                    log.error("Etudiant introuvable id={}", dto.getEtudiantId());
+                    return new NotFoundException("Etudiant introuvable");
+                });
 
         // Chercher une demande existante pour cet étudiant
         Optional<DemandeStage> existante = repository.findByEtudiantId(dto.getEtudiantId());
@@ -54,12 +61,15 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         ds.setStatut(dto.getStatut());
         ds.setEtudiant(etudiant);
 
-        // Seulement pour une nouvelle demande
         if (ds.getId() == null) {
             ds.setDateDemande(LocalDateTime.now());
+            log.info("Nouvelle demande créée pour étudiant id={}",
+                    dto.getEtudiantId());
         }
 
         DemandeStage saved = repository.save(ds);
+        log.info("Demande id={} sauvegardée avec statut={}",
+                saved.getId(), saved.getStatut());
         return toDTO(saved);
     }
 
@@ -87,10 +97,13 @@ public class DemandeStageServiceImpl implements DemandeStageService {
 
     @Override
     public void delete(Long id) {
+        log.info("Suppression demande id={}", id);
         if (!repository.existsById(id)) {
+            log.error("Demande id={} introuvable pour suppression", id);
             throw new NotFoundException("Demande introuvable");
         }
         repository.deleteById(id);
+        log.info("Demande id={} supprimée", id);
     }
 
     @Override
@@ -100,8 +113,10 @@ public class DemandeStageServiceImpl implements DemandeStageService {
                 .orElseThrow(() -> new NotFoundException("Demande introuvable"));
 
         Etudiant etudiant = (Etudiant) etudiantRepository.findById(dto.getEtudiantId())
-                .orElseThrow(() -> new NotFoundException("Etudiant introuvable"));
-
+                .orElseThrow(() -> {
+                    log.error("Etudiant introuvable id={}", dto.getEtudiantId());
+                    return new NotFoundException("Etudiant introuvable");
+                });
         ds.setSujet(dto.getSujet());
 
         ds.setStatut(dto.getStatut());
@@ -163,13 +178,20 @@ public class DemandeStageServiceImpl implements DemandeStageService {
 
         return toDTO(updated);
     }
-@Transactional
+    @Transactional
     @Override
-    public byte[]  soumettreDemandeComplete(DemandeRequestDTO request) {
+    public byte[] soumettreDemandeComplete(DemandeRequestDTO request) {
+
+        log.info("Début soumission demande complète pour étudiant ID: {}", request.getEtudiantId());
 
         // 1. Récupérer l'étudiant
         Etudiant etudiant = (Etudiant) etudiantRepository.findById(request.getEtudiantId())
-                .orElseThrow(() -> new RuntimeException("Étudiant introuvable"));
+                .orElseThrow(() -> {
+                    log.error("Étudiant introuvable avec ID: {}", request.getEtudiantId());
+                    return new RuntimeException("Étudiant introuvable");
+                });
+
+        log.info("Étudiant trouvé: {} {}", etudiant.getNom(), etudiant.getPrenom());
 
         // 2. Créer l'entreprise
         Entreprise entreprise = new Entreprise();
@@ -181,6 +203,7 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         entreprise.setFax(request.getFaxEntreprise());
 
         entreprise = entrepriseRepository.save(entreprise);
+        log.info("Entreprise créée avec ID: {}", entreprise.getId());
 
         // 3. Créer la demande
         DemandeStage demande = new DemandeStage();
@@ -192,7 +215,9 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         demande.setEtudiant(etudiant);
         demande.setEntreprise(entreprise);
         demande.setTuteurStage(request.getTuteurStage());
+
         demande = demandeStageRepository.save(demande);
+        log.info("Demande créée avec ID: {}", demande.getId());
 
         // 4. Préparer LettreRequestDTO
         LettreRequestDTO lettreDTO = new LettreRequestDTO();
@@ -211,8 +236,11 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         byte[] lettrePdf;
 
         try {
+            log.info("Génération lettre pour demande ID: {}", demande.getId());
             lettrePdf = pdfService.generateLettre(demande.getId(), lettreDTO);
+            log.info("Lettre générée avec succès pour demande ID: {}", demande.getId());
         } catch (Exception e) {
+            log.error("Erreur génération lettre pour demande ID: {}", demande.getId(), e);
             throw new RuntimeException(
                     "Erreur lors de la génération de la lettre d'affectation pour la demande ID : "
                             + demande.getId(),
@@ -252,12 +280,14 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         conventionDTO.setDeuxieme(isDeuxiemeAnnee(etudiant.getNiveau()));
 
         // 7. Générer et enregistrer convention
-
         byte[] conventionPdf;
-        try {
-           conventionPdf =  pdfService.generateConvention(demande.getId(), conventionDTO);
 
+        try {
+            log.info("Génération convention pour demande ID: {}", demande.getId());
+            conventionPdf = pdfService.generateConvention(demande.getId(), conventionDTO);
+            log.info("Convention générée avec succès pour demande ID: {}", demande.getId());
         } catch (Exception e) {
+            log.error("Erreur génération convention pour demande ID: {}", demande.getId(), e);
             throw new RuntimeException(
                     "Erreur lors de la génération de la lettre de convetion pour la demande ID : "
                             + demande.getId(),
@@ -266,9 +296,10 @@ public class DemandeStageServiceImpl implements DemandeStageService {
         }
 
         // 8. Retourner la réponse frontend
+        log.info("Création ZIP pour demande ID: {}", demande.getId());
         return creerZipDocuments(lettrePdf, conventionPdf);
-
     }
+
     private byte[] creerZipDocuments(byte[] lettrePdf, byte[] conventionPdf) {
         try {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();

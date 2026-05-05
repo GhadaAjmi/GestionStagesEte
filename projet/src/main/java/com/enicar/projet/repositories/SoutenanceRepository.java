@@ -28,7 +28,11 @@ public interface SoutenanceRepository extends JpaRepository<Soutenance, Long> {
 """)
     List<Soutenance> findByEtudiantNiveau(@Param("niveau") String niveau);
 
-    Optional<Soutenance> findByDemandeStage_Etudiant_Id(Long etudiantId);
-
-    Optional<Soutenance> findByDemandeStage_Id(Long demandeStageId);
+    @Query("""
+    select distinct s
+    from Soutenance s
+    join s.membresJury mj
+    where mj.enseignant.id = :enseignantId
+""")
+    List<Soutenance> findByEnseignantId(@Param("enseignantId") Long enseignantId);
 }

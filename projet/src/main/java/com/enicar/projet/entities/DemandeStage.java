@@ -1,6 +1,7 @@
 package com.enicar.projet.entities;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -48,7 +49,7 @@ public class DemandeStage {
     @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "etudiant_id")
     private Etudiant etudiant;
-
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "soutenance_id", nullable = true)
     private Soutenance soutenance;

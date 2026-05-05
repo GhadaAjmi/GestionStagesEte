@@ -3,6 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { SoutenanceService } from '../../services/soutenance.service';
 import { Soutenance, MembreJury } from '../../models/soutenance';
+import { Router } from '@angular/router';
+import { EvaluationResponseDTO, EvaluationService } from '../../services/evaluation.service';
 
 interface SoutenanceEnseignantFilter {
   recherche?: string;
@@ -24,7 +26,9 @@ interface SoutenanceEnseignantFilter {
 export class MesSoutenancesComponent implements OnInit {
 
   enseignantId!: number;
-
+evaluations: EvaluationResponseDTO[] = [];
+monEvaluation: EvaluationResponseDTO | null = null;
+evaluationsJury: EvaluationResponseDTO[] = [];
   soutenances: Soutenance[] = [];
   filteredSoutenances: Soutenance[] = [];
 
@@ -46,7 +50,8 @@ export class MesSoutenancesComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private soutenanceService: SoutenanceService
+    private soutenanceService: SoutenanceService,private router: Router,
+    private serviceEvaluation : EvaluationService
   ) {}
 
   ngOnInit(): void {
@@ -59,6 +64,7 @@ export class MesSoutenancesComponent implements OnInit {
 
     this.enseignantId = userId;
     this.load();
+
   }
 
   // ─────────────────────────────────────────────
@@ -66,31 +72,82 @@ export class MesSoutenancesComponent implements OnInit {
   // ─────────────────────────────────────────────
 
   load(): void {
-    this.loading = true;
-    this.error = null;
+  console.log("🚀 load() appelé");
+  console.log("👨‍🏫 enseignantId =", this.enseignantId);
 
-    this.soutenanceService.getSoutenancesByEnseignant(this.enseignantId).subscribe({
-      next: data => {
-        this.soutenances = (data || []).map(s => ({
+  this.loading = true;
+  this.error = null;
+
+  console.log("📡 Appel API getSoutenancesByEnseignant...");
+
+  this.soutenanceService.getSoutenancesByEnseignant(this.enseignantId).subscribe({
+    next: data => {
+
+      console.log("📥 Données brutes reçues API :", data);
+
+      this.soutenances = (data || []).map((s, index) => {
+
+        console.log(`🔹 mapping soutenance ${index}:`, s);
+
+        return {
           ...s,
           membresJury: s.membresJury || []
-        }));
+        };
+      });
 
-        this.filteredSoutenances = [...this.soutenances];
+      console.log(" Soutenances après mapping :", this.soutenances);
 
-        this.prepareFilterOptions();
-        this.applyFilters();
+      this.filteredSoutenances = [...this.soutenances];
 
-        this.loading = false;
+      console.log("filteredSoutenances initial :", this.filteredSoutenances);
+
+      console.log(" prepareFilterOptions() appelé");
+      this.prepareFilterOptions();
+
+      console.log(" applyFilters() appelé");
+      this.applyFilters();
+
+      this.loading = false;
+      console.log(" load() terminé avec succès");
+    },
+
+    error: err => {
+
+      console.error(" Erreur chargement soutenances enseignant :", err);
+
+      this.error = 'Erreur lors du chargement de vos soutenances.';
+      this.loading = false;
+
+      console.log(" loading arrêté suite à erreur");
+    }
+  });
+}
+private chargerEvaluations(soutenanceId: any): void {
+
+  this.serviceEvaluation.getParSoutenance(soutenanceId)
+    .subscribe({
+      next: (res: EvaluationResponseDTO[]) => {
+
+        console.log("📥 Toutes évaluations :", res);
+
+        this.evaluations = res;
+
+        // 🔥 mon évaluation (enseignant connecté)
+        this.monEvaluation =
+          res.find(e => e.enseignantId === this.enseignantId) || null;
+
+        // 🔥 jury = toutes sauf moi
+        this.evaluationsJury =
+          res.filter(e => e.enseignantId !== this.enseignantId);
+
+        console.log("⭐ Mon évaluation :", this.monEvaluation);
+        console.log("👥 Jury :", this.evaluationsJury);
       },
-      error: err => {
-        console.error('Erreur chargement soutenances enseignant :', err);
-        this.error = 'Erreur lors du chargement de vos soutenances.';
-        this.loading = false;
+      error: (err) => {
+        console.error("❌ erreur evaluations:", err);
       }
     });
-  }
-
+}
   private prepareFilterOptions(): void {
     this.niveauxDisponibles = this.uniqueValues(
       this.soutenances.map(s => s.etudiantNiveau)
@@ -261,6 +318,8 @@ export class MesSoutenancesComponent implements OnInit {
     this.selectedSoutenance = soutenance;
     this.showDetailModal = true;
     this.detailError = null;
+    this.chargerEvaluations(soutenance.id);
+
     document.body.style.overflow = 'hidden';
 
     if (!soutenance.id) {
@@ -293,7 +352,9 @@ export class MesSoutenancesComponent implements OnInit {
     this.detailError = null;
     document.body.style.overflow = '';
   }
-
+evaluer(id: any) {
+  this.router.navigate(['/enseignant', 'evaluation', id]);
+}
   // ─────────────────────────────────────────────
   // Helpers affichage
   // ─────────────────────────────────────────────

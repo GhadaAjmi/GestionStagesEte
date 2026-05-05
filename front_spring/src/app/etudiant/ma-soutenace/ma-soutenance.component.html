@@ -269,11 +269,79 @@
                   <li>Préparez votre présentation selon les consignes de votre professeur.</li>
                 </ul>
               </div>
+
             </div>
           </div>
         </div>
       </div>
+<!-- ÉVALUATIONS -->
+<div class="card mt-4" *ngIf="evaluation.length > 0">
 
+  <div class="card-body">
+
+    <h5 class="fw-bold mb-4">
+      <i data-feather="star" class="me-2"></i>
+      Évaluations du jury ({{ evaluation.length }})
+    </h5>
+
+    <div *ngFor="let ev of evaluation" class="border rounded p-3 mb-3 bg-light">
+
+      <!-- Infos enseignant -->
+      <div class="mb-2 fw-bold">
+        {{ ev.enseignantNom }} {{ ev.enseignantPrenom }}
+      </div>
+
+      <div class="row g-3">
+
+        <div class="col-md-3">
+          <div class="text-muted fs-13">Rapport</div>
+          <div class="fw-bold fs-5">{{ ev.noteRapport ?? '—' }}/20</div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="text-muted fs-13">Présentation</div>
+          <div class="fw-bold fs-5">{{ ev.notePresentation ?? '—' }}/20</div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="text-muted fs-13">Technique</div>
+          <div class="fw-bold fs-5">{{ ev.noteTechnique ?? '—' }}/20</div>
+        </div>
+
+        <div class="col-md-3">
+          <div class="text-muted fs-13">Comportement</div>
+          <div class="fw-bold fs-5">{{ ev.noteComportement ?? '—' }}/20</div>
+        </div>
+
+        <!-- Commentaire -->
+        <div class="col-12 mt-2">
+
+          <div class="text-muted fs-13 mb-1">Commentaire</div>
+
+          <div class="p-2 border rounded bg-white">
+
+            <span *ngIf="ev.commentaire; else noComment">
+              {{ ev.commentaire }}
+            </span>
+
+            <ng-template #noComment>
+              <span class="text-muted">Aucun commentaire</span>
+            </ng-template>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Cas vide -->
+<div *ngIf="evaluation.length === 0" class="text-muted mt-3">
+  Aucune évaluation disponible pour cette soutenance.
+</div>
     </div>
   </div>
 </div>

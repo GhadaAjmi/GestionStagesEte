@@ -271,8 +271,7 @@ export class NewSoutenanceComponent implements OnInit {
   }
 
   getRoleJury(index: number): string {
-    if (index === 0) return 'Président';
-    if (index === 1) return 'Rapporteur';
+  
     return `Membre ${index + 1}`;
   }
 

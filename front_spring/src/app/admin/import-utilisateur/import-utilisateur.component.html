@@ -1,0 +1,172 @@
+<!-- import-utilisateurs.component.html -->
+<div class="import-wrapper">
+
+  <!-- ══════════════════════════ HEADER ══════════════════════════ -->
+  <div class="import-header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Import des Utilisateurs</h1>
+      <p>Importez en masse via un fichier Excel (.xlsx)</p>
+    </div>
+    <button class="btn-template" (click)="downloadTemplate()">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+      Télécharger le template
+    </button>
+  </div>
+
+  <!-- ══════════════════════════ ÉTAPE : IDLE ══════════════════════════ -->
+  <div *ngIf="step === 'idle'" class="drop-zone"
+       (dragover)="onDragOver($event)"
+       (drop)="onDrop($event)"
+       (click)="fileInput.click()">
+    <input #fileInput type="file" accept=".xlsx,.xls" (change)="onFileSelected($event)" hidden>
+    <div class="drop-icon">
+      <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="8" y="4" width="36" height="48" rx="4" stroke-width="1.5"/>
+        <path d="M32 4v16h12" stroke-width="1.5"/>
+        <path d="M20 52v6m0 0l-4-4m4 4l4-4" stroke-width="2" stroke-linecap="round"/>
+        <path d="M32 52v6m0 0l-4-4m4 4l4-4" stroke-width="2" stroke-linecap="round"/>
+        <path d="M44 52v6m0 0l-4-4m4 4l4-4" stroke-width="2" stroke-linecap="round"/>
+        <line x1="16" y1="28" x2="36" y2="28" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="16" y1="34" x2="36" y2="34" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="16" y1="40" x2="28" y2="40" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h2>Glissez votre fichier Excel ici</h2>
+    <p>ou <span class="link">cliquez pour parcourir</span></p>
+    <div class="formats">
+      <span class="format-tag">XLSX</span>
+      <span class="format-tag">XLS</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ LOADING ══════════════════════════ -->
+  <div *ngIf="step === 'loading'" class="loading-state">
+    <div class="spinner"></div>
+    <p>Traitement en cours…</p>
+  </div>
+
+  <!-- ══════════════════════════ ERREUR ══════════════════════════ -->
+  <div *ngIf="step === 'error'" class="error-state">
+    <div class="error-icon">✕</div>
+    <h3>Une erreur est survenue</h3>
+    <p>{{ serverError }}</p>
+    <button class="btn-secondary" (click)="reset()">Réessayer</button>
+  </div>
+
+  <!-- ══════════════════════════ PRÉVISUALISATION ══════════════════════════ -->
+  <div *ngIf="step === 'preview'" class="preview-section">
+
+    <!-- Résumé du fichier -->
+    <div class="summary-bar">
+      <div class="summary-item">
+        <span class="summary-label">Fichier</span>
+        <span class="summary-value">{{ selectedFile?.name }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Utilisateurs valides</span>
+        <span class="summary-value success">{{ parsedUsers.length }}</span>
+      </div>
+      <div class="summary-item" *ngIf="parseErrors.length">
+        <span class="summary-label">Erreurs détectées</span>
+        <span class="summary-value error-count">{{ parseErrors.length }}</span>
+      </div>
+    </div>
+
+    <!-- Erreurs de parsing -->
+    <div *ngIf="parseErrors.length" class="parse-errors">
+      <div class="parse-errors-header">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        Lignes ignorées ({{ parseErrors.length }})
+      </div>
+      <ul>
+        <li *ngFor="let err of parseErrors">{{ err }}</li>
+      </ul>
+    </div>
+
+    <!-- Tableau de prévisualisation -->
+    <div class="table-container" *ngIf="parsedUsers.length">
+      <table>
+        <thead>
+          <tr>
+            <th>Rôle</th>
+            <th>CIN</th>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Département</th>
+            <th>Spécifique</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of previewRows">
+            <td><span class="badge" [ngClass]="getRoleBadgeClass(u.role)">{{ u.role }}</span></td>
+            <td>{{ u.cin }}</td>
+            <td>{{ u.nom }}</td>
+            <td>{{ u.prenom }}</td>
+            <td class="email-cell">{{ u.email }}</td>
+            <td>{{ u.telephone }}</td>
+            <td>{{ u.departement || '—' }}</td>
+            <td class="specific">
+              <span *ngIf="u.niveau">N: {{ u.niveau }}</span>
+              <span *ngIf="u.grade">G: {{ u.grade }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button [disabled]="previewPage === 0" (click)="previewPage = previewPage - 1">‹</button>
+        <span>Page {{ previewPage + 1 }} / {{ totalPages }}</span>
+        <button [disabled]="previewPage >= totalPages - 1" (click)="previewPage = previewPage + 1">›</button>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-bar">
+      <button class="btn-secondary" (click)="reset()">Annuler</button>
+      <button class="btn-primary" (click)="submitImport()" [disabled]="!parsedUsers.length">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+        Importer {{ parsedUsers.length }} utilisateur(s)
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ RÉSULTAT FINAL ══════════════════════════ -->
+  <div *ngIf="step === 'done' && importResult" class="result-section">
+    <div class="result-icon success-icon">✓</div>
+    <h2>Import terminé</h2>
+
+    <div class="result-stats">
+      <div class="stat-card">
+        <div class="stat-number">{{ importResult.total }}</div>
+        <div class="stat-label">Total traité</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-number">{{ importResult.success }}</div>
+        <div class="stat-label">Succès</div>
+      </div>
+      <div class="stat-card error" *ngIf="importResult.errors.length">
+        <div class="stat-number">{{ importResult.errors.length }}</div>
+        <div class="stat-label">Erreurs</div>
+      </div>
+    </div>
+
+    <!-- Erreurs backend -->
+    <div *ngIf="importResult.errors.length" class="parse-errors">
+      <div class="parse-errors-header">Erreurs lors de l'enregistrement</div>
+      <ul>
+        <li *ngFor="let err of importResult.errors">Ligne {{ err.ligne }} : {{ err.message }}</li>
+      </ul>
+    </div>
+
+    <button class="btn-primary" (click)="reset()">Nouvel import</button>
+  </div>
+
+</div>

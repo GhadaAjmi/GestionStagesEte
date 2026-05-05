@@ -11,6 +11,8 @@ import com.enicar.projet.repositories.SoutenanceRepository;
 import com.enicar.projet.repositories.UtilisateurRepository;
 import com.enicar.projet.services.interfaces.MembreJuryService;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,21 +24,28 @@ public class MembreJuryServiceImpl implements MembreJuryService {
     private final MembreJuryRepository repo;
     private final SoutenanceRepository soutenanceRepo;
     private final UtilisateurRepository enseignantRepo;
+    private static final Logger log = LogManager.getLogger(MembreJuryServiceImpl.class);
 
     @Override
     public MembreJuryDTO ajouter(MembreJuryDTO dto) {
-
-        // 🔥 éviter doublon
+        log.info("Ajout membre jury - soutenanceId={}, enseignantId={}",
+                dto.getSoutenanceId(), dto.getEnseignantId());
         if (repo.existsBySoutenanceIdAndEnseignantId(dto.getSoutenanceId(), dto.getEnseignantId())) {
+            log.warn("Doublon détecté pour soutenanceId={} et enseignantId={}",
+                    dto.getSoutenanceId(), dto.getEnseignantId());
             throw new BadRequestException("Enseignant déjà dans ce jury");
         }
 
         Soutenance soutenance = soutenanceRepo.findById(dto.getSoutenanceId())
-                .orElseThrow(() -> new NotFoundException("Soutenance introuvable"));
-
+                .orElseThrow(() -> {
+                    log.error("Soutenance introuvable id={}", dto.getSoutenanceId());
+                    return new NotFoundException("Soutenance introuvable");
+                });
         Enseignant enseignant =(Enseignant) enseignantRepo.findById(dto.getEnseignantId())
-                .orElseThrow(() -> new NotFoundException("Enseignant introuvable"));
-
+                .orElseThrow(() -> {
+                    log.error("Enseignant introuvable id={}", dto.getEnseignantId());
+                    return new NotFoundException("Enseignant introuvable");
+                });
         MembreJury m = new MembreJury();
         m.setSoutenance(soutenance);
         m.setEnseignant(enseignant);

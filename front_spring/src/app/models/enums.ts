@@ -23,6 +23,8 @@ export type TypeDocument =
 export type StatutDocument =
   | 'GENERE'
   | 'SOUMIS'
+    | 'SIGNE'
+
   | 'VALIDE'
   | 'REJETE';
 

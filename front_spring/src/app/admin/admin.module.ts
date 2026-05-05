@@ -8,13 +8,15 @@ import { SallesComponent } from './salles/salles.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { CoreModule } from '../core/core.module';
+import { ImportUtilisateurComponent } from './import-utilisateur/import-utilisateur.component';
 
 
 @NgModule({
   declarations: [
     CreateUserComponent,
     UtilisateursComponent,
-    SallesComponent
+    SallesComponent,
+    ImportUtilisateurComponent
   ],
   imports: [
     CommonModule,

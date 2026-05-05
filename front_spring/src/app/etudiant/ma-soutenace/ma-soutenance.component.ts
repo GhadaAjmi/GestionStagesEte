@@ -6,6 +6,7 @@ import localeFr from '@angular/common/locales/fr';
 import { AuthService } from '../../services/auth.service';
 import { SoutenanceService } from '../../services/soutenance.service';
 import { Soutenance } from '../../models/soutenance';
+import { EvaluationResponseDTO, EvaluationService } from '../../services/evaluation.service';
 
 registerLocaleData(localeFr);
 
@@ -20,10 +21,11 @@ export class MaSoutenanceComponent implements OnInit {
   soutenance: Soutenance | null = null;
   loading: boolean = true;
   errorMessage: string = '';
-
+  evaluation: EvaluationResponseDTO[] = [];
   constructor(
     private authService: AuthService,
-    private soutenanceService: SoutenanceService
+    private soutenanceService: SoutenanceService,
+    private evalService: EvaluationService
   ) {}
 
   ngOnInit(): void {
@@ -33,7 +35,9 @@ export class MaSoutenanceComponent implements OnInit {
       this.loading = false;
       this.errorMessage = 'Utilisateur non connecté.';
       this.soutenance = null;
+      this.evaluation = [];
       this.initFeather();
+      
       return;
     }
 
@@ -53,17 +57,24 @@ export class MaSoutenanceComponent implements OnInit {
 
         this.loading = false;
         this.initFeather();
+
+this.evalService.getParSoutenance(this.soutenance.id)
+  .subscribe(res => {
+    this.evaluation = res ?? [];
+  });
       },
       error: (err) => {
         console.error('Erreur récupération soutenance étudiant :', err);
 
         this.soutenance = null;
+        this.evaluation = [];
         this.loading = false;
 
         // Pas forcément une vraie erreur : ça peut juste dire aucune soutenance planifiée
         this.errorMessage = '';
         this.initFeather();
       }
+      
     });
   }
 

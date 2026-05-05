@@ -4,6 +4,7 @@ import com.enicar.projet.dtos.ChangePasswordRequest;
 import com.enicar.projet.dtos.UtilisateurDTO;
 import com.enicar.projet.entities.RoleUtilisateur;
 import com.enicar.projet.entities.Utilisateur;
+import com.enicar.projet.services.interfaces.UtilisateurImportService;
 import com.enicar.projet.services.interfaces.UtilisateurService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -16,14 +17,17 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
 @RequiredArgsConstructor
 @CrossOrigin("*")
 public class UtilisateurController {
-
     private final UtilisateurService service;
+
+
+    private final UtilisateurImportService Importservice;
 
     // =========================================================
     // CREATE
@@ -219,5 +223,14 @@ public class UtilisateurController {
         return ResponseEntity.ok(
                 service.getEnseignantsDisponibles(departement, date, heureDebut, duree)
         );
+    }
+
+
+    @PostMapping("/import")
+    public ResponseEntity<Map<String, Object>> importUsers(
+            @RequestBody List<UtilisateurDTO> users) {
+
+        var result = Importservice.importBulk(users);
+        return ResponseEntity.ok(result);
     }
 }

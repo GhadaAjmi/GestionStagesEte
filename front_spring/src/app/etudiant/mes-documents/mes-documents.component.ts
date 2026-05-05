@@ -86,7 +86,7 @@ export class MesDocumentsComponent implements OnInit {
   }
 
   initialiserDocumentsRequis(niveau: string) {
-    const estNiveau1 = niveau === '1' || niveau === '1A'
+    const estNiveau1 = niveau === '1' || niveau === 'ING1'
                     || niveau.startsWith('1') || niveau === 'première';
 
     this.documentsRequis = [
@@ -100,6 +100,12 @@ export class MesDocumentsComponent implements OnInit {
         type: 'CONVENTION',
         label: 'Convention de stage',
         obligatoire: true,
+        accept: '.pdf'
+      },
+          {
+        type: 'PROLONGATION',
+        label: 'Prolongation',
+        obligatoire: false,
         accept: '.pdf'
       },
       {
@@ -141,6 +147,7 @@ export class MesDocumentsComponent implements OnInit {
   getBadgeClass(type: string): string {
     switch (this.getStatut(type)) {
       case 'SOUMIS': return 'bg-soft-primary text-primary';
+      case 'SIGNE': return 'bg-soft-info text-info';
       case 'VALIDE': return 'bg-soft-success text-success';
       case 'REJETE': return 'bg-soft-danger text-danger';
       default:       return 'bg-soft-secondary text-secondary';
@@ -150,6 +157,7 @@ export class MesDocumentsComponent implements OnInit {
   getBadgeLabel(type: string): string {
     switch (this.getStatut(type)) {
       case 'SOUMIS': return 'Soumis';
+      case 'SIGNE': return 'Signé';
       case 'VALIDE': return 'Validé ✅';
       case 'REJETE': return 'Rejeté ❌';
       default:       return 'En attente';

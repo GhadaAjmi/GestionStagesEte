@@ -1,5 +1,6 @@
 package com.enicar.projet.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,7 +32,7 @@ public class Soutenance {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private StatutSoutenance statut;
-
+    @JsonIgnore
     @OneToOne(mappedBy = "soutenance", fetch = FetchType.LAZY)
     @JoinColumn(name = "demande_stage_id")
     private DemandeStage demandeStage;
@@ -39,4 +40,5 @@ public class Soutenance {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "salle_id")
     private Salle salle;
-}
+    @OneToMany(mappedBy = "soutenance", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<MembreJury> membresJury;}

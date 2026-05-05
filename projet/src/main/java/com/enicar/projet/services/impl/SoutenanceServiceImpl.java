@@ -10,6 +10,8 @@ import com.enicar.projet.services.interfaces.SoutenanceService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -27,11 +29,13 @@ public class SoutenanceServiceImpl implements SoutenanceService {
     private final SalleRepository salleRepo;
     private final MembreJuryRepository membreJuryRepo;
     private final UtilisateurRepository enseignantRepo;
-
+    private static final Logger log = LogManager.getLogger(SoutenanceServiceImpl.class);
     // ── CRUD ────────────────────────────────────────────────────────────────
 
     @Override
     public SoutenanceDTO ajouter(SoutenanceDTO dto) {
+        log.info("Ajout d'une soutenance pour demandeStageId={}", dto.getDemandeStageId());
+
         Soutenance s = new Soutenance();
         DemandeStage d = new DemandeStage();
 
@@ -42,28 +46,39 @@ public class SoutenanceServiceImpl implements SoutenanceService {
 
         if (dto.getDemandeStageId() != null) {
             d = demandeRepo.findById(dto.getDemandeStageId())
-                    .orElseThrow(() -> new NotFoundException(
-                            "Demande introuvable : " + dto.getDemandeStageId()));
+                    .orElseThrow(() -> {
+                        log.error("Demande introuvable id={}", dto.getDemandeStageId());
+                        return new NotFoundException("Demande introuvable : " + dto.getDemandeStageId());
+                    });
             s.setDemandeStage(d);
         }
 
         if (dto.getSalleId() != null) {
             Salle salle = salleRepo.findById(dto.getSalleId())
-                    .orElseThrow(() -> new NotFoundException(
-                            "Salle introuvable : " + dto.getSalleId()));
+                    .orElseThrow(() ->  {
+                        log.error("Salle introuvable id={}", dto.getSalleId());
+                        return new NotFoundException("Salle introuvable : " + dto.getSalleId());
+                    });
             s.setSalle(salle);
         }
 
         Soutenance saved = repo.save(s);
         d.setSoutenance(saved);
         List<MembreJury> membres = saveMembres(dto.getMembresJury(), saved);
+        log.info("Soutenance créée id={}", saved.getId());
+
         return toDTO(saved, membres);
     }
 
     @Override
     public SoutenanceDTO modifier(Long id, SoutenanceDTO dto) {
+        log.info("Modification soutenance id={}", id);
+
         Soutenance s = repo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Soutenance introuvable : " + id));
+                .orElseThrow(() ->  {
+                    log.error("Soutenance introuvable id={}", id);
+                    return new NotFoundException("Soutenance introuvable : " + id);
+                });
 
         s.setDate(dto.getDate());
         s.setHeureDebut(dto.getHeureDebut());
@@ -87,6 +102,8 @@ public class SoutenanceServiceImpl implements SoutenanceService {
         Soutenance saved = repo.save(s);
         membreJuryRepo.deleteBySoutenanceId(id);
         List<MembreJury> membres = saveMembres(dto.getMembresJury(), saved);
+        log.info("Soutenance modifiée id={}", id);
+
         return toDTO(saved, membres);
     }
 
@@ -103,6 +120,8 @@ public class SoutenanceServiceImpl implements SoutenanceService {
         try {
             s.setStatut(StatutSoutenance.valueOf(statut));
         } catch (IllegalArgumentException e) {
+            log.error("Statut invalide={} pour id={}", statut, id);
+
             throw new IllegalArgumentException("Statut invalide : " + statut);
         }
 
@@ -111,6 +130,8 @@ public class SoutenanceServiceImpl implements SoutenanceService {
     }
     @Override
     public List<SoutenanceDTO> getAllIng2() {
+        log.info("Récupération de toutes les soutenances");
+
         return repo.findByEtudiantNiveau("ING2")
                 .stream()
                 .map(s -> toDTO(s, membreJuryRepo.findBySoutenanceId(s.getId())))
@@ -118,6 +139,8 @@ public class SoutenanceServiceImpl implements SoutenanceService {
     }
     @Override
     public void supprimer(Long id) {
+        log.warn("Suppression soutenance id={}", id);
+
         if (!repo.existsById(id))
             throw new NotFoundException("Soutenance introuvable : " + id);
         membreJuryRepo.deleteBySoutenanceId(id);
@@ -140,6 +163,9 @@ public class SoutenanceServiceImpl implements SoutenanceService {
 
     @Override
     public List<SoutenanceDTO> planifierGroupe(PlanificationGroupeDTO dto) {
+        log.info("Planification groupe salleId={} nbEtudiants={}",
+                dto.getSalleId(),
+                dto.getEtudiantIds().size());
         Salle salle = salleRepo.findById(dto.getSalleId())
                 .orElseThrow(() -> new NotFoundException("Salle introuvable : " + dto.getSalleId()));
 
@@ -157,6 +183,8 @@ public class SoutenanceServiceImpl implements SoutenanceService {
             s.setSalle(salle);
 
             Soutenance saved = repo.save(s);
+            log.info("Soutenance créée pour étudiantId={} id={}", etudiantId, saved.getId());
+
             List<MembreJury> membres = saveMembres(dto.getMembresJury(), saved);
             return toDTO(saved, membres);
         }).toList();
@@ -382,15 +410,63 @@ public class SoutenanceServiceImpl implements SoutenanceService {
 
     @Override
     public List<SoutenanceDTO> getSoutenancesByEnseignant(Long enseignantId) {
-        return membreJuryRepo.findByEnseignantId(enseignantId)
-                .stream()
-                .map(MembreJury::getSoutenance)
-                .filter(soutenance -> soutenance != null)
-                .distinct()
-                .map(soutenance -> {
-                    List<MembreJury> membres = membreJuryRepo.findBySoutenanceId(soutenance.getId());
-                    return toDTO(soutenance, membres);
-                })
-                .toList();
+
+        List<Soutenance> soutenances =repo.findByEnseignantId(enseignantId);
+
+        return soutenances.stream().map(s -> {
+
+            SoutenanceDTO dto = new SoutenanceDTO();
+
+            dto.setId(s.getId());
+            dto.setDate(s.getDate());
+            dto.setHeureDebut(s.getHeureDebut());
+            dto.setDuree(s.getDuree());
+            dto.setStatut(s.getStatut().name());
+
+            // Demande stage
+            if (s.getDemandeStage() != null) {
+                dto.setDemandeStageId(s.getDemandeStage().getId());
+                dto.setSujetDemande(s.getDemandeStage().getSujet());
+            }
+            if (s.getDemandeStage() != null && s.getDemandeStage().getEtudiant() != null) {
+
+                var etudiant = s.getDemandeStage().getEtudiant();
+
+                dto.setEtudiantNom(etudiant.getNom());
+                dto.setEtudiantPrenom(etudiant.getPrenom());
+                dto.setEtudiantNiveau(etudiant.getNiveau());
+                dto.setEtudiantGroupe(etudiant.getGroupe());
+
+                if (etudiant.getDepartement() != null) {
+                    dto.setEtudiantDepartement(etudiant.getDepartement());
+                }
+
+                if (etudiant.getSpecialite() != null) {
+                    dto.setEtudiantSpecialite(etudiant.getSpecialite());
+                }
+            }
+            // Salle
+            if (s.getSalle() != null) {
+                dto.setSalleId(s.getSalle().getId());
+                dto.setCodeSalle(s.getSalle().getCode());
+                dto.setLocalisationSalle(s.getSalle().getLocalisation());
+            }
+
+
+            if (s.getMembresJury() != null) {
+                dto.setMembresJury(
+                        s.getMembresJury().stream().map(m -> {
+                            return MembreJuryDTO.builder()
+                                    .id(m.getId())
+                                    .enseignantId(m.getEnseignant().getId())
+                                    .nomEnseignant(m.getEnseignant().getNom())
+                                    .prenomEnseignant(m.getEnseignant().getPrenom())
+                                    .build();
+                        }).toList()
+                );
+            }
+
+            return dto;
+        }).toList();
     }
 }

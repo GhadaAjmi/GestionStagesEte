@@ -357,7 +357,6 @@ export class DemandeDetailsComponent implements OnInit, OnDestroy {
   docId: number,
   type: 'convention' | 'lettre-affectation' | 'prolongation'
 ): void {
-  if (!this.canManageDocuments) return;
 
   this.documentService.signerDocument(docId, type)
     .pipe(takeUntil(this.destroy$))
@@ -373,7 +372,6 @@ export class DemandeDetailsComponent implements OnInit, OnDestroy {
     });
 }
   refuserDocument(docId: number, motif: string): void {
-    if (!this.canManageDocuments) return;
 
     this.documentService.refuser(docId, motif)
       .pipe(takeUntil(this.destroy$))
@@ -390,7 +388,6 @@ export class DemandeDetailsComponent implements OnInit, OnDestroy {
   }
 
   validerDocument(id: number): void {
-    if (!this.canManageDocuments) return;
 
     this.documentService.valider(id)
       .pipe(takeUntil(this.destroy$))
@@ -478,10 +475,7 @@ export class DemandeDetailsComponent implements OnInit, OnDestroy {
     this.closeRefusModal();
   }
 
-  imprimerConvention(): void {
-    if (!this.convention?.id) return;
-    this.voirDocument('convention', this.convention.id);
-  }
+
 
   appliquerFiltres(): void {
     let liste = [...this.journaux];
@@ -793,10 +787,10 @@ export class DemandeDetailsComponent implements OnInit, OnDestroy {
     );
   }
 
-  get phase1Complete(): boolean {
-    return this.docsPhase1.length > 0 &&
-      this.docsPhase1.every(d => d.statut === 'VALIDE');
-  }
+ get phase1Complete(): boolean {
+  return this.docsPhase1.length > 0 &&
+    this.docsPhase1.every(d => d.statut === 'SIGNE');
+}
 
   get phase2Active(): boolean {
     return this.phase1Complete &&
@@ -816,12 +810,14 @@ export class DemandeDetailsComponent implements OnInit, OnDestroy {
     return this.demande?.statut === 'TERMINEE';
   }
 
-  get documentsEnAttente(): DocumentDemande[] {
-    return this.documents.filter(d =>
-      ['GENERE', 'SOUMIS'].includes(d.statut)
-    );
-  }
-
+get documentsEnAttente(): DocumentDemande[] {
+  return this.documents.filter(d =>
+    ['GENERE', 'SOUMIS', 'VALIDE'].includes(d.statut)
+  );
+}
+get docsSignes(): number {
+  return this.documents.filter(d => d.statut === 'SIGNE').length;
+}
   get docsEnAttente(): number {
     return this.documentsEnAttente.length;
   }
@@ -852,7 +848,7 @@ export class DemandeDetailsComponent implements OnInit, OnDestroy {
    
    
       case 'EN_ATTENTE_SIGNATURE':
-        return 'Validation responsable';
+        return 'Validation Service stage';
 
       case 'VALIDEE':
         return 'Démarrage du stage';
@@ -905,8 +901,8 @@ export class DemandeDetailsComponent implements OnInit, OnDestroy {
       case 'SOUMIS':
         return 'bg-soft-primary text-primary';
 
-      case 'GENERE':
-        return 'bg-soft-warning text-warning';
+      case 'SIGNE':
+        return 'bg-soft-success text-info';
 
       default:
         return 'bg-soft-secondary text-secondary';
@@ -917,9 +913,7 @@ export class DemandeDetailsComponent implements OnInit, OnDestroy {
     const map: Record<string, string> = {
       SOUMISE: 'bg-soft-warning text-warning',
       EN_ATTENTE_SIGNATURE: 'bg-soft-primary text-primary',
-      EN_ATTENTE_SIGNATURE_STAGIAIRE: 'bg-soft-warning text-warning',
-      EN_ATTENTE_SIGNATURE_RESPONSABLE: 'bg-soft-primary text-primary',
-      VALIDEE: 'bg-soft-success text-success',
+
       REFUSEE: 'bg-soft-danger text-danger',
       EN_COURS: 'bg-soft-primary text-primary',
       PROLONGATION_DEMANDEE: 'bg-soft-info text-info',
@@ -933,8 +927,6 @@ export class DemandeDetailsComponent implements OnInit, OnDestroy {
     const map: Record<string, string> = {
       SOUMISE: 'Soumise',
       EN_ATTENTE_SIGNATURE: 'En attente signature',
-      EN_ATTENTE_SIGNATURE_STAGIAIRE: 'En attente signature stagiaire',
-      EN_ATTENTE_SIGNATURE_RESPONSABLE: 'En attente signature responsable',
       VALIDEE: 'Approuvée',
       REFUSEE: 'Rejetée',
       EN_COURS: 'En cours',
@@ -975,6 +967,8 @@ export class DemandeDetailsComponent implements OnInit, OnDestroy {
       GENERE: 'bg-soft-warning text-warning',
       SOUMIS: 'bg-soft-primary text-primary',
       VALIDE: 'bg-soft-success text-success',
+      SIGNE: 'bg-soft-success text-info',
+
       REJETE: 'bg-soft-danger text-danger'
     };
 

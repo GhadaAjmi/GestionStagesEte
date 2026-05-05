@@ -1,6 +1,8 @@
 package com.enicar.projet.services.impl;
 
 import com.enicar.projet.dtos.ProlongationDTO;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import com.enicar.projet.entities.DemandeStage;
 import com.enicar.projet.entities.Prolongation;
 import com.enicar.projet.entities.StatutProlongation;
@@ -18,13 +20,17 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ProlongationServiceImpl implements ProlongationService {
+    private static final Logger log = LogManager.getLogger(ProlongationServiceImpl.class);
 
     private final ProlongationRepository prolongationRepository;
     private final DemandeStageRepository demandeRepository;
 
     // ── Conversion entité → DTO ──────────────────────────────────────────────
     private ProlongationDTO toDTO(Prolongation p) {
-        if (p == null) return null;
+        if (p == null) {
+            log.warn("Tentative de conversion d'une prolongation null");
+            return null;
+        }
 
         ProlongationDTO dto = new ProlongationDTO();
         dto.setId(p.getId());
@@ -44,12 +50,18 @@ public class ProlongationServiceImpl implements ProlongationService {
     // ── Demander une prolongation ─────────────────────────────────────────────
     @Override
     public ProlongationDTO demanderProlongation(Long demandeId, LocalDate dateFinProlongee) {
+        log.info("Demande de prolongation pour demandeId={}", demandeId);
         DemandeStage demande = demandeRepository.findById(demandeId)
-                .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
+                .orElseThrow(() -> {
+                    log.error("Demande non trouvée avec id={}", demandeId);
+                    return new RuntimeException("Demande non trouvée");
+                });
 
-        if (prolongationRepository.existsByDemandeStage(demande)) {
+        if (prolongationRepository.existsByDemandeStage(demande)){
+            log.warn("Une prolongation existe déjà pour demandeId={}", demandeId);
             throw new RuntimeException("Une prolongation existe déjà pour cette demande");
         }
+
 
         Prolongation p = new Prolongation();
         p.setDemandeStage(demande);
@@ -58,6 +70,7 @@ public class ProlongationServiceImpl implements ProlongationService {
         p.setStatut(StatutProlongation.EN_ATTENTE);
 
         Prolongation saved = prolongationRepository.save(p);
+        log.info("Prolongation créée avec id={}", saved.getId());
 
         // ← Lier la prolongation à la demande
         demande.setProlongation(saved);
@@ -68,8 +81,12 @@ public class ProlongationServiceImpl implements ProlongationService {
     // ── Approuver une prolongation ────────────────────────────────────────────
     @Override
     public ProlongationDTO approuver(Long id) {
+        log.info("Approbation de la prolongation id={}", id);
         Prolongation p = prolongationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Prolongation non trouvée"));
+                .orElseThrow(() -> {
+                    log.error("Prolongation non trouvée id={}", id);
+                    return new RuntimeException("Prolongation non trouvée");
+                });
 
         p.setStatut(StatutProlongation.APPROUVEE);
 
@@ -83,8 +100,12 @@ public class ProlongationServiceImpl implements ProlongationService {
     // ── Refuser une prolongation ──────────────────────────────────────────────
     @Override
     public ProlongationDTO refuser(Long id) {
+        log.info("Refus de la prolongation id={}", id);
         Prolongation p = prolongationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Prolongation non trouvée"));
+                .orElseThrow(() -> {
+                    log.error("Prolongation non trouvée id={}", id);
+                    return new RuntimeException("Prolongation non trouvée");
+                });
 
         p.setStatut(StatutProlongation.REFUSEE);
 
@@ -94,11 +115,18 @@ public class ProlongationServiceImpl implements ProlongationService {
     // ── Obtenir prolongation par demande ──────────────────────────────────────
     @Override
     public ProlongationDTO getByDemande(Long demandeId) {
+        log.info("Recherche prolongation pour demandeId={}", demandeId);
         DemandeStage demande = demandeRepository.findById(demandeId)
-                .orElseThrow(() -> new RuntimeException("Demande non trouvée"));
+                .orElseThrow(() -> {
+                    log.error("Demande non trouvée id={}", demandeId);
+                    return new RuntimeException("Demande non trouvée");
+                });
 
         Prolongation p = prolongationRepository.findByDemandeStage(demande)
-                .orElseThrow(() -> new RuntimeException("Aucune prolongation trouvée"));
+                .orElseThrow(() ->{
+                    log.warn("Aucune prolongation trouvée pour demandeId={}", demandeId);
+                    return new RuntimeException("Aucune prolongation trouvée");
+                });
 
         return toDTO(p);
     }
@@ -106,6 +134,8 @@ public class ProlongationServiceImpl implements ProlongationService {
     // ── Obtenir toutes les prolongations ──────────────────────────────────────
     @Override
     public List<ProlongationDTO> getAll() {
+        log.info("Récupération de toutes les prolongations");
+
         return prolongationRepository.findAll()
                 .stream()
                 .map(this::toDTO)

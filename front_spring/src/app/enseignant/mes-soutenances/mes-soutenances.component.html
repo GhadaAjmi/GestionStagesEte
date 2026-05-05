@@ -151,6 +151,8 @@
                 <div class="row g-3">
 
                   <div class="col-lg-4 col-md-6">
+             <label class="form-label">Rechercher</label>
+
                     <div class="input-group">
                       <span class="input-group-text">
                         <i class="feather-search"></i>
@@ -164,6 +166,8 @@
                   </div>
 
                   <div class="col-lg-2 col-md-6">
+                <label class="form-label">Statut</label>
+
                     <select class="form-control"
                             [(ngModel)]="filter.statut"
                             (change)="applyFilters()">
@@ -175,6 +179,8 @@
                   </div>
 
                   <div class="col-lg-2 col-md-6">
+                 <label class="form-label">Niveau</label>
+
                     <select class="form-control"
                             [(ngModel)]="filter.niveau"
                             (change)="applyFilters()">
@@ -186,6 +192,8 @@
                   </div>
 
                   <div class="col-lg-2 col-md-6">
+            <label class="form-label">Département</label>
+
                     <select class="form-control"
                             [(ngModel)]="filter.departement"
                             (change)="applyFilters()">
@@ -206,6 +214,7 @@
                   </div>
 
                   <div class="col-lg-3 col-md-6">
+                    <label class="form-label">Spécialité</label>
                     <select class="form-control"
                             [(ngModel)]="filter.specialite"
                             (change)="applyFilters()">
@@ -217,10 +226,12 @@
                   </div>
 
                   <div class="col-lg-3 col-md-6">
+              <label class="form-label">Groupe</label>
+
                     <select class="form-control"
                             [(ngModel)]="filter.groupe"
                             (change)="applyFilters()">
-                      <option value="">Tous groupes</option>
+                      <option selected value="">Tous groupes</option>
                       <option *ngFor="let g of groupesDisponibles" [value]="g">
                         {{ g }}
                       </option>
@@ -228,10 +239,12 @@
                   </div>
 
                   <div class="col-lg-3 col-md-6">
+                   <label class="form-label">Salle</label>
+
                     <select class="form-control"
                             [(ngModel)]="filter.salleCode"
                             (change)="applyFilters()">
-                      <option value="">Toutes salles</option>
+                      <option selected value="">Toutes salles</option>
                       <option *ngFor="let s of sallesDisponibles" [value]="s">
                         {{ s }}
                       </option>
@@ -239,6 +252,8 @@
                   </div>
 
                   <div class="col-lg-3 col-md-6">
+                                        <label class="form-label">Date</label>
+
                     <input type="date"
                            class="form-control"
                            [(ngModel)]="filter.date"
@@ -315,7 +330,6 @@
                         <th>Niveau</th>
                         <th>Département</th>
                         <th>Salle</th>
-                        <th>Mon rôle</th>
                         <th>Statut</th>
                         <th class="text-end">Actions</th>
                       </tr>
@@ -396,12 +410,6 @@
                           </div>
                         </td>
 
-                        <!-- Mon rôle -->
-                        <td>
-                          <span class="badge bg-soft-primary text-primary">
-                            {{ monRole(s) }}
-                          </span>
-                        </td>
 
                         <!-- Statut -->
                         <td>
@@ -409,16 +417,23 @@
                             {{ statutLabel(s.statut) }}
                           </span>
                         </td>
+<td class="text-end">
 
-                        <!-- Actions -->
-                        <td class="text-end">
-                          <a href="javascript:void(0)"
-                             class="btn btn-sm btn-light"
-                             (click)="openDetail(s)">
-                            <i class="feather-eye me-1"></i>
-                            Voir
-                          </a>
-                        </td>
+  <div class="d-flex justify-content-end gap-2">
+
+    <button class="btn btn-sm btn-link p-0 text-primary"
+            (click)="evaluer(s.id)">
+      <i class="feather-clipboard fs-18"></i>
+    </button>
+
+    <button class="btn btn-sm btn-link p-0 text-primary"
+            (click)="openDetail(s)">
+      <i class="feather-eye fs-18"></i>
+    </button>
+
+  </div>
+
+</td>
 
                       </tr>
 
@@ -679,6 +694,102 @@
                 Aucun membre de jury assigné
               </div>
             </ng-template>
+            
+<div class="col-12">
+
+  <h6 class="fw-bold mb-3">
+    <i class="feather-star me-2"></i>
+    Évaluations
+  </h6>
+
+  <!-- 🔵 MON ÉVALUATION -->
+  <div class="card border-primary mb-3" *ngIf="monEvaluation">
+
+    <div class="card-header bg-primary text-white">
+      Mon évaluation
+    </div>
+
+    <div class="card-body">
+
+      <div class="row g-2">
+
+        <div class="col-md-3">
+          Rapport: <strong>{{ monEvaluation.noteRapport }}</strong>
+        </div>
+
+        <div class="col-md-3">
+          Présentation: <strong>{{ monEvaluation.notePresentation }}</strong>
+        </div>
+
+        <div class="col-md-3">
+          Technique: <strong>{{ monEvaluation.noteTechnique }}</strong>
+        </div>
+
+        <div class="col-md-3">
+          Comportement: <strong>{{ monEvaluation.noteComportement }}</strong>
+        </div>
+
+        <div class="col-12 mt-2">
+          <small class="text-muted">Commentaire</small>
+          <p class="mb-0">{{ monEvaluation.commentaire }}</p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 🟡 JURY -->
+  <div *ngIf="evaluationsJury.length > 0">
+
+    <h6 class="fw-bold mt-3 mb-2">
+      Jury
+    </h6>
+
+    <div class="card mb-2" *ngFor="let e of evaluationsJury">
+
+      <div class="card-body">
+
+        <div class="d-flex justify-content-between">
+
+          <strong>Enseignant #{{ e.enseignantId }}</strong>
+
+        </div>
+
+        <div class="row mt-2">
+
+          <div class="col-md-3">
+            {{ e.noteRapport }}
+          </div>
+
+          <div class="col-md-3">
+            {{ e.notePresentation }}
+          </div>
+
+          <div class="col-md-3">
+            {{ e.noteTechnique }}
+          </div>
+
+          <div class="col-md-3">
+            {{ e.noteComportement }}
+          </div>
+
+        </div>
+
+        <small class="text-muted d-block mt-2">
+          {{ e.commentaire }}
+        </small>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔴 Aucune évaluation -->
+  <div *ngIf="evaluations.length === 0" class="text-muted text-center border rounded p-3">
+    Aucune évaluation disponible
+  </div>
+
+</div>
           </div>
 
         </div>
