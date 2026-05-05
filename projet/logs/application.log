@@ -38,3 +38,81 @@
 2026-05-05 09:14:42 [SpringApplicationShutdownHook] INFO  org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
 2026-05-05 09:14:42 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
 2026-05-05 09:14:42 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-05-05 09:24:10 [main] INFO  com.enicar.projet.ProjetApplication - Starting ProjetApplication using Java 25.0.2 with PID 14672 (C:\Users\ghada\Desktop\sem4\web\GestionSoutenancesStagesFinal\projet\target\classes started by ghada in C:\Users\ghada\Desktop\sem4\web\GestionSoutenancesStagesFinal\projet)
+2026-05-05 09:24:10 [main] DEBUG com.enicar.projet.ProjetApplication - Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-05-05 09:24:10 [main] INFO  com.enicar.projet.ProjetApplication - No active profile set, falling back to 1 default profile: "default"
+2026-05-05 09:24:10 [main] INFO  org.springframework.data.repository.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-05 09:24:10 [main] INFO  org.springframework.data.repository.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 100 ms. Found 11 JPA repository interfaces.
+2026-05-05 09:24:11 [main] INFO  org.springframework.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8087 (http)
+2026-05-05 09:24:11 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8087"]
+2026-05-05 09:24:11 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-05-05 09:24:11 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-05-05 09:24:11 [main] INFO  org.springframework.boot.web.context.servlet.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 1299 ms
+2026-05-05 09:24:11 [main] INFO  org.hibernate.orm.jpa - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-05-05 09:24:11 [main] INFO  org.hibernate.orm.core - HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-05-05 09:24:12 [main] INFO  org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-05 09:24:12 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-05-05 09:24:12 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@6068cda1
+2026-05-05 09:24:12 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-05-05 09:24:12 [main] INFO  org.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/gestionstagesete]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.45
+	Default catalog/schema: gestionstagesete/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-05 09:24:13 [main] INFO  org.hibernate.orm.core - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-05 09:24:13 [main] INFO  org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-05 09:24:13 [main] INFO  org.springframework.data.jpa.repository.query.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-05-05 09:24:14 [main] WARN  org.springframework.boot.jpa.autoconfigure.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-05 09:24:15 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8087"]
+2026-05-05 09:24:15 [main] INFO  org.springframework.boot.tomcat.TomcatWebServer - Tomcat started on port 8087 (http) with context path '/'
+2026-05-05 09:24:15 [main] INFO  com.enicar.projet.ProjetApplication - Started ProjetApplication in 5.409 seconds (process running for 6.125)
+2026-05-05 09:25:13 [SpringApplicationShutdownHook] INFO  org.springframework.boot.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-05-05 09:25:13 [tomcat-shutdown] INFO  org.springframework.boot.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-05-05 09:25:13 [SpringApplicationShutdownHook] INFO  org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-05-05 09:25:13 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-05-05 09:25:13 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-05-05 09:25:17 [main] INFO  com.enicar.projet.ProjetApplication - Starting ProjetApplication using Java 25.0.2 with PID 944 (C:\Users\ghada\Desktop\sem4\web\GestionSoutenancesStagesFinal\projet\target\classes started by ghada in C:\Users\ghada\Desktop\sem4\web\GestionSoutenancesStagesFinal\projet)
+2026-05-05 09:25:17 [main] DEBUG com.enicar.projet.ProjetApplication - Running with Spring Boot v4.0.6, Spring v7.0.7
+2026-05-05 09:25:17 [main] INFO  com.enicar.projet.ProjetApplication - No active profile set, falling back to 1 default profile: "default"
+2026-05-05 09:25:18 [main] INFO  org.springframework.data.repository.config.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-05 09:25:18 [main] INFO  org.springframework.data.repository.config.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 109 ms. Found 11 JPA repository interfaces.
+2026-05-05 09:25:19 [main] INFO  org.springframework.boot.tomcat.TomcatWebServer - Tomcat initialized with port 8087 (http)
+2026-05-05 09:25:19 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8087"]
+2026-05-05 09:25:19 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-05-05 09:25:19 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/11.0.21]
+2026-05-05 09:25:19 [main] INFO  org.springframework.boot.web.context.servlet.WebApplicationContextInitializer - Root WebApplicationContext: initialization completed in 1546 ms
+2026-05-05 09:25:19 [main] INFO  org.hibernate.orm.jpa - HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-05-05 09:25:19 [main] INFO  org.hibernate.orm.core - HHH000001: Hibernate ORM core version 7.2.12.Final
+2026-05-05 09:25:20 [main] INFO  org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-05 09:25:20 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-05-05 09:25:20 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@6068cda1
+2026-05-05 09:25:20 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-05-05 09:25:20 [main] INFO  org.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/gestionstagesete]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.45
+	Default catalog/schema: gestionstagesete/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-05-05 09:25:21 [main] INFO  org.hibernate.orm.core - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-05 09:25:22 [main] INFO  org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-05 09:25:22 [main] INFO  org.springframework.data.jpa.repository.query.QueryEnhancerFactories - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-05-05 09:25:24 [main] WARN  org.springframework.boot.jpa.autoconfigure.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-05-05 09:25:25 [main] INFO  org.apache.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8087"]
+2026-05-05 09:25:25 [main] INFO  org.springframework.boot.tomcat.TomcatWebServer - Tomcat started on port 8087 (http) with context path '/'
+2026-05-05 09:25:25 [main] INFO  com.enicar.projet.ProjetApplication - Started ProjetApplication in 7.853 seconds (process running for 8.608)
+2026-05-05 09:25:29 [http-nio-8087-exec-1] INFO  org.apache.catalina.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-05 09:25:29 [http-nio-8087-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-05-05 09:25:29 [http-nio-8087-exec-1] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 0 ms
