@@ -25,11 +25,11 @@ public class UtilisateurDTO {
     private String lieuDelivranceCin;
     private String dateDelivranceCin;
 
-    private String niveau;
+    private String niveau; //ING1 ING2
     private String specialite;
-    private String groupe;
+    private String groupe;//A,
     private String numeroInscription;
-
+//enseigant
     private String grade;
     private String domaine;
 }

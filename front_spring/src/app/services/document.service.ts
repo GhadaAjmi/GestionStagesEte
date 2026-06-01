@@ -9,9 +9,11 @@ import { DocumentDemande } from '../models/document';
 })
 export class DocumentService {
 
-  private readonly apiUrl = 'http://localhost:8087/api/documents';
-  private readonly pdfUrl = 'http://localhost:8087/api/pdf';
+ // private readonly apiUrl = 'http://localhost:8087/api/documents';
+  //private readonly pdfUrl = 'http://localhost:8087/api/pdf';
 
+ private readonly apiUrl = '/api/documents';
+ private readonly pdfUrl = '/api/pdf';
   constructor(private http: HttpClient) {}
 
   // ── Ajouter un document ─────────────────────────────────────

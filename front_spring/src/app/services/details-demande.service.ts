@@ -13,7 +13,8 @@ import { Prolongation } from '../models/Prolongation';
 })
 export class DetailsDemandeService {
 
- private readonly base = 'http://localhost:8087/api';
+ //private readonly base = 'http://localhost:8087/api';
+ private readonly base = '/api';
 
 
   constructor(private http: HttpClient) {}

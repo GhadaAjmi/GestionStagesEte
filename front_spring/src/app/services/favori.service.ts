@@ -9,7 +9,7 @@ import { AuthService } from './auth.service';
 })
 export class FavoriService {
 
-  private apiUrl = 'http://localhost:8087/api/favoris';
+ private apiUrl = 'http://localhost:8087/api/favoris';
 
   constructor(
     private http: HttpClient,

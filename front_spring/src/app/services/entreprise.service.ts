@@ -9,7 +9,8 @@ import { Entreprise } from '../models/entreprise';
 })
 export class EntrepriseService {
 
-  private readonly apiUrl = 'http://localhost:8087/api/entreprises';
+ // private readonly apiUrl = 'http://localhost:8087/api/entreprises';
+  private readonly apiUrl = '/api/entreprises';
 
   constructor(private http: HttpClient) {}
 

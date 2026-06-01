@@ -28,11 +28,11 @@
 
         <!-- Ajouter utilisateur -->
         <li class="nxl-item" *ngIf="role === 'ADMIN' || role === 'SUPER_ADMIN'">
-          <a routerLink="/admin/new"
+          <a routerLink="/admin/import"
              routerLinkActive="active"
              class="nxl-link">
             <span class="nxl-micon"><i class="feather-user-plus"></i></span>
-            <span class="nxl-mtext">Ajouter utilisateur</span>
+            <span class="nxl-mtext">Importer Utilisateurs</span>
           </a>
         </li>
 
@@ -142,16 +142,7 @@
           </a>
         </li>
 
-        <!-- Nouvelle soutenance -->
-        <li class="nxl-item" *ngIf="role === 'RESPONSABLE'">
-          <a routerLink="/responsable/soutenances/new"
-             routerLinkActive="active"
-             class="nxl-link">
-            <span class="nxl-micon"><i class="feather-plus-circle"></i></span>
-            <span class="nxl-mtext">Nouvelle Soutenance</span>
-          </a>
-        </li>
-
+     
         <!-- Enseignants -->
         <li class="nxl-item" *ngIf="role === 'RESPONSABLE'">
           <a routerLink="/responsable/enseignants"

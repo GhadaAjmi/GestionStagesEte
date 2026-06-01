@@ -14,9 +14,10 @@ export type StatutDemande = 'EN_ATTENTE' | 'VALIDEE' | 'REFUSEE' | string;
 })
 export class DemandeService {
 
-  private readonly apiUrl = 'http://localhost:8087/api/demandes';
-  private readonly baseUrl = 'http://localhost:8087/api';
-
+  //private readonly apiUrl = 'http://localhost:8087/api/demandes';
+  //private readonly baseUrl = 'http://localhost:8087/api';
+  private readonly apiUrl = '/api/demandes';
+  private readonly baseUrl = '/api';
   constructor(private http: HttpClient) {}
 
   // ── Récupérer toutes les demandes ─────────────────────────────

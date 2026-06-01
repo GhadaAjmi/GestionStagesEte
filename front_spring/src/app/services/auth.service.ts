@@ -26,6 +26,8 @@ interface JwtPayload {
 export class AuthService {
 
   private apiUrl = 'http://localhost:8087/api/auth';
+
+
   private profileUpdatedSubject = new BehaviorSubject<void>(undefined);
   public profileUpdated$ = this.profileUpdatedSubject.asObservable();
 

@@ -9,7 +9,7 @@ import { JournalStage } from '../models/journalStage';
 })
 export class JournalService {
 
-  private readonly apiUrl = 'http://localhost:8087/api/journal';
+   private readonly apiUrl = 'http://localhost:8087/api/journal';
 
   constructor(private http: HttpClient) {}
 

@@ -9,7 +9,7 @@ import { Prolongation } from '../models/Prolongation';
 })
 export class ProlongationService {
 
-  private readonly apiUrl = 'http://localhost:8087/api/prolongations';
+ private readonly apiUrl = 'http://localhost:8087/api/prolongations';
 
   constructor(private http: HttpClient) {}
 

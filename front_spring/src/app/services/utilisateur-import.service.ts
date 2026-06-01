@@ -15,7 +15,7 @@ export interface ImportResult {
 @Injectable({ providedIn: 'root' })
 export class UtilisateurImportService {
 
-  private apiUrl = 'http://localhost:8087/api/utilisateurs/import';
+ private apiUrl = 'http://localhost:8087/api/utilisateurs/import';
 
   // Mapping entre les en-têtes Excel et les champs DTO
   private readonly COLUMN_MAP: Record<string, keyof Utilisateur> = {
